@@ -1,0 +1,28 @@
+/* Contact Page CSS */
+
+/* Page header & breadcrumbs */
+.page-head{padding:26px 0 10px;background:linear-gradient(180deg,#fff,var(--bg-soft))}
+.breadcrumb{color:rgba(17,24,39,.60);font-weight:650;font-size:13px}
+.page-title{margin:10px 0 0;font-size:28px;letter-spacing:-.02em}
+
+/* Contact Form */
+.form{
+  display:grid;gap:12px;
+}
+.input, .textarea{
+  width:100%;
+  border:1px solid rgba(17,24,39,.12);
+  border-radius:14px;
+  padding:12px 12px;
+  font-weight:650;
+  outline:none;
+}
+.input:focus, .textarea:focus{border-color:rgba(25,118,210,.45);box-shadow:0 0 0 4px rgba(25,118,210,.10)}
+.textarea{min-height:130px;resize:vertical}
+
+/* Contact Info */
+.kv{display:grid;gap:8px;margin:12px 0 14px}
+.kv div{display:flex;gap:10px;align-items:flex-start;color:rgba(17,24,39,.78)}
+.kv .k{width:22px;text-align:center}
+
+.divider{height:1px;background:rgba(17,24,39,.08);margin:12px 0}

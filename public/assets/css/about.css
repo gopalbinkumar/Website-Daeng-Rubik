@@ -1,0 +1,31 @@
+/* About Page CSS */
+
+/* Page header & breadcrumbs */
+.page-head{padding:26px 0 10px;background:linear-gradient(180deg,#fff,var(--bg-soft))}
+.breadcrumb{color:rgba(17,24,39,.60);font-weight:650;font-size:13px}
+.page-title{margin:10px 0 0;font-size:28px;letter-spacing:-.02em}
+
+/* Featured (used for about hero) */
+.featured{
+  display:grid;grid-template-columns: 1fr 1.2fr;
+  gap:16px;align-items:stretch;
+  overflow:hidden;
+}
+.featured-media{
+  min-height:220px;
+  background:
+    radial-gradient(260px 200px at 30% 30%, rgba(25,118,210,.20), transparent 60%),
+    radial-gradient(260px 200px at 70% 70%, rgba(253,216,53,.26), transparent 60%),
+    linear-gradient(135deg, rgba(229,57,53,.16), rgba(255,255,255,.10));
+  border-right:1px solid rgba(17,24,39,.08);
+}
+.featured-body{padding:18px}
+.kv{display:grid;gap:8px;margin:12px 0 14px}
+.kv div{display:flex;gap:10px;align-items:flex-start;color:rgba(17,24,39,.78)}
+.kv .k{width:22px;text-align:center}
+
+/* Responsive About */
+@media (max-width: 980px){
+  .featured{grid-template-columns: 1fr}
+  .featured-media{border-right:none;border-bottom:1px solid rgba(17,24,39,.08)}
+}
