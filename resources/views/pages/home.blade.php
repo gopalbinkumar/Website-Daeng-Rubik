@@ -122,7 +122,6 @@
                             </div>
                             <div class="prod-actions">
                                 <a class="btn btn-primary" href="{{ route('products') }}" style="flex:1;">Lihat detail</a>
-                                <button class="btn btn-secondary" type="button" style="flex:1;">+ Keranjang</button>
                             </div>
                         </div>
                     </article>

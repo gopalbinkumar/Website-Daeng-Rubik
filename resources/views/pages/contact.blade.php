@@ -12,7 +12,7 @@
             <div class="breadcrumb">Beranda &gt; Kontak</div>
             <h1 class="page-title">Hubungi Kami</h1>
             <p class="muted" style="margin:8px 0 0;max-width:820px;line-height:1.7">
-                Terhubung dengan Daeng Rubik lewat WhatsApp dan media sosial. Form ini UI-only (belum mengirim data).
+                Terhubung dengan Daeng Rubik lewat WhatsApp dan media sosial
             </p>
         </div>
     </section>

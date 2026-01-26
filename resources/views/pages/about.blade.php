@@ -81,32 +81,6 @@
                     </div>
                 </div>
             </div>
-
-            <div style="height:18px"></div>
-
-            <div class="section-title">
-                <div>
-                    <h2>Tim</h2>
-                    <p class="muted">Placeholder profil tim (UI).</p>
-                </div>
-            </div>
-
-            <div class="grid-4">
-                @foreach([
-                    ['name' => 'Daeng', 'role' => 'Founder'],
-                    ['name' => 'Rani', 'role' => 'Event Manager'],
-                    ['name' => 'Bima', 'role' => 'Trainer'],
-                    ['name' => 'Sari', 'role' => 'Admin'],
-                ] as $m)
-                    <div class="card card-pad">
-                        <div style="width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,rgba(229,57,53,.18),rgba(25,118,210,.14),rgba(253,216,53,.22));border:1px solid rgba(17,24,39,.10);display:flex;align-items:center;justify-content:center;font-weight:900">
-                            {{ mb_substr($m['name'], 0, 1) }}
-                        </div>
-                        <h3 style="margin:12px 0 2px;font-size:16px;letter-spacing:-.01em">{{ $m['name'] }}</h3>
-                        <p class="muted" style="margin:0">{{ $m['role'] }}</p>
-                    </div>
-                @endforeach
-            </div>
         </div>
     </section>
 @endsection

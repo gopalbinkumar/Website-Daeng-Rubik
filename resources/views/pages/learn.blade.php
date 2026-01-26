@@ -178,7 +178,7 @@
             </div>
 
             <div style="height:18px"></div>
-            <div class="card card-pad">
+            {{-- <div class="card card-pad">
                 <b>📊 Progress belajar (UI)</b>
                 <p class="muted" style="margin:8px 0 0;line-height:1.7">
                     Nantinya progress akan tersimpan per akun. Untuk sekarang, ini placeholder tampilan.
@@ -190,7 +190,7 @@
                 <div style="height:10px;background:rgba(17,24,39,.08);border-radius:999px;overflow:hidden">
                     <div style="width:80%;height:100%;background:linear-gradient(90deg,var(--green),var(--yellow));"></div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </section>
 @endsection

@@ -70,6 +70,210 @@
 .mobile-filter-btn{display:none}
 .filter-sheet{display:none}
 
+/* Product Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 98;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.product-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  max-width: 820px;
+  width: 90%;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  z-index: 99;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.product-modal.open {
+  opacity: 1;
+  pointer-events: all;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+.product-modal-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+.product-modal-image {
+  position: relative;
+  background:
+    radial-gradient(200px 200px at 30% 30%, rgba(229,57,53,.22), transparent 60%),
+    radial-gradient(200px 200px at 70% 60%, rgba(25,118,210,.18), transparent 60%),
+    linear-gradient(180deg, #fff, #f3f6ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  border-right: 1px solid rgba(17,24,39,.08);
+}
+
+.product-modal-body {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.product-modal-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+
+.product-modal-price {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--red);
+  margin: 8px 0 16px;
+}
+
+.product-modal-description {
+  margin-top: 16px;
+}
+
+.product-modal-specs {
+  margin-top: 16px;
+}
+
+.specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.spec-item {
+  background: rgba(17,24,39,.04);
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.spec-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.spec-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.product-modal-actions {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(17,24,39,.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.marketplace-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.marketplace-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.shopee-btn {
+  background: #EE4D2D;
+  color: #fff;
+}
+
+.shopee-btn:hover {
+  background: #e03d1d;
+}
+
+.tokopedia-btn {
+  background: #42B549;
+  color: #fff;
+}
+
+.tokopedia-btn:hover {
+  background: #3aa341;
+}
+
+.tiktok-btn {
+  background: #000;
+  color: #fff;
+}
+
+.tiktok-btn:hover {
+  background: #1a1a1a;
+}
+
 /* Responsive Products */
 @media (max-width: 980px){
   .two-col{grid-template-columns: 1fr}
@@ -92,4 +296,36 @@
   }
   .filter-sheet.open{transform: translateY(0)}
   .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  
+  /* Mobile Modal */
+  .product-modal {
+    width: 95%;
+    max-height: 95vh;
+    border-radius: 20px 20px 0 0;
+    top: auto;
+    bottom: 0;
+    transform: translate(-50%, 100%);
+  }
+  
+  .product-modal.open {
+    transform: translate(-50%, 0);
+  }
+  
+  .product-modal-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .product-modal-image {
+    border-right: none;
+    border-bottom: 1px solid rgba(17,24,39,.08);
+    padding: 24px;
+  }
+  
+  .product-modal-body {
+    padding: 24px;
+  }
+  
+  .specs-grid {
+    grid-template-columns: 1fr;
+  }
 }
