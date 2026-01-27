@@ -39,8 +39,8 @@
 }
 .nav-link:hover{background:rgba(17,24,39,.05);color:var(--text)}
 .nav-link.active{
-  color:var(--text);
-  background: linear-gradient(90deg, rgba(229,57,53,.10), rgba(25,118,210,.10), rgba(253,216,53,.18));
+  color:white ;
+  background: var(--red);
   border:1px solid rgba(17,24,39,.08);
 }
 .nav-actions{display:flex;align-items:center;gap:10px}
@@ -64,6 +64,10 @@
   font-size:11px;font-weight:900;
   padding:2px 6px;border-radius:999px;
   border:2px solid #fff;
+}
+.cart-badge[data-count="0"]::after,
+.cart-badge:not([data-count])::after{
+  display:none;
 }
 .hamburger{display:none}
 

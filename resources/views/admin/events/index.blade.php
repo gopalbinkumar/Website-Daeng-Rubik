@@ -164,6 +164,32 @@
                         </select>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Total Hadiah</label>
+                    <input type="number" class="form-input" placeholder="Contoh: 5000000">
+                    <small style="display:block;margin-top:4px;font-size:12px;color:var(--admin-text-muted);">
+                        Nilai total hadiah yang akan ditampilkan di halaman event dan laporan.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Kategori Lomba</label>
+                    <div class="category-tags">
+                        <div class="tag-list">
+                            <span class="tag">3x3 ✕</span>
+                            <span class="tag">2x2 ✕</span>
+                            <span class="tag">4x4 ✕</span>
+                        </div>
+                        <div class="tag-input-row">
+                            <input type="text" class="form-input" placeholder="Tambah kategori, mis. 3x3 OH">
+                            <button type="button" class="btn btn-secondary btn-small">+ Tambah</button>
+                        </div>
+                        <small class="form-helper">
+                            Admin dapat menambahkan lebih dari satu kategori lomba. (UI demo, belum tersambung backend)
+                        </small>
+                    </div>
+                </div>
             </form>
         </div>
         <div class="modal-footer">
@@ -246,6 +272,30 @@
                             <option>Ongoing</option>
                             <option>Finished</option>
                         </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Total Hadiah</label>
+                    <input type="number" class="form-input" value="5000000">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Kategori Lomba</label>
+                    <div class="category-tags">
+                        <div class="tag-list">
+                            <span class="tag">3x3 ✕</span>
+                            <span class="tag">2x2 ✕</span>
+                            <span class="tag">4x4 ✕</span>
+                            <span class="tag">OH ✕</span>
+                        </div>
+                        <div class="tag-input-row">
+                            <input type="text" class="form-input" placeholder="Tambah kategori, mis. BLD">
+                            <button type="button" class="btn btn-secondary btn-small">+ Tambah</button>
+                        </div>
+                        <small class="form-helper">
+                            Ubah, tambah, atau hapus kategori lomba sesuai kebutuhan event.
+                        </small>
                     </div>
                 </div>
             </form>

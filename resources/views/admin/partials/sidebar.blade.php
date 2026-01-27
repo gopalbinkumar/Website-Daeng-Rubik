@@ -27,12 +27,17 @@
 
         <a href="{{ route('admin.admins.index') }}" class="menu-item {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}">
             <span class="menu-item-icon">👥</span>
-            <span>Admin</span>
+            <span>Pengguna</span>
         </a>
 
         <a href="{{ route('admin.settings') }}" class="menu-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
             <span class="menu-item-icon">⚙️</span>
             <span>Pengaturan Website</span>
+        </a>
+
+        <a href="{{ route('admin.reports.sales') }}" class="menu-item {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">
+            <span class="menu-item-icon">📊</span>
+            <span>Laporan Penjualan</span>
         </a>
     </nav>
 </aside>

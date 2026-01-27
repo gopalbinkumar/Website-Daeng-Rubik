@@ -45,5 +45,78 @@
   openFilter?.addEventListener('click', () => setSheet(true));
   closeFilter?.addEventListener('click', () => setSheet(false));
   sheetBackdrop?.addEventListener('click', () => setSheet(false));
+
+  // Simple Cart utility (localStorage-based, UI only)
+  const CART_KEY = 'daengrubik_cart_v1';
+
+  const readCart = () => {
+    try {
+      const raw = localStorage.getItem(CART_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const writeCart = (items) => {
+    try {
+      localStorage.setItem(CART_KEY, JSON.stringify(items));
+    } catch {
+      // ignore
+    }
+    updateCartBadge();
+  };
+
+  const countCart = () => {
+    return readCart().reduce((sum, item) => sum + (item.qty || 1), 0);
+  };
+
+  const updateCartBadge = () => {
+    const count = countCart();
+    $$('.cart-badge').forEach(el => {
+      el.setAttribute('data-count', String(count));
+    });
+  };
+
+  window.DaengCart = {
+    getItems: () => readCart(),
+    add: (product) => {
+      if (!product || typeof product.id === 'undefined') return;
+      const items = readCart();
+      const existing = items.find(i => i.id === product.id);
+      if (existing) {
+        existing.qty = (existing.qty || 1) + 1;
+      } else {
+        items.push({
+          id: product.id,
+          name: product.name || 'Produk Rubik',
+          price: product.price || 0,
+          qty: 1
+        });
+      }
+      writeCart(items);
+    },
+    changeQty: (id, delta) => {
+      const items = readCart().map(i => {
+        if (i.id === id) {
+          const next = (i.qty || 1) + delta;
+          return { ...i, qty: next < 1 ? 1 : next };
+        }
+        return i;
+      });
+      writeCart(items);
+    },
+    remove: (id) => {
+      const items = readCart().filter(i => i.id !== id);
+      writeCart(items);
+    },
+    clear: () => {
+      writeCart([]);
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', updateCartBadge);
 })();
 

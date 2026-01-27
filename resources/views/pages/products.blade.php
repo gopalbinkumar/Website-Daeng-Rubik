@@ -386,6 +386,7 @@
 
     <script>
         const productsData = @json($products);
+        const checkoutUrl = "{{ url('/checkout') }}";
         
         function openProductModal(productId) {
             const product = productsData.find(p => p.id === productId);
@@ -394,6 +395,19 @@
             const modal = document.getElementById('productModal');
             const backdrop = document.getElementById('productModalBackdrop');
             const content = document.getElementById('productModalContent');
+
+            const marketplace = product.marketplace || {};
+            let marketplaceButtons = '';
+            if (marketplace.tokopedia) {
+                marketplaceButtons += `<button type="button" class="marketplace-icon tokopedia" title="Buka di Tokopedia" onclick="openMarketplace('${marketplace.tokopedia}')"></button>`;
+            }
+            if (marketplace.shopee) {
+                marketplaceButtons += `<button type="button" class="marketplace-icon shopee" title="Buka di Shopee" onclick="openMarketplace('${marketplace.shopee}')"></button>`;
+            }
+            if (marketplace.tiktok) {
+                marketplaceButtons += `<button type="button" class="marketplace-icon tiktok" title="Buka di TikTok Shop" onclick="openMarketplace('${marketplace.tiktok}')"></button>`;
+            }
+            const hasMarketplace = marketplaceButtons.trim().length > 0;
             
             content.innerHTML = `
                 <div class="product-modal-image">
@@ -407,7 +421,7 @@
                     
                     <div class="product-modal-info">
                         <p style="color:var(--muted);font-size:14px;margin:16px 0;">
-                            <strong>ℹ️</strong> Pembelian dilakukan melalui marketplace resmi Daeng Rubik.
+                            <strong>ℹ️</strong> Pembelian dilakukan melalui halaman checkout resmi Daeng Rubik atau marketplace resmi di bawah.
                         </p>
                     </div>
                     
@@ -441,15 +455,21 @@
                     </div>
                     
                     <div class="product-modal-actions">
-                        <a href="${product.marketplace.shopee}" target="_blank" class="marketplace-btn shopee-btn">
-                            <span>🛒</span> Beli di Shopee
-                        </a>
-                        <a href="${product.marketplace.tokopedia}" target="_blank" class="marketplace-btn tokopedia-btn">
-                            <span>🛒</span> Beli di Tokopedia
-                        </a>
-                        <a href="${product.marketplace.tiktok}" target="_blank" class="marketplace-btn tiktok-btn">
-                            <span>🛒</span> Beli di TikTok Shop
-                        </a>
+                        <button type="button" class="checkout-btn" onclick="goToCheckout(${product.id})">
+                            🛒 Beli Sekarang
+                        </button>
+                        <div class="product-secondary-actions">
+                            ${hasMarketplace ? `
+                            <div class="marketplace-row">
+                                ${marketplaceButtons}
+                            </div>
+                            ` : ''}
+                            <button type="button" class="add-cart-btn" onclick="addToCart(${product.id})">
+                                <span class="icon">➕</span>
+                                <span>Tambah ke Keranjang</span>
+                            </button>
+                        </div>
+                        <p id="cartFeedback" class="cart-feedback" aria-live="polite"></p>
                     </div>
                 </div>
             `;
@@ -465,6 +485,30 @@
             modal.classList.remove('open');
             backdrop.classList.remove('open');
             document.body.style.overflow = '';
+        }
+
+        function goToCheckout(productId) {
+            if (!checkoutUrl) return;
+            window.location.href = `${checkoutUrl}?id=${productId}`;
+        }
+
+        function openMarketplace(url) {
+            if (!url) return;
+            window.open(url, '_blank');
+        }
+        
+        function addToCart(productId) {
+            const feedback = document.getElementById('cartFeedback');
+            const product = productsData.find(p => p.id === productId);
+            if (!product || !window.DaengCart) return;
+            window.DaengCart.add({
+                id: product.id,
+                name: product.name,
+                price: product.price
+            });
+            if (feedback) {
+                feedback.textContent = `✅ "${product.name}" ditambahkan ke keranjang.`;
+            }
         }
         
         // Close on Escape key

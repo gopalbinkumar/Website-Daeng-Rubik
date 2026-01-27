@@ -4,7 +4,7 @@
             <div>
                 <div class="brand" style="margin-bottom:10px;">
                     <img src="{{ asset('assets/logo-daeng-rubik.png') }}" alt="Daeng Rubik Logo" style="width:38px;height:38px;object-fit:contain;display:block;" />
-                    <span>Daeng <span style="color:var(--yellow)">Rubik</span></span>
+                    <span>Daeng <span style="color:var(--red)">Rubik</span></span>
                 </div>
                 <small class="muted" style="color:rgba(255,255,255,.70);display:block;line-height:1.7">
                     Platform terpadu untuk belanja rubik, mengikuti event rubik, dan belajar rubik dari basic sampai advanced.

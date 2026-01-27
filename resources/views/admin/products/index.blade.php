@@ -162,6 +162,27 @@
                         </label>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Link Marketplace (Opsional)</label>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight:500;font-size:13px;">Tokopedia</label>
+                            <input type="url" class="form-input" placeholder="https://tokopedia.com/daengrubik/...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight:500;font-size:13px;">Shopee</label>
+                            <input type="url" class="form-input" placeholder="https://shopee.co.id/...">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:8px;">
+                        <label class="form-label" style="font-weight:500;font-size:13px;">TikTok Shop</label>
+                        <input type="url" class="form-input" placeholder="https://www.tiktok.com/@akunmu/shop/...">
+                        <small class="form-helper">
+                            Jika link diisi, ikon marketplace terkait akan muncul di detail produk sisi user. Jika kosong, ikon tidak ditampilkan.
+                        </small>
+                    </div>
+                </div>
             </form>
         </div>
         <div class="modal-footer">
@@ -235,6 +256,27 @@
                         <label style="display: flex; align-items: center; gap: 8px;">
                             <input type="checkbox" checked> Aktif
                         </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Link Marketplace (Opsional)</label>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight:500;font-size:13px;">Tokopedia</label>
+                            <input type="url" class="form-input" value="https://tokopedia.com/daengrubik/produk-3x3">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight:500;font-size:13px;">Shopee</label>
+                            <input type="url" class="form-input" value="https://shopee.co.id/daengrubik/produk-3x3">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:8px;">
+                        <label class="form-label" style="font-weight:500;font-size:13px;">TikTok Shop</label>
+                        <input type="url" class="form-input" placeholder="https://www.tiktok.com/@akunmu/shop/...">
+                        <small class="form-helper">
+                            Kosongkan jika produk belum tersedia di marketplace tertentu.
+                        </small>
                     </div>
                 </div>
             </form>

@@ -6,7 +6,7 @@
     <title>@yield('title', 'Daeng Rubik')</title>
     <meta name="description" content="Daeng Rubik - rubik store, event rubik, dan materi pembelajaran rubik.">
 
-    <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" href="{{ asset('assets/logo-daeng-rubik.png') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,600,700,800,900&display=swap" rel="stylesheet" />
 

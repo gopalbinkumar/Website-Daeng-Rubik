@@ -224,54 +224,99 @@
   border-top: 1px solid rgba(17,24,39,.08);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
-.marketplace-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+.checkout-btn {
+  width: 100%;
   padding: 14px 20px;
   border-radius: 12px;
   font-weight: 700;
   font-size: 15px;
-  text-decoration: none;
-  transition: all 0.2s;
   border: none;
   cursor: pointer;
+  background: linear-gradient(90deg, var(--red), var(--blue), var(--yellow));
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(25,118,210,0.4);
+  transition: all 0.2s;
 }
 
-.marketplace-btn:hover {
+.checkout-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 14px 32px rgba(25,118,210,0.45);
 }
 
-.shopee-btn {
-  background: #EE4D2D;
-  color: #fff;
+.product-secondary-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
 }
 
-.shopee-btn:hover {
-  background: #e03d1d;
+.marketplace-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
-.tokopedia-btn {
-  background: #42B549;
-  color: #fff;
+.marketplace-icon{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  border:none;
+  cursor:pointer;
+  background-size:60%;
+  background-repeat:no-repeat;
+  background-position:center;
+  transition:transform .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
 
-.tokopedia-btn:hover {
-  background: #3aa341;
+.marketplace-icon.tokopedia{
+  background-color:#42B549;
+  /* ikon bisa diganti SVG di kemudian hari */
 }
 
-.tiktok-btn {
-  background: #000;
-  color: #fff;
+.marketplace-icon.shopee{
+  background-color:#EE4D2D;
 }
 
-.tiktok-btn:hover {
-  background: #1a1a1a;
+.marketplace-icon.tiktok{
+  background-color:#000;
+}
+
+.marketplace-icon:hover{
+  transform:translateY(-1px) scale(1.03);
+  box-shadow:0 8px 20px rgba(0,0,0,.18);
+}
+
+.add-cart-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(17,24,39,.12);
+  background:#fff;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.add-cart-btn .icon{
+  font-size:14px;
+}
+
+.add-cart-btn:hover{
+  background:rgba(17,24,39,.03);
+  box-shadow:0 6px 16px rgba(15,23,42,.12);
+}
+
+.cart-feedback{
+  margin:6px 0 0;
+  font-size:12px;
+  color:var(--green);
 }
 
 /* Responsive Products */

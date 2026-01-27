@@ -132,12 +132,15 @@
 
                         <div class="form-group">
                             <label class="form-label">Kategori Lomba <span class="required">*</span></label>
-                            <select class="form-input" required>
-                                <option value="">Pilih kategori</option>
+                            <div class="checkbox-list">
                                 @foreach($event['categories'] as $cat)
-                                    <option value="{{ $cat }}">{{ $cat }}</option>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" class="checkbox-input">
+                                        <span>{{ $cat }}</span>
+                                    </label>
                                 @endforeach
-                            </select>
+                            </div>
+                            <small class="form-helper">Pilih satu atau lebih kategori lomba yang ingin diikuti.</small>
                         </div>
 
                         <div class="form-group">

@@ -19,7 +19,7 @@
   letter-spacing:-.03em;
 }
 .hero-title .grad{
-  background: linear-gradient(90deg, var(--red), var(--blue), var(--yellow));
+  background: var(--red);
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .hero-sub{font-size:16px;line-height:1.6;color:rgba(17,24,39,.70);margin:14px 0 18px}

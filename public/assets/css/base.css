@@ -59,7 +59,8 @@ img{max-width:100%;display:block}
 .btn:active{transform:translateY(1px)}
 .btn-primary{
   color:#fff;
-  background: linear-gradient(90deg, var(--red), var(--blue), var(--yellow));
+  /* background: linear-gradient(90deg, var(--red), var(--blue), var(--yellow)); */
+  background: var(--red);
   box-shadow: 0 10px 26px rgba(25,118,210,.25);
 }
 .btn-primary:hover{box-shadow: 0 14px 34px rgba(25,118,210,.32)}

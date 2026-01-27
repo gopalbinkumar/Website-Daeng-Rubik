@@ -346,6 +346,25 @@
   margin-top: -4px;
 }
 
+.checkbox-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.checkbox-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  color:var(--text);
+}
+
+.checkbox-input{
+  width:16px;
+  height:16px;
+}
+
 .form-actions {
   display: flex;
   gap: 12px;

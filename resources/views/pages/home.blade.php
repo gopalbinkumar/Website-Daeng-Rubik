@@ -184,7 +184,7 @@
         </div>
     </section>
 
-    <section class="section" style="background:var(--bg-soft);border-top:1px solid rgba(17,24,39,.06);border-bottom:1px solid rgba(17,24,39,.06)">
+    {{-- <section class="section" style="background:var(--bg-soft);border-top:1px solid rgba(17,24,39,.06);border-bottom:1px solid rgba(17,24,39,.06)">
         <div class="container">
             <div class="section-title">
                 <div>
@@ -199,6 +199,6 @@
                 <div class="stat green"><b>4.9★</b><small>Rating komunitas</small></div>
             </div>
         </div>
-    </section>
+    </section> --}}
 @endsection
 

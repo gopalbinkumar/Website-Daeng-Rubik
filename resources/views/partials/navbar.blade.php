@@ -20,6 +20,14 @@
             </nav>
 
             <div class="nav-actions">
+                <a href="{{ route('cart') }}" class="icon-btn cart-badge" id="cartButton" data-count="0" aria-label="Keranjang">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 6h15l-1.5 9h-12z" />
+                        <circle cx="9" cy="19" r="1.5" />
+                        <circle cx="18" cy="19" r="1.5" />
+                    </svg>
+                </a>
+
                 <button class="icon-btn" type="button" aria-label="Cari">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 21l-4.3-4.3" />

@@ -347,3 +347,206 @@ Halaman Event (card)
 - Komponen konsisten dengan website sebelumnya: **card**, **chip**, **button** rounded, spacing lega, micro-interaction halus.
 - Responsif: grid → stack; modal desktop → near-fullscreen mobile; CTA selalu mudah dijangkau.
 
+---
+
+## 5) NAVBAR & KERANJANG (User)
+
+### 5.1 Navbar dengan Ikon Keranjang
+
+#### Desktop
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ [Logo Daeng Rubik]  Daeng Rubik        Beranda  Produk  Event  Belajar  │
+│                                                                          │
+│                                           [🔍]  [🛒 2]  [≡]               │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+- **Ikon keranjang**:
+  - Simbol: 🛒 atau ikon vector.
+  - **Badge** kecil di pojok kanan atas: angka jumlah item di keranjang (mis. `2`).
+  - Hover: background sedikit abu-abu transparan, cursor pointer.
+- **Perilaku**:
+  - Klik ikon keranjang → navigasi ke **Halaman Keranjang** (`/keranjang`).
+
+#### Mobile
+```
+┌──────────────────────────┐
+│ [Logo] Daeng Rubik   [🛒 2] [☰] │
+└──────────────────────────┘
+```
+
+- Ikon keranjang tetap terlihat di topbar mobile di sebelah ikon menu.
+
+---
+
+## 6) MODAL DETAIL PRODUK — AKSI TAMBAHAN
+
+### 6.1 Tombol “Tambah ke Keranjang”
+
+#### Footer Modal (setelah revisi)
+```
+┌─────────────────────────────────────────────┐
+│ [  🛒  Beli Sekarang (primary)           ]  │
+│                                             │
+│  [Tokopedia Icon] [Shopee Icon] [TikTok]  [➕ Keranjang]  │
+└─────────────────────────────────────────────┘
+```
+
+- **Urutan aksi**:
+  - Baris 1: Tombol besar **“Beli Sekarang”** (checkout langsung).
+  - Baris 2:
+    - Kiri: ikon marketplace (Tokopedia, Shopee, TikTok) **hanya muncul jika link diisi**.
+    - Kanan: tombol kecil **“Tambah ke Keranjang”**:
+      - Bentuk pill / kotak kecil.
+      - Isi: ikon 🧺/🛒 + teks singkat “Tambah”.
+
+### 6.2 Feedback UI “Tambah ke Keranjang”
+
+- Setelah klik:
+  - Tombol berubah sementara:
+    - Warna hijau muda.
+    - Ikon ✅ + teks “Ditambahkan”.
+  - Badge keranjang di navbar bertambah + **animasi kecil** (bounce).
+  - Toast kecil di pojok bawah:
+    - “Produk ditambahkan ke keranjang.”
+
+---
+
+## 7) HALAMAN KERANJANG (User)
+
+### 7.1 Layout Desktop
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ Keranjang Belanja                                                       │
+│ [Lanjut belanja]                                                        │
+│                                                                          │
+│  ┌──────────────────────────────┐  ┌──────────────────────────────────┐ │
+│  │  DAFTAR PRODUK               │  │  RINGKASAN KERANJANG             │ │
+│  │                              │  │                                  │ │
+│  │  [IMG]  Nama Produk          │  │  Total Harga Produk:   Rp xxx    │ │
+│  │        Harga Satuan          │  │  Diskon (opsional):    Rp 0      │ │
+│  │        Qty: [-] 2 [+]       │  │  Total Pembayaran:     Rp xxx    │ │
+│  │        Subtotal: Rp xx      │  │                                  │ │
+│  │        [Hapus]              │  │  [ Lanjut ke Checkout ]          │ │
+│  │                              │  │                                  │ │
+│  │  (repeat untuk setiap item)  │  └──────────────────────────────────┘ │
+│  └──────────────────────────────┘                                       │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 7.2 Elemen Per Item
+
+- **Gambar produk** kecil (thumb 64×64).
+- **Nama produk** + atribut (opsional).
+- **Harga satuan**.
+- **Kontrol jumlah (qty)**:
+  - Stepper: tombol `-` dan `+` di kiri-kanan angka.
+  - Minimal 1, maksimal mis. 99 (UX-only).
+- **Subtotal** = harga × qty.
+- **Aksi hapus**:
+  - Link teks “Hapus” atau ikon 🗑️, warna merah lembut.
+  - Konfirmasi ringan opsional (UI-text).
+
+### 7.3 Ringkasan Keranjang
+
+- Total harga produk (penjumlahan semua subtotal).
+- (Opsional) Diskon/voucher (placeholder).
+- **Total Pembayaran** (ditekankan).
+- Tombol **“Checkout”** (primary, full width di card ringkasan).
+
+### 7.4 Mobile
+
+```
+┌──────────────────────────┐
+│ Keranjang Belanja (2)    │
+│                          │
+│ [IMG] Nama Produk        │
+│      Harga               │
+│      Qty: [-] 2 [+]      │
+│      Subtotal: Rp xx     │
+│      [Hapus]             │
+│ ------------------------ │
+│ [Ringkasan]              │
+│ Total: Rp xxx            │
+│ [ Lanjut ke Checkout ]   │
+└──────────────────────────┘
+```
+
+---
+
+## 8) LAPORAN PENJUALAN (Admin) — AKSI & TRANSAKSI MANUAL
+
+### 8.1 Toolbar & Aksi
+
+#### Toolbar (revisi)
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ [Harian] [Bulanan] [Tahunan]   [Date Range ▾] [Produk ▾] [Status ▾]    │
+│                                                  [Reset] [Filter]      │
+│                                                  [Export PDF] [ + Tambah Transaksi Manual ] │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+- Tombol baru: **“+ Tambah Transaksi Manual”** (primary/secondary dengan ikon ➕).
+  - Klik → membuka **Modal Tambah Transaksi Manual**.
+
+### 8.2 Modal Tambah Transaksi Manual
+
+#### Layout
+```
+┌─────────────────────────────────────────────┐
+│ Tambah Transaksi Manual            [X]      │
+├─────────────────────────────────────────────┤
+│ Nama Produk           [Dropdown ▾]         │
+│ Sumber Transaksi *    [Website ▾]          │
+│                       (Website / Shopee /  │
+│                        Tokopedia / TikTok) │
+│ Nama Pembeli *        [________________]   │
+│ Tanggal Transaksi *   [📅 12 Jan 2026]     │
+│ Jumlah Pembelian *    [__1__]              │
+│ Total Pembayaran *    [Rp 90.000]          │
+│ Ongkir                [Rp 15.000]          │
+│ Metode Pembayaran *   [Transfer Bank ▾]    │
+│ Catatan Tambahan      [Textarea.......]    │
+├─────────────────────────────────────────────┤
+│ [Batal]                          [Simpan Transaksi] │
+└─────────────────────────────────────────────┘
+```
+
+- **Sumber Transaksi**:
+  - Dropdown dengan opsi:
+    - Website
+    - Shopee
+    - Tokopedia
+    - TikTok Shop
+- **Metode Pembayaran**:
+  - Dropdown: Transfer Bank / COD / e-Wallet (UI-only).
+- Field wajib diberi tanda `*` dan validasi visual (outline merah + pesan kecil).
+
+### 8.3 Interaksi Admin
+
+- Admin buka **Laporan Penjualan** → klik **“Tambah Transaksi Manual”**.
+- Isi form sesuai transaksi offline/marketplace (Shopee/Tokopedia/TikTok Shop).
+- Klik **“Simpan Transaksi”**:
+  - UI menutup modal.
+  - Baris baru muncul di tabel dengan label “Sumber: Shopee/Tokopedia/…” (bisa ditampilkan di kolom tambahan/tooltip).
+
+---
+
+## 9) Alur Interaksi Setelah Revisi
+
+### User
+1. Tambah produk ke keranjang:
+   - Dari modal produk: klik **“Tambah ke Keranjang”** → badge keranjang di navbar naik.
+2. Lihat keranjang:
+   - Klik ikon 🛒 di navbar → **Halaman Keranjang**.
+   - Atur qty, hapus item, lihat total → lanjut ke Checkout.
+
+### Admin
+1. Laporan penjualan:
+   - Atur filter (harian/bulanan/tahunan, tanggal, produk, status).
+   - Lihat ringkasan pendapatan dan tabel transaksi.
+2. Tambah transaksi manual:
+   - Klik **“Tambah Transaksi Manual”** → isi form → simpan.
+   - Transaksi dari Shopee/Tokopedia/TikTok Shop kini ikut tercatat di laporan.
