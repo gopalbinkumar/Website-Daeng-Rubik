@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,13 +11,16 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,600,700,800,900&display=swap" rel="stylesheet" />
 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.1/css/all.css">
+
     <!-- Base CSS (always loaded) -->
     <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/layout.css') }}">
-    
+
     <!-- Page-specific CSS -->
     @stack('styles')
 </head>
+
 <body>
     @include('partials.navbar')
 
@@ -28,5 +32,5 @@
 
     <script src="{{ asset('assets/daengrubik.js') }}" defer></script>
 </body>
-</html>
 
+</html>

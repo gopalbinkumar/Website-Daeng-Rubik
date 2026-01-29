@@ -12,41 +12,41 @@ class Product extends Model
     protected $fillable = [
         'name',
         'slug',
-        'sku',
         'price',
         'stock',
-        'category',
+        'cube_category_id', // ✅ GANTI INI
         'brand',
-        'size',
         'difficulty_level',
         'description',
-        'specs',
         'is_active',
     ];
 
     protected $casts = [
-        'specs' => 'array',
         'is_active' => 'boolean',
     ];
 
+    // 🖼️ RELASI IMAGE
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)
+            ->orderBy('position');
+    }
+
+    public function primaryImage()
+    {
+        return $this->hasOne(ProductImage::class)
+            ->where('position', 0);
+    }
+
+    // 🔗 MARKETPLACE
     public function marketplaceLinks()
     {
         return $this->hasMany(ProductMarketplaceLink::class);
     }
 
-    public function activeMarketplaceLinks()
+    // 🧊 RELASI KATEGORI RUBIK
+    public function cubeCategory()
     {
-        return $this->marketplaceLinks()->whereNotNull('url');
-    }
-
-    public function cartItems()
-    {
-        return $this->hasMany(CartItem::class);
-    }
-
-    public function transactionItems()
-    {
-        return $this->hasMany(TransactionItem::class);
+        return $this->belongsTo(CubeCategory::class);
     }
 }
-

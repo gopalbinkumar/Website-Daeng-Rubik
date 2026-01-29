@@ -1,26 +1,29 @@
 <!doctype html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - Daeng Rubik</title>
-    
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,600,700,800,900&display=swap" rel="stylesheet" />
-    
+
     <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
 </head>
+
 <body>
     <div class="auth-page">
         <!-- Left Visual Section -->
         <div class="auth-visual">
             <div class="auth-visual-content">
                 <div class="auth-cube"></div>
-                
+
                 <h2 class="auth-slogan">Solve, Learn, Compete</h2>
-                <p class="auth-desc">Platform rubik terlengkap di Indonesia untuk belanja, belajar, dan berkompetisi.</p>
-                
+                <p class="auth-desc">Platform rubik terlengkap di Indonesia untuk belanja, belajar, dan berkompetisi.
+                </p>
+
                 <div class="auth-features">
                     <div class="feature-item">
                         <div class="feature-icon">🛒</div>
@@ -58,26 +61,41 @@
                 <h1 class="auth-title">Selamat Datang Kembali</h1>
                 <p class="auth-subtitle">Login untuk melanjutkan ke dashboard Anda</p>
 
-                <form id="loginForm" class="auth-form">
+                @if ($errors->any())
+                    <div class="form-error">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div class="form-success">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+
+                <form method="POST" action="{{ route('auth.login.post') }}" class="auth-form">
+                    @csrf
                     <div class="form-group">
                         <label class="form-label">Email / Username <span class="required">*</span></label>
                         <div class="input-wrapper">
-                            <input type="text" class="form-input" placeholder="email@example.com" required>
-                            <span class="input-icon">✉️</span>
+                            <input type="email" name="email" class="form-input" placeholder="email@example.com"
+                                value="{{ old('email') }}" required> <span class="input-icon">✉️</span>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Password <span class="required">*</span></label>
                         <div class="input-wrapper">
-                            <input type="password" class="form-input" placeholder="••••••••" required>
+                            <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+
                             <span class="input-icon">🔒</span>
                             <button type="button" class="toggle-password">👁</button>
                         </div>
                     </div>
 
                     <div class="checkbox-group">
-                        <input type="checkbox" id="remember" class="checkbox-input">
+                        <input type="checkbox" name="remember" id="remember" class="checkbox-input">
                         <label for="remember" class="checkbox-label">Ingat saya</label>
                     </div>
 
@@ -100,7 +118,8 @@
             </div>
         </div>
     </div>
-
-    <script src="{{ asset('assets/auth.js') }}" defer></script>
+{{-- 
+    <script src="{{ asset('assets/auth.js') }}" defer></script> --}}
 </body>
+
 </html>
