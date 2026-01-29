@@ -3,18 +3,21 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\HomeController;
 
 
-Route::view('/', 'pages.home')->name('home');
+Route::get('/', [HomeController::class, 'home'])->name('home');
 
 Route::get('/produk', [ProductController::class, 'userIndex'])
     ->name('products');
+Route::view('/materivideo', 'pages.learn-video')->name('learn.video');
+Route::view('/materimodul', 'pages.learn-module')->name('learn.module');
 
 Route::view('/event', 'pages.events')->name('events');
 Route::view('/event/daftar', 'pages.event-register')->name('events.register');
 Route::view('/checkout', 'pages.checkout')->name('checkout');
 Route::view('/keranjang', 'pages.cart')->name('cart');
-Route::view('/belajar', 'pages.learn')->name('learn');
+Route::view('/belajar', 'pages.learn')->name('learn.index');
 Route::view('/tentang', 'pages.about')->name('about');
 Route::view('/kontak', 'pages.contact')->name('contact');
 

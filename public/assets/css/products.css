@@ -483,6 +483,18 @@
     align-items: center;
 }
 
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 16px;
+}
+
+.category-grid .field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* Responsive Products */
 @media (max-width: 980px) {
     .two-col {

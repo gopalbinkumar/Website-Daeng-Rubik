@@ -77,7 +77,7 @@
                         Basic, intermediate, advanced—dengan tampilan card materi yang enak dibaca (UI).
                     </p>
                     <div style="margin-top:12px;">
-                        <a class="btn btn-primary" href="{{ route('learn') }}">Mulai belajar</a>
+                        <a class="btn btn-primary" href="{{ route('learn.index') }}">Mulai belajar</a>
                     </div>
                 </div>
             </div>

@@ -9,12 +9,7 @@
 @section('content')
     @php
         $rupiah = fn(int $n) => 'Rp ' . number_format($n, 0, ',', '.');
-        $featuredProducts = [
-            ['name' => 'Rubik 3x3 Speed Cube', 'price' => 50000, 'badge' => ['hot', 'Bestseller'], 'stars' => 5],
-            ['name' => 'Rubik 4x4 Magnetic', 'price' => 85000, 'badge' => ['new', 'New'], 'stars' => 5],
-            ['name' => 'Rubik 5x5 Smooth Turn', 'price' => 120000, 'badge' => ['muted', 'Favorit'], 'stars' => 4],
-            ['name' => 'Megaminx Pro', 'price' => 150000, 'badge' => ['hot', 'Hot'], 'stars' => 5],
-        ];
+        
         $events = [
             [
                 'title' => 'Kompetisi Rubik Nasional',
@@ -65,12 +60,13 @@
                         Solve, Learn, Compete
                     </h1>
                     <p class="hero-sub">
-                        Semua kebutuhan rubik kamu dalam satu platform: belanja rubik berkualitas, ikut event rubik, dan belajar dari basic sampai advanced.
+                        Semua kebutuhan rubik kamu dalam satu platform: belanja rubik berkualitas, ikut event rubik, dan
+                        belajar dari basic sampai advanced.
                     </p>
                     <div class="hero-cta">
                         <a class="btn btn-primary" href="{{ route('products') }}">Jelajahi Produk</a>
                         <a class="btn btn-secondary" href="{{ route('events') }}">Lihat Event</a>
-                        <a class="btn btn-outline" href="{{ route('learn') }}">Mulai Belajar</a>
+                        <a class="btn btn-outline" href="{{ route('learn.index') }}">Mulai Belajar</a>
                     </div>
                 </div>
 
@@ -106,22 +102,37 @@
             </div>
 
             <div class="grid-4">
-                @foreach($featuredProducts as $p)
+                @foreach ($featuredProducts as $p)
                     <article class="card prod">
                         <div class="prod-img">
-                            <span class="badge {{ $p['badge'][0] }}">{{ $p['badge'][1] }}</span>
                             <div style="width:72%;max-width:220px;">
-                                <div class="cube" style="border-radius:18px;border-width:6px"></div>
+                                <img src="{{ $p->primaryImage
+                                    ? asset('storage/' . $p->primaryImage->image_path)
+                                    : asset('assets/img/placeholder-product.png') }}"
+                                    alt="{{ $p->name }}"
+                                    style="
+                                    width:100%;
+                                    aspect-ratio:1/1;
+                                    object-fit:cover;
+                                    border-radius:18px;
+                                    border:6px solid var(--line);
+                                ">
                             </div>
                         </div>
+
                         <div class="prod-body">
-                            <p class="prod-name">{{ $p['name'] }}</p>
+                            <p class="prod-name">{{ $p->name }}</p>
+
                             <div class="prod-meta">
-                                <span class="price">{{ $rupiah($p['price']) }}</span>
-                                <span class="stars">★ {{ $p['stars'] }}.0</span>
+                                <span class="price">
+                                    Rp {{ number_format($p->price, 0, ',', '.') }}
+                                </span>
                             </div>
+
                             <div class="prod-actions">
-                                <a class="btn btn-primary" href="{{ route('products') }}" style="flex:1;">Lihat detail</a>
+                                <a class="btn btn-primary" href="{{ route('products') }}" style="flex:1;">
+                                    Lihat detail
+                                </a>
                             </div>
                         </div>
                     </article>
@@ -129,6 +140,7 @@
             </div>
         </div>
     </section>
+
 
     <section class="section" style="padding-top:0;">
         <div class="container">
@@ -150,7 +162,8 @@
                     <div class="kv">
                         <div><span class="k" aria-hidden="true">📅</span><span>{{ $e['date'] }}</span></div>
                         <div><span class="k" aria-hidden="true">📍</span><span>{{ $e['location'] }}</span></div>
-                        <div><span class="k" aria-hidden="true">🧾</span><span>Pendaftaran online (UI dulu)</span></div>
+                        <div><span class="k" aria-hidden="true">🧾</span><span>Pendaftaran online (UI dulu)</span>
+                        </div>
                     </div>
                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                         <a class="btn btn-primary" href="{{ route('events') }}">Daftar sekarang</a>
@@ -162,7 +175,7 @@
             <div style="height:16px"></div>
 
             <div class="grid-4">
-                @foreach(array_slice($events, 1) as $ev)
+                @foreach (array_slice($events, 1) as $ev)
                     <article class="card prod">
                         <div class="prod-img" style="aspect-ratio: 16/10;">
                             <span class="badge {{ $ev['badge'][0] }}">{{ $ev['badge'][1] }}</span>
@@ -201,4 +214,3 @@
         </div>
     </section> --}}
 @endsection
-

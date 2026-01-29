@@ -24,7 +24,7 @@
                     <a href="{{ url('/') }}">Beranda</a>
                     <a href="{{ route('products') }}">Produk</a>
                     <a href="{{ route('events') }}">Event</a>
-                    <a href="{{ route('learn') }}">Belajar</a>
+                    <a href="{{ route('learn.index') }}">Belajar</a>
                 </div>
             </div>
 
@@ -33,7 +33,7 @@
                 <div style="display:grid;gap:8px;">
                     <a href="{{ route('products') }}">Katalog Rubik</a>
                     <a href="{{ route('events') }}">Kompetisi & Workshop</a>
-                    <a href="{{ route('learn') }}">Tutorial Rubik</a>
+                    <a href="{{ route('learn.index') }}">Tutorial Rubik</a>
                     <a href="{{ route('contact') }}">Kerjasama</a>
                 </div>
             </div>

@@ -27,13 +27,16 @@
 
                         {{-- KATEGORI --}}
                         <h3>Kategori</h3>
-                        @foreach ($cubeCategories as $cat)
-                            <label class="field">
-                                <input type="checkbox" name="category[]" value="{{ $cat->id }}"
-                                    {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
-                                {{ $cat->name }}
-                            </label>
-                        @endforeach
+
+                        <div class="category-grid">
+                            @foreach ($cubeCategories as $cat)
+                                <label class="field">
+                                    <input type="checkbox" name="category[]" value="{{ $cat->id }}"
+                                        {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
+                                    {{ $cat->name }}
+                                </label>
+                            @endforeach
+                        </div>
 
                         <div class="divider"></div>
 
@@ -147,32 +150,35 @@
 
                     </div>
 
-                    <div class="pagination" aria-label="Pagination">
+                    @if ($products->total() > 9)
+                        <div class="pagination" aria-label="Pagination">
 
-                        {{-- Prev --}}
-                        @if ($products->onFirstPage())
-                            <span class="page-chip disabled">‹</span>
-                        @else
-                            <a href="{{ $products->previousPageUrl() }}" class="page-chip">‹</a>
-                        @endif
-
-                        {{-- Page Numbers --}}
-                        @for ($i = 1; $i <= $products->lastPage(); $i++)
-                            @if ($i == $products->currentPage())
-                                <span class="page-chip active">{{ $i }}</span>
+                            {{-- Prev --}}
+                            @if ($products->onFirstPage())
+                                <span class="page-chip disabled">‹</span>
                             @else
-                                <a href="{{ $products->url($i) }}" class="page-chip">{{ $i }}</a>
+                                <a href="{{ $products->previousPageUrl() }}" class="page-chip">‹</a>
                             @endif
-                        @endfor
 
-                        {{-- Next --}}
-                        @if ($products->hasMorePages())
-                            <a href="{{ $products->nextPageUrl() }}" class="page-chip">›</a>
-                        @else
-                            <span class="page-chip disabled">›</span>
-                        @endif
+                            {{-- Page Numbers --}}
+                            @for ($i = 1; $i <= $products->lastPage(); $i++)
+                                @if ($i == $products->currentPage())
+                                    <span class="page-chip active">{{ $i }}</span>
+                                @else
+                                    <a href="{{ $products->url($i) }}" class="page-chip">{{ $i }}</a>
+                                @endif
+                            @endfor
 
-                    </div>
+                            {{-- Next --}}
+                            @if ($products->hasMorePages())
+                                <a href="{{ $products->nextPageUrl() }}" class="page-chip">›</a>
+                            @else
+                                <span class="page-chip disabled">›</span>
+                            @endif
+
+                        </div>
+                    @endif
+
 
                 </div>
             </div>
@@ -250,10 +256,11 @@
             <!-- Content akan diisi via JavaScript -->
         </div>
     </div>
+
     <script>
         /* =========================
-       GLOBAL STATE
-    ========================= */
+                   GLOBAL STATE
+                ========================= */
         let activeProduct = null;
         let currentImageIndex = 0;
 
@@ -326,58 +333,58 @@
             onclick="openMarketplace('${m.tiktok_shop}')"></button>`;
 
             content.innerHTML = `
-<div class="product-modal-image">
-    <div id="imageSlider"
-        style="width:100%;max-width:400px;aspect-ratio:1/1;margin:0 auto;
-               position:relative;overflow:hidden;border-radius:18px;
-               border:6px solid var(--line);">
+            <div class="product-modal-image">
+                <div id="imageSlider"
+                    style="width:100%;max-width:400px;aspect-ratio:1/1;margin:0 auto;
+                        position:relative;overflow:hidden;border-radius:18px;
+                        border:6px solid var(--line);">
 
-        <img id="modalProductImage"
-            src="${activeProduct.images[0] || ''}"
-            style="width:100%;height:100%;object-fit:cover;">
+                    <img id="modalProductImage"
+                        src="${activeProduct.images[0] || ''}"
+                        style="width:100%;height:100%;object-fit:cover;">
 
-        ${activeProduct.images.length > 1 ? `
-                <button onclick="prevImage()"
-                    style="position:absolute;left:10px;top:50%;
-                    transform:translateY(-50%);
-                    width:36px;height:36px;border-radius:50%;
-                    border:none;background:rgba(0,0,0,.45);
-                    color:#fff;font-size:22px;cursor:pointer;">‹</button>
+                    ${activeProduct.images.length > 1 ? `
+                                        <button onclick="prevImage()"
+                                            style="position:absolute;left:10px;top:50%;
+                                            transform:translateY(-50%);
+                                            width:36px;height:36px;border-radius:50%;
+                                            border:none;background:rgba(0,0,0,.45);
+                                            color:#fff;font-size:22px;cursor:pointer;">‹</button>
 
-                <button onclick="nextImage()"
-                    style="position:absolute;right:10px;top:50%;
-                    transform:translateY(-50%);
-                    width:36px;height:36px;border-radius:50%;
-                    border:none;background:rgba(0,0,0,.45);
-                    color:#fff;font-size:22px;cursor:pointer;">›</button>
-            ` : ''}
-    </div>
-</div>
+                                        <button onclick="nextImage()"
+                                            style="position:absolute;right:10px;top:50%;
+                                            transform:translateY(-50%);
+                                            width:36px;height:36px;border-radius:50%;
+                                            border:none;background:rgba(0,0,0,.45);
+                                            color:#fff;font-size:22px;cursor:pointer;">›</button>
+                                    ` : ''}
+                </div>
+            </div>
 
-<div class="product-modal-body">
-    <h2 class="product-modal-title">${activeProduct.name}</h2>
+            <div class="product-modal-body">
+                <h2 class="product-modal-title">${activeProduct.name}</h2>
 
-    <span class="badge badge-secondary">${activeProduct.cube_category ?? ''}</span>
+                <span class="badge badge-secondary">${activeProduct.cube_category ?? ''}</span>
 
-    <div class="product-modal-price">
-        ${activeProduct.price.toLocaleString('id-ID', {
-            style: 'currency', currency: 'IDR', minimumFractionDigits: 0
-        })}
-    </div>
+                <div class="product-modal-price">
+                    ${activeProduct.price.toLocaleString('id-ID', {
+                        style: 'currency', currency: 'IDR', minimumFractionDigits: 0
+                    })}
+                </div>
 
-    <div class="product-modal-description">
-        <h3>Deskripsi</h3>
-        <p>${activeProduct.description}</p>
-    </div>
+                <div class="product-modal-description">
+                    <h3>Deskripsi</h3>
+                    <p>${activeProduct.description}</p>
+                </div>
 
-    <div class="product-modal-specs">
-        <div class="specs-grid">
-            <div><b>Brand</b> ${activeProduct.brand}</div>
-            <div><b>Level</b> ${capitalizeFirst(activeProduct.difficulty_level)}</div>
-        </div>
-    </div>
+                <div class="product-modal-specs">
+                    <div class="specs-grid">
+                        <div><b>Brand</b> ${activeProduct.brand}</div>
+                        <div><b>Level</b> ${capitalizeFirst(activeProduct.difficulty_level)}</div>
+                    </div>
+                </div>
 
-    <div class="product-modal-actions">
+        <div class="product-modal-actions">
         <button class="checkout-btn" onclick="goToCheckout(${activeProduct.id})">
             <i class="fa-solid fa-bag-shopping"></i> Beli Sekarang
         </button>
@@ -389,9 +396,9 @@
         ${marketplaceButtons ? `<div class="marketplace-row">${marketplaceButtons}</div>` : ''}
 
         <p class="cart-feedback"></p>
-    </div>
-</div>
-`;
+        </div>
+            </div>
+            `;
 
             attachSwipe();
             renderImage();
@@ -401,9 +408,6 @@
             document.body.style.overflow = 'hidden';
         }
 
-        /* =========================
-           IMAGE SLIDER
-        ========================= */
         function renderImage() {
             const img = document.getElementById('modalProductImage');
             if (!img || !activeProduct || !activeProduct.images.length) return;
@@ -424,9 +428,6 @@
             renderImage();
         }
 
-        /* =========================
-           SWIPE SUPPORT
-        ========================= */
         function attachSwipe() {
             const slider = document.getElementById('imageSlider');
             if (!slider) return;
@@ -457,9 +458,6 @@
             diff < 0 ? nextImage() : prevImage();
         }
 
-        /* =========================
-           ACTIONS
-        ========================= */
         function closeProductModal() {
             document.getElementById('productModal').classList.remove('open');
             document.getElementById('productModalBackdrop').classList.remove('open');
@@ -488,18 +486,15 @@
             if (feedback) feedback.textContent = `✅ "${p.name}" ditambahkan ke keranjang.`;
         }
 
-        /* =========================
-           ESC CLOSE
-        ========================= */
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeProductModal();
         });
-    </script>
 
-    <script>
+
+
         /* =========================
-       PRICE RANGE DESKTOP
-    ========================= */
+           PRICE RANGE DESKTOP
+        ========================= */
         const priceRange = document.getElementById('priceRange');
         const priceMinLabel = document.getElementById('priceMinLabel');
         const priceMaxLabel = document.getElementById('priceMaxLabel');
@@ -520,12 +515,7 @@
             update();
             priceRange.addEventListener('input', update);
         }
-    </script>
 
-    <script>
-        /* =========================
-       PRICE RANGE MOBILE
-    ========================= */
         const mRange = document.getElementById('mPriceRange');
         const mMinLabel = document.getElementById('mPriceMinLabel');
         const mMaxLabel = document.getElementById('mPriceMaxLabel');
@@ -543,8 +533,6 @@
             mRange.addEventListener('input', updateM);
         }
     </script>
-
-
 
 
 @endsection
