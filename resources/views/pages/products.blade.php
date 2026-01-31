@@ -22,7 +22,7 @@
             <div class="two-col">
                 <aside class="card filter desktop-only" aria-label="Filter produk">
                     <form method="GET" action="{{ route('products') }}">
-                        <h3>🔎 Filter</h3>
+                        <h3><i class="fa-solid fa-magnifying-glass"></i> Filter</h3>
                         <div class="divider"></div>
 
                         {{-- KATEGORI --}}

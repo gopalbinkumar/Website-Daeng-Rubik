@@ -642,7 +642,9 @@ body {
 .upload-box {
     border: 2px dashed #d0d5dd;
     border-radius: 10px;
-    height: 140px;
+    height: 150px;
+    width: 100%;
+    max-width: 420px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -730,7 +732,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     z-index: 1001;
-    max-width: 600px;
+    max-width: 800px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;

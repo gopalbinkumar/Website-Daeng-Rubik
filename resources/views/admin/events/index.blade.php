@@ -31,6 +31,7 @@
             <thead>
                 <tr>
                     <th>Judul Event</th>
+                    <th>Kategori Event</th>
                     <th>Tanggal</th>
                     <th>Lokasi</th>
                     <th>Status</th>
@@ -38,42 +39,97 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td><strong>Kompetisi Rubik Nasional</strong></td>
-                    <td>15 Feb 2026<br><small style="color: var(--admin-text-muted);">08:00 WIB</small></td>
-                    <td>Jakarta</td>
-                    <td><span class="badge badge-warning">Upcoming</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-icon btn-secondary" onclick="openModal('modalEditEvent')" title="Edit">✏️</button>
-                            <button class="btn btn-icon btn-danger" onclick="confirmDelete('Kompetisi Rubik Nasional', () => alert('Deleted'))" title="Hapus">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Workshop Basic 3x3</strong></td>
-                    <td>20 Feb 2026<br><small style="color: var(--admin-text-muted);">13:00 WIB</small></td>
-                    <td>Bandung</td>
-                    <td><span class="badge badge-warning">Upcoming</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-icon btn-secondary" onclick="openModal('modalEditEvent')" title="Edit">✏️</button>
-                            <button class="btn btn-icon btn-danger" onclick="confirmDelete('Workshop Basic 3x3', () => alert('Deleted'))" title="Hapus">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Speedcubing Meetup</strong></td>
-                    <td>25 Feb 2026<br><small style="color: var(--admin-text-muted);">16:00 WIB</small></td>
-                    <td>Surabaya</td>
-                    <td><span class="badge badge-warning">Upcoming</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-icon btn-secondary" onclick="openModal('modalEditEvent')" title="Edit">✏️</button>
-                            <button class="btn btn-icon btn-danger" onclick="confirmDelete('Speedcubing Meetup', () => alert('Deleted'))" title="Hapus">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
+                @forelse ($events as $event)
+                    <tr>
+                        {{-- Judul --}}
+                        <td>
+                            <strong>{{ $event->title }}</strong>
+                        </td>
+
+                        {{-- Kategori Event --}}
+                        <td>
+                            @if ($event->category === 'kompetisi')
+                                Kompetisi
+                            @elseif ($event->category === 'gathering')
+                                Gathering
+                            @else
+                                {{ $event->custom_category ?? 'Event Lainnya' }}
+                            @endif
+                        </td>
+
+                        {{-- Tanggal --}}
+                        <td>
+                            {{ $event->start_datetime->format('d M Y') }}<br>
+                            <small style="color: var(--admin-text-muted);">
+                                {{ $event->start_datetime->format('H:i') }} WIB
+                            </small>
+                        </td>
+
+                        {{-- Lokasi --}}
+                        <td>
+                            {{ $event->location }}
+                        </td>
+
+                        {{-- Status --}}
+                        <td>
+                            @php
+                                $badgeClass = match ($event->status) {
+                                    'upcoming' => 'badge-warning',
+                                    'ongoing' => 'badge-success',
+                                    'finished' => 'badge-secondary',
+                                    default => 'badge-warning',
+                                };
+                            @endphp
+
+                            <span class="badge {{ $badgeClass }}">
+                                {{ ucfirst($event->status) }}
+                            </span>
+                        </td>
+
+                        {{-- Aksi --}}
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-icon btn-secondary" onclick="openEditEvent(this)"
+                                    data-id="{{ $event->id }}" data-title="{{ $event->title }}"
+                                    data-category="{{ $event->category }}"
+                                    data-custom-category="{{ $event->custom_category }}"
+                                    data-description="{{ $event->description }}"
+                                    data-start-date="{{ $event->start_datetime->format('Y-m-d') }}"
+                                    data-start-time="{{ $event->start_datetime->format('H:i') }}"
+                                    data-end-date="{{ $event->end_datetime->format('Y-m-d') }}"
+                                    data-end-time="{{ $event->end_datetime->format('H:i') }}"
+                                    data-location="{{ $event->location }}" data-ticket-price="{{ $event->ticket_price }}"
+                                    data-max-participants="{{ $event->max_participants }}"
+                                    data-total-prize="{{ $event->total_prize }}" data-status="{{ $event->status }}"
+                                    data-cover="{{ $event->cover_image ? asset('storage/'.$event->cover_image) : '' }}"
+
+                                    {{-- ⬇️ INI PENTING --}} data-competition-categories='@json(
+                                        $event->competitionCategories->map(fn($c) => [
+                                                'id' => $c->id,
+                                                'name' => $c->name,
+                                            ]))'>
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+
+                                <form method="POST" action="{{ route('admin.events.destroy', $event->id) }}"
+                                    style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-icon btn-danger"
+                                        onclick="return confirm('Hapus event {{ $event->title }}?')" title="Hapus">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align:center; color:var(--admin-text-muted);">
+                            Belum ada event
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
 
@@ -95,106 +151,138 @@
             <h3 class="modal-title">Tambah Event</h3>
             <button class="modal-close" onclick="closeModal('modalAddEvent')">×</button>
         </div>
+
         <div class="modal-body">
-            <form>
+            <form method="POST" action="{{ route('admin.events.store') }}" enctype="multipart/form-data">
+                @csrf
+
+                <!-- Cover -->
                 <div class="form-group">
                     <label class="form-label">Cover Event</label>
-                    <div class="upload-area" onclick="document.getElementById('eventCover').click()">
-                        <p>Drag & Drop atau Klik untuk Upload</p>
+                    <div class="image-upload-grid"> <label class="upload-box">
+                            <input type="file" name="cover_image" accept="image/*" data-preview>
+                            <img class="upload-preview-img" hidden>
+                            <span>Gambar Utama</span>
+                        </label>
                     </div>
-                    <input type="file" id="eventCover" accept="image/*" style="display: none;">
-                    <div class="upload-preview"></div>
                 </div>
 
+                <!-- Judul -->
                 <div class="form-group">
                     <label class="form-label">Judul Event <span class="required">*</span></label>
-                    <input type="text" class="form-input" placeholder="Contoh: Kompetisi Rubik Nasional">
+                    <input type="text" class="form-input" name="title" placeholder="Contoh: Kompetisi Rubik Nasional"
+                        required>
                 </div>
 
+                <!-- Kategori -->
+                <div class="form-group">
+                    <label class="form-label">Kategori <span class="required">*</span></label>
+                    <select class="form-select" id="eventCategory" name="category" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="kompetisi">Kompetisi</option>
+                        <option value="gathering">Gathering</option>
+                        <option value="lainnya">Event Lainnya</option>
+                    </select>
+                </div>
+
+                <!-- Kategori Lainnya -->
+                <div class="form-group" id="customCategoryGroup" style="display:none;">
+                    <label class="form-label">Nama Kategori Lainnya <span class="required">*</span></label>
+                    <input type="text" class="form-input" name="custom_category" placeholder="Meetup">
+                </div>
+
+                <!-- Deskripsi -->
                 <div class="form-group">
                     <label class="form-label">Deskripsi <span class="required">*</span></label>
-                    <textarea class="form-textarea" placeholder="Deskripsi event..."></textarea>
+                    <textarea class="form-textarea" name="description" placeholder="Deskripsi event..." required></textarea>
                 </div>
 
+                <!-- Tanggal & Jam -->
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Tanggal Mulai <span class="required">*</span></label>
-                        <input type="date" class="form-input">
-                        <input type="time" class="form-input" style="margin-top: 8px;">
+                        <input type="date" class="form-input" name="start_date" required>
+                        <input type="time" class="form-input" name="start_time" style="margin-top:8px;" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tanggal Akhir <span class="required">*</span></label>
-                        <input type="date" class="form-input">
-                        <input type="time" class="form-input" style="margin-top: 8px;">
+                        <input type="date" class="form-input" name="end_date" required>
+                        <input type="time" class="form-input" name="end_time" style="margin-top:8px;" required>
                     </div>
                 </div>
 
+                <!-- Lokasi -->
                 <div class="form-group">
                     <label class="form-label">Lokasi <span class="required">*</span></label>
-                    <input type="text" class="form-input" placeholder="Contoh: Jakarta Convention Center">
+                    <input type="text" class="form-input" name="location"
+                        placeholder="Contoh: Jakarta Convention Center" required>
                 </div>
 
+                <!-- Detail Kompetisi -->
+                <h4 class="form-section-title" id="competitionTitle" style="display:none;">
+                    Detail Kompetisi
+                </h4>
+
                 <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Kategori <span class="required">*</span></label>
-                        <select class="form-select">
-                            <option>Pilih Kategori</option>
-                            <option>Kompetisi</option>
-                            <option>Workshop</option>
-                            <option>Meetup</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
+                    <div class="form-group" id="priceGroup" style="display:none;">
                         <label class="form-label">Harga Tiket</label>
-                        <input type="number" class="form-input" placeholder="50000">
+                        <input type="number" class="form-input" name="ticket_price" min="0">
                     </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
+                    <div class="form-group" id="quotaGroup" style="display:none;">
                         <label class="form-label">Max Peserta <span class="required">*</span></label>
-                        <input type="number" class="form-input" placeholder="100">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status <span class="required">*</span></label>
-                        <select class="form-select">
-                            <option>Upcoming</option>
-                            <option>Ongoing</option>
-                            <option>Finished</option>
-                        </select>
+                        <input type="number" class="form-input" name="max_participants" min="1">
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="prizeGroup" style="display:none;">
                     <label class="form-label">Total Hadiah</label>
-                    <input type="number" class="form-input" placeholder="Contoh: 5000000">
-                    <small style="display:block;margin-top:4px;font-size:12px;color:var(--admin-text-muted);">
-                        Nilai total hadiah yang akan ditampilkan di halaman event dan laporan.
-                    </small>
+                    <input type="number" class="form-input" name="total_prize" min="0">
                 </div>
 
-                <div class="form-group">
+                <!-- Kategori Lomba -->
+                <div class="form-group" id="competitionCategoryGroup" style="display:none;">
                     <label class="form-label">Kategori Lomba</label>
                     <div class="category-tags">
-                        <div class="tag-list">
-                            <span class="tag">3x3 ✕</span>
-                            <span class="tag">2x2 ✕</span>
-                            <span class="tag">4x4 ✕</span>
-                        </div>
+                        <div class="tag-list"></div>
+
                         <div class="tag-input-row">
-                            <input type="text" class="form-input" placeholder="Tambah kategori, mis. 3x3 OH">
-                            <button type="button" class="btn btn-secondary btn-small">+ Tambah</button>
+                            <select class="form-select" id="competitionCategorySelect">
+                                <option value="">Pilih Kategori</option>
+                                @foreach ($competitionCategories ?? [] as $category)
+                                    <option value="{{ $category->id }}">
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="text" class="form-input" id="competitionCategoryInput"
+                                placeholder="Tambah kategori, mis. BLD" style="display:none;">
+                            <button type="button" class="btn btn-secondary btn-small" id="addCategoryBtn">
+                                + Tambah
+                            </button>
                         </div>
+
                         <small class="form-helper">
-                            Admin dapat menambahkan lebih dari satu kategori lomba. (UI demo, belum tersambung backend)
+                            Ubah, tambah, atau hapus kategori lomba sesuai kebutuhan event.
                         </small>
                     </div>
                 </div>
+
+                <!-- Status -->
+                <div class="form-group" id="statusGroup" style="display:none;">
+                    <label class="form-label">Status <span class="required">*</span></label>
+                    <select class="form-select" name="status">
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="finished">Finished</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalAddEvent')">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Event</button>
+                </div>
             </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modalAddEvent')">Batal</button>
-            <button class="btn btn-primary">Simpan Event</button>
+
         </div>
     </div>
 
@@ -204,105 +292,136 @@
             <h3 class="modal-title">Edit Event</h3>
             <button class="modal-close" onclick="closeModal('modalEditEvent')">×</button>
         </div>
+
         <div class="modal-body">
-            <form>
+            <form method="POST" id="editEventForm" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+
+                <!-- Cover -->
                 <div class="form-group">
                     <label class="form-label">Cover Event</label>
-                    <div class="upload-area" onclick="document.getElementById('editEventCover').click()">
-                        <p>Drag & Drop atau Klik untuk Upload</p>
-                    </div>
-                    <input type="file" id="editEventCover" accept="image/*" style="display: none;">
-                    <div class="upload-preview">
-                        <img src="https://via.placeholder.com/200" alt="Preview" style="max-width: 200px; border-radius: 8px;">
+                    <div class="image-upload-grid">
+                        <label class="upload-box">
+                            <input type="file" name="cover_image" accept="image/*" data-preview>
+                            <img class="upload-preview-img" id="editCoverPreview">
+                        </label>
                     </div>
                 </div>
 
+                <!-- Judul -->
                 <div class="form-group">
                     <label class="form-label">Judul Event <span class="required">*</span></label>
-                    <input type="text" class="form-input" value="Kompetisi Rubik Nasional">
+                    <input type="text" class="form-input" name="title" required>
                 </div>
 
+                <!-- Kategori -->
+                <div class="form-group">
+                    <label class="form-label">Kategori <span class="required">*</span></label>
+                    <select class="form-select" id="editEventCategory" name="category" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="kompetisi">Kompetisi</option>
+                        <option value="gathering">Gathering</option>
+                        <option value="lainnya">Event Lainnya</option>
+                    </select>
+                </div>
+
+                <!-- Kategori Lainnya -->
+                <div class="form-group" id="editCustomCategoryGroup" style="display:none;">
+                    <label class="form-label">Nama Kategori Lainnya <span class="required">*</span></label>
+                    <input type="text" class="form-input" name="custom_category">
+                </div>
+
+                <!-- Deskripsi -->
                 <div class="form-group">
                     <label class="form-label">Deskripsi <span class="required">*</span></label>
-                    <textarea class="form-textarea">Deskripsi event...</textarea>
+                    <textarea class="form-textarea" name="description" required></textarea>
                 </div>
 
+                <!-- Tanggal & Jam -->
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Tanggal Mulai <span class="required">*</span></label>
-                        <input type="date" class="form-input" value="2026-02-15">
-                        <input type="time" class="form-input" value="08:00" style="margin-top: 8px;">
+                        <input type="date" class="form-input" name="start_date" required>
+                        <input type="time" class="form-input" name="start_time" style="margin-top:8px;" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tanggal Akhir <span class="required">*</span></label>
-                        <input type="date" class="form-input" value="2026-02-15">
-                        <input type="time" class="form-input" value="17:00" style="margin-top: 8px;">
+                        <input type="date" class="form-input" name="end_date" required>
+                        <input type="time" class="form-input" name="end_time" style="margin-top:8px;" required>
                     </div>
                 </div>
 
+                <!-- Lokasi -->
                 <div class="form-group">
                     <label class="form-label">Lokasi <span class="required">*</span></label>
-                    <input type="text" class="form-input" value="Jakarta Convention Center">
+                    <input type="text" class="form-input" name="location" required>
                 </div>
 
+                <!-- Detail Kompetisi -->
+                <h4 class="form-section-title" id="editCompetitionTitle" style="display:none;">
+                    Detail Kompetisi
+                </h4>
+
                 <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Kategori <span class="required">*</span></label>
-                        <select class="form-select">
-                            <option>Kompetisi</option>
-                            <option>Workshop</option>
-                            <option>Meetup</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
+                    <div class="form-group" id="editPriceGroup" style="display:none;">
                         <label class="form-label">Harga Tiket</label>
-                        <input type="number" class="form-input" value="50000">
+                        <input type="number" class="form-input" name="ticket_price" min="0">
                     </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
+                    <div class="form-group" id="editQuotaGroup" style="display:none;">
                         <label class="form-label">Max Peserta <span class="required">*</span></label>
-                        <input type="number" class="form-input" value="200">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status <span class="required">*</span></label>
-                        <select class="form-select">
-                            <option>Upcoming</option>
-                            <option>Ongoing</option>
-                            <option>Finished</option>
-                        </select>
+                        <input type="number" class="form-input" name="max_participants" min="1">
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="editPrizeGroup" style="display:none;">
                     <label class="form-label">Total Hadiah</label>
-                    <input type="number" class="form-input" value="5000000">
+                    <input type="number" class="form-input" name="total_prize" min="0">
                 </div>
 
-                <div class="form-group">
+                <!-- Kategori Lomba -->
+                <div class="form-group" id="editCompetitionCategoryGroup" style="display:none;">
                     <label class="form-label">Kategori Lomba</label>
                     <div class="category-tags">
-                        <div class="tag-list">
-                            <span class="tag">3x3 ✕</span>
-                            <span class="tag">2x2 ✕</span>
-                            <span class="tag">4x4 ✕</span>
-                            <span class="tag">OH ✕</span>
-                        </div>
+                        <div class="tag-list" id="editTagList"></div>
+
                         <div class="tag-input-row">
-                            <input type="text" class="form-input" placeholder="Tambah kategori, mis. BLD">
-                            <button type="button" class="btn btn-secondary btn-small">+ Tambah</button>
+                            <select class="form-select" id="editCompetitionCategorySelect">
+                                <option value="">Pilih Kategori</option>
+                                @foreach ($competitionCategories ?? [] as $category)
+                                    <option value="{{ $category->id }}">
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="text" class="form-input" id="editCompetitionCategoryInput"
+                                placeholder="Tambah kategori, mis. BLD" style="display:none;">
+                            <button type="button" class="btn btn-secondary btn-small" id="editAddCategoryBtn">
+                                + Tambah
+                            </button>
                         </div>
-                        <small class="form-helper">
-                            Ubah, tambah, atau hapus kategori lomba sesuai kebutuhan event.
-                        </small>
                     </div>
                 </div>
+
+                <!-- Status -->
+                <div class="form-group" id="editStatusGroup" style="display:none;">
+                    <label class="form-label">Status <span class="required">*</span></label>
+                    <select class="form-select" name="status">
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="finished">Finished</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalEditEvent')">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Simpan Perubahan
+                    </button>
+                </div>
             </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modalEditEvent')">Batal</button>
-            <button class="btn btn-primary">Simpan Perubahan</button>
         </div>
     </div>
 @endsection

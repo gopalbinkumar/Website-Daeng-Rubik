@@ -540,6 +540,18 @@
         gap: 10px;
         margin-bottom: 10px;
     }
+    
+    .prod-body{
+        font-size: 15px;
+        font-weight: 700 !important;
+    }
+
+    .grid-3,
+    .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
 
     /* Mobile Modal */
     .product-modal {

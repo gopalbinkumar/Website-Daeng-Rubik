@@ -14,7 +14,7 @@
     <div class="table-wrapper">
         <form method="GET" action="{{ route('admin.products.index') }}">
             <div class="table-toolbar">
-                <input type="text" name="search" class="search-input" placeholder="🔍 Search produk..."
+                <input type="text" name="search" class="search-input" placeholder=" Search produk..."
                     value="{{ request('search') }}">
 
                 <select class="filter-select" name="category" onchange="this.form.submit()">
@@ -87,13 +87,15 @@
                                     data-images='@json($product->images->map(fn($img) => asset('storage/' . $img->image_path)))' {{-- MARKETPLACE --}}
                                     data-tokopedia="{{ optional($product->marketplaceLinks->where('marketplace', 'tokopedia')->first())->url }}"
                                     data-shopee="{{ optional($product->marketplaceLinks->where('marketplace', 'shopee')->first())->url }}"
-                                    data-tiktok="{{ optional($product->marketplaceLinks->where('marketplace', 'tiktok_shop')->first())->url }}">✏️</button>
+                                    data-tiktok="{{ optional($product->marketplaceLinks->where('marketplace', 'tiktok_shop')->first())->url }}">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
 
                                 <form method="POST" action="{{ route('admin.products.destroy', $product->id) }}"
                                     style="display:inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-icon btn-danger">🗑️</button>
+                                    <button class="btn btn-icon btn-danger"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </div>
                         </td>

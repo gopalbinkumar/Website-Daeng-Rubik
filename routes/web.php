@@ -4,20 +4,26 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\EventController;
 
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
 
 Route::get('/produk', [ProductController::class, 'userIndex'])
     ->name('products');
-Route::view('/materivideo', 'pages.learn-video')->name('learn.video');
-Route::view('/materimodul', 'pages.learn-module')->name('learn.module');
+
+//halaman pembelajaran
+Route::prefix('belajar')->name('learn.')->group(function () {
+    Route::view('/', 'pages.learn.index')->name('index');
+    Route::view('/video', 'pages.learn.video')->name('video');
+    Route::view('/modul', 'pages.learn.module')->name('module');
+});
+
 
 Route::view('/event', 'pages.events')->name('events');
 Route::view('/event/daftar', 'pages.event-register')->name('events.register');
 Route::view('/checkout', 'pages.checkout')->name('checkout');
 Route::view('/keranjang', 'pages.cart')->name('cart');
-Route::view('/belajar', 'pages.learn')->name('learn.index');
 Route::view('/tentang', 'pages.about')->name('about');
 Route::view('/kontak', 'pages.contact')->name('contact');
 
@@ -31,20 +37,10 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::view('/lupa-password', 'auth.forgot-password')->name('forgot');
 });
 
-// Admin Routes
-// Route::prefix('admin')->name('admin.')->group(function () {
-//     Route::view('/', 'admin.dashboard')->name('dashboard');
-//     Route::view('/produk', 'admin.products.index')->name('products.index');
-//     Route::view('/event', 'admin.events.index')->name('events.index');
-//     Route::view('/materi', 'admin.learn.index')->name('learn.index');
-//     Route::view('/admin', 'admin.admins.index')->name('admins.index');
-//     Route::view('/pengaturan', 'admin.settings')->name('settings');
-//     Route::view('/laporan/penjualan', 'admin.reports.sales')->name('reports.sales');
-//     Route::get('/logout', function () {
-//         return redirect()->route('admin.dashboard');
-//     })->name('logout');
-// });
 
+// =================
+//   ADMIN ROUTES
+// =================
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
@@ -52,25 +48,34 @@ Route::middleware(['auth', 'admin'])
 
         Route::view('/', 'admin.dashboard')->name('dashboard');
 
-        Route::get('/produk', [ProductController::class, 'adminIndex'])
-            ->name('products.index');
+        Route::prefix('produk')
+            ->controller(ProductController::class)
+            ->group(function () {
 
-        Route::post('/produk', [ProductController::class, 'store'])
-            ->name('products.store');
+                Route::get('/', 'adminIndex')->name('products.index');
+                Route::post('/', 'store')->name('products.store');
+                Route::put('/{product}', 'update')->name('products.update');
+                Route::delete('/{product}', 'destroy')->name('products.destroy');
 
-        Route::put('/produk/{product}', [ProductController::class, 'update'])
-            ->name('products.update');
+            });
 
-        Route::delete('/produk/{product}', [ProductController::class, 'destroy'])
-            ->name('products.destroy');
+        Route::prefix('event')
+            ->controller(EventController::class)
+            ->group(function () {
 
-        Route::view('/event', 'admin.events.index')->name('events.index');
+                Route::get('/', 'index')->name('events.index');
+                Route::post('/', 'store')->name('events.store');
+                Route::put('/{event}', 'update')->name('events.update');
+                Route::delete('/{event}', 'destroy')->name('events.destroy');
+
+            });
+
         Route::view('/materi', 'admin.learn.index')->name('learn.index');
         Route::view('/admin', 'admin.admins.index')->name('admins.index');
         Route::view('/pengaturan', 'admin.settings')->name('settings');
         Route::view('/laporan/penjualan', 'admin.reports.sales')->name('reports.sales');
 
-        Route::post('/logout', [\App\Http\Controllers\UserController::class, 'logout'])
+        Route::post('/logout', [UserController::class, 'logout'])
             ->name('logout');
 
 
