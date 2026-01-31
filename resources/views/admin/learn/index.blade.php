@@ -4,6 +4,13 @@
 @section('page-title', 'Materi Pembelajaran')
 
 @section('content')
+
+    <style>
+        .form-input[readonly] {
+            background-color: #ffffff;
+            cursor: not-allowed;
+        }
+    </style>
     <div class="page-header">
         <h2 class="page-title">Materi Pembelajaran</h2>
         <button class="btn btn-primary" onclick="openModal('modalAddMateri')">
@@ -14,17 +21,19 @@
     <div class="table-wrapper">
         <div class="table-toolbar">
             <select class="filter-select">
-                <option>Level: Semua</option>
-                <option>Basic</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
+                <option value="">Level: Semua</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
             </select>
+
             <select class="filter-select">
-                <option>Kategori: Semua</option>
-                <option>3x3</option>
-                <option>4x4</option>
-                <option>5x5</option>
+                <option value="">Kategori: Semua</option>
+                @foreach ($categories as $cat)
+                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                @endforeach
             </select>
+
             <input type="text" class="search-input" placeholder="🔍 Search materi...">
         </div>
 
@@ -33,66 +42,96 @@
                 <tr>
                     <th style="width: 100px;">Thumbnail</th>
                     <th>Judul Materi</th>
+                    <th>Jenis Materi</th>
                     <th>Level</th>
                     <th>Kategori</th>
-                    <th>Durasi</th>
                     <th style="width: 120px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td><img src="https://via.placeholder.com/80x60" alt="Video" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;"></td>
-                    <td><strong>Pengenalan Rubik 3x3</strong><br><small style="color: var(--admin-text-muted);">1.2K views</small></td>
-                    <td><span class="badge badge-success">Basic</span></td>
-                    <td>3x3</td>
-                    <td>5:30</td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-icon btn-secondary" onclick="openModal('modalEditMateri')" title="Edit">✏️</button>
-                            <button class="btn btn-icon btn-danger" onclick="confirmDelete('Pengenalan Rubik 3x3', () => alert('Deleted'))" title="Hapus">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><img src="https://via.placeholder.com/80x60" alt="Video" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;"></td>
-                    <td><strong>F2L Intermediate</strong><br><small style="color: var(--admin-text-muted);">980 views</small></td>
-                    <td><span class="badge badge-warning">Intermediate</span></td>
-                    <td>3x3</td>
-                    <td>18:20</td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-icon btn-secondary" onclick="openModal('modalEditMateri')" title="Edit">✏️</button>
-                            <button class="btn btn-icon btn-danger" onclick="confirmDelete('F2L Intermediate', () => alert('Deleted'))" title="Hapus">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><img src="https://via.placeholder.com/80x60" alt="Video" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px;"></td>
-                    <td><strong>Full OLL Strategy</strong><br><small style="color: var(--admin-text-muted);">720 views</small></td>
-                    <td><span class="badge badge-danger">Advanced</span></td>
-                    <td>3x3</td>
-                    <td>24:10</td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-icon btn-secondary" onclick="openModal('modalEditMateri')" title="Edit">✏️</button>
-                            <button class="btn btn-icon btn-danger" onclick="confirmDelete('Full OLL Strategy', () => alert('Deleted'))" title="Hapus">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
+                @forelse ($materials as $materi)
+                    <tr>
+                        <!-- Thumbnail -->
+                        <td style="text-align:center;">
+                            @if ($materi->type === 'video')
+                                <img src="{{ $materi->youtube_thumbnail }}"
+                                    style="width:80px;height:60px;object-fit:cover;border-radius:8px;">
+                            @else
+                                @php
+                                    $ext = strtolower(pathinfo($materi->module_path, PATHINFO_EXTENSION));
+                                @endphp
+
+                                @if ($ext === 'pdf')
+                                    <i class="fa-solid fa-file-pdf" style="font-size:42px;color:#e63946;"></i>
+                                @elseif (in_array($ext, ['doc', 'docx']))
+                                    <i class="fa-solid fa-file-word" style="font-size:42px;color:#2b579a;"></i>
+                                @elseif (in_array($ext, ['xls', 'xlsx']))
+                                    <i class="fa-solid fa-file-excel" style="font-size:42px;color:#2e7d32;"></i>
+                                @else
+                                    <i class="fa-solid fa-file" style="font-size:42px;color:#6c757d;"></i>
+                                @endif
+                            @endif
+                        </td>
+
+
+                        <!-- Judul -->
+                        <td>
+                            <strong>{{ $materi->title }}</strong>
+                        </td>
+
+                        <!-- Jenis -->
+                        <td>
+                            {{ ucfirst($materi->type) }}
+                        </td>
+
+                        <!-- Level -->
+                        <td>
+                            <span
+                                class="badge badge-{{ $materi->level === 'beginner' ? 'success' : ($materi->level === 'intermediate' ? 'warning' : 'danger') }}">
+                                {{ ucfirst($materi->level) }}
+                            </span>
+                        </td>
+
+                        <!-- Kategori -->
+                        <td>
+                            {{ $materi->category?->name ?? '-' }}
+                        </td>
+
+                        <!-- Aksi -->
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-icon btn-secondary"
+                                    onclick='openEditMateri(@json($materi))' title="Edit">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+
+                                <form method="POST" action="{{ route('admin.learn.destroy', $materi) }}"
+                                    style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn btn-icon btn-danger"
+                                        onclick="return confirm('Hapus materi {{ $materi->title }}?')" title="Hapus">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" style="text-align:center;">
+                            Belum ada materi
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
 
-        <div class="pagination">
-            <div class="pagination-info">Menampilkan 1-10 dari 75 materi</div>
-            <div class="pagination-controls">
-                <button class="page-btn">‹</button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">›</button>
-            </div>
-        </div>
+        {{-- Pagination (jika nanti pakai paginate()) --}}
+        {{-- {{ $materials->links() }} --}}
     </div>
+
 
     <!-- Modal Add Materi -->
     <div id="modalAddMateri" class="modal">
@@ -100,130 +139,223 @@
             <h3 class="modal-title">Tambah Materi</h3>
             <button class="modal-close" onclick="closeModal('modalAddMateri')">×</button>
         </div>
-        <div class="modal-body">
-            <form>
-                <div class="form-group">
-                    <label class="form-label">Thumbnail Video</label>
-                    <div class="upload-area" onclick="document.getElementById('materiThumbnail').click()">
-                        <p>Drag & Drop atau Klik untuk Upload</p>
-                    </div>
-                    <input type="file" id="materiThumbnail" accept="image/*" style="display: none;">
-                    <div class="upload-preview"></div>
-                </div>
 
+        <div class="modal-body">
+            <form method="POST" action="{{ route('admin.learn.store') }}" enctype="multipart/form-data">
+                @csrf
+
+                <!-- Judul -->
                 <div class="form-group">
                     <label class="form-label">Judul Materi <span class="required">*</span></label>
-                    <input type="text" class="form-input" placeholder="Contoh: Pengenalan Rubik 3x3">
+                    <input type="text" name="title" class="form-input" placeholder="Contoh: Pengenalan Rubik 3x3"
+                        required>
                 </div>
 
+                <!-- Jenis Materi -->
+                <div class="form-group">
+                    <label class="form-label">Jenis Materi <span class="required">*</span></label>
+                    <select name="type" class="form-select" id="jenisMateri" required>
+                        <option value="">Pilih Jenis</option>
+                        <option value="video">Video (YouTube)</option>
+                        <option value="modul">Modul (Upload)</option>
+                    </select>
+                </div>
+
+                <!-- Deskripsi -->
                 <div class="form-group">
                     <label class="form-label">Deskripsi <span class="required">*</span></label>
-                    <textarea class="form-textarea" placeholder="Deskripsi materi..."></textarea>
+                    <textarea name="description" class="form-textarea" placeholder="Deskripsi materi..." required></textarea>
                 </div>
 
+                <!-- Level & Kategori -->
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Level <span class="required">*</span></label>
-                        <select class="form-select">
-                            <option>Pilih Level</option>
-                            <option>Basic</option>
-                            <option>Intermediate</option>
-                            <option>Advanced</option>
+                        <select name="level" class="form-select" required>
+                            <option value="">Pilih Level</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
                         </select>
                     </div>
+
                     <div class="form-group">
                         <label class="form-label">Kategori <span class="required">*</span></label>
-                        <select class="form-select">
-                            <option>Pilih Kategori</option>
-                            <option>3x3</option>
-                            <option>4x4</option>
-                            <option>5x5</option>
-                            <option>Megaminx</option>
+                        <select name="category_id" class="form-select" required>
+                            <option value="">Pilih Kategori</option>
+                            @foreach ($categories as $cat)
+                                <option value="{{ $cat->id }}">
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Video URL atau Upload <span class="required">*</span></label>
-                    <input type="text" class="form-input" placeholder="YouTube URL atau upload file video">
-                    <input type="file" accept="video/*" class="form-input" style="margin-top: 8px;">
+                <!-- Video URL -->
+                <div class="form-group" id="videoUrlGroup">
+                    <label class="form-label">Video URL (YouTube) <span class="required">*</span></label>
+                    <input type="text" name="video_url" class="form-input"
+                        placeholder="https://www.youtube.com/watch?v=xxxx">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Durasi (menit) <span class="required">*</span></label>
-                    <input type="number" class="form-input" placeholder="5">
+                <!-- Modul Upload -->
+                <div class="form-group" id="videoUploadGroup">
+                    <label class="form-label">Upload Modul <span class="required">*</span></label>
+                    <input type="file" name="module_file" class="form-input" accept=".pdf,.doc,.docx">
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalAddMateri')">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Simpan Materi
+                    </button>
                 </div>
             </form>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modalAddMateri')">Batal</button>
-            <button class="btn btn-primary">Simpan Materi</button>
-        </div>
     </div>
+
 
     <!-- Modal Edit Materi -->
-    <div id="modalEditMateri" class="modal">
-        <div class="modal-header">
-            <h3 class="modal-title">Edit Materi</h3>
-            <button class="modal-close" onclick="closeModal('modalEditMateri')">×</button>
-        </div>
-        <div class="modal-body">
-            <form>
-                <div class="form-group">
-                    <label class="form-label">Thumbnail Video</label>
-                    <div class="upload-area" onclick="document.getElementById('editMateriThumbnail').click()">
-                        <p>Drag & Drop atau Klik untuk Upload</p>
-                    </div>
-                    <input type="file" id="editMateriThumbnail" accept="image/*" style="display: none;">
-                    <div class="upload-preview">
-                        <img src="https://via.placeholder.com/200" alt="Preview" style="max-width: 200px; border-radius: 8px;">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Judul Materi <span class="required">*</span></label>
-                    <input type="text" class="form-input" value="Pengenalan Rubik 3x3">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Deskripsi <span class="required">*</span></label>
-                    <textarea class="form-textarea">Deskripsi materi...</textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Level <span class="required">*</span></label>
-                        <select class="form-select">
-                            <option>Basic</option>
-                            <option>Intermediate</option>
-                            <option>Advanced</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Kategori <span class="required">*</span></label>
-                        <select class="form-select">
-                            <option>3x3</option>
-                            <option>4x4</option>
-                            <option>5x5</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Video URL atau Upload <span class="required">*</span></label>
-                    <input type="text" class="form-input" value="https://youtube.com/watch?v=...">
-                    <input type="file" accept="video/*" class="form-input" style="margin-top: 8px;">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Durasi (menit) <span class="required">*</span></label>
-                    <input type="number" class="form-input" value="5">
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('modalEditMateri')">Batal</button>
-            <button class="btn btn-primary">Simpan Perubahan</button>
-        </div>
+<div id="modalEditMateri" class="modal">
+    <div class="modal-header">
+        <h3 class="modal-title">Edit Materi</h3>
+        <button class="modal-close" onclick="closeModal('modalEditMateri')">×</button>
     </div>
+
+    <div class="modal-body">
+        <form id="formEditMateri"
+              method="POST"
+              enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+
+            <!-- HIDDEN TYPE (WAJIB) -->
+            <input type="hidden" name="type" id="editTypeValue">
+
+            <!-- Judul -->
+            <div class="form-group">
+                <label class="form-label">Judul Materi *</label>
+                <input type="text" name="title" id="editTitle" class="form-input" required>
+            </div>
+
+            <!-- Jenis Materi (READONLY) -->
+            <div class="form-group">
+                <label class="form-label">Jenis Materi</label>
+                <input type="text" id="editTypeText" class="form-input" readonly>
+            </div>
+
+            <!-- Deskripsi -->
+            <div class="form-group">
+                <label class="form-label">Deskripsi *</label>
+                <textarea name="description" id="editDescription" class="form-textarea"></textarea>
+            </div>
+
+            <!-- Level & Kategori -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Level *</label>
+                    <select name="level" id="editLevel" class="form-select" required>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Kategori *</label>
+                    <select name="category_id" id="editCategory" class="form-select">
+                        @foreach ($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <!-- VIDEO -->
+            <div class="form-group" id="editVideoGroup">
+                <label class="form-label">Video URL (YouTube)</label>
+                <input type="text" name="video_url" id="editVideoUrl" class="form-input">
+            </div>
+
+            <!-- MODUL -->
+            <div class="form-group" id="editModuleGroup">
+                <label class="form-label">Upload Modul (opsional)</label>
+                <input type="file" name="module_file" class="form-input"
+                       accept=".pdf,.doc,.docx,.xls,.xlsx">
+                <small class="text-muted">Kosongkan jika tidak ingin mengganti file</small>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('modalEditMateri')">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+    <script>
+        const jenisMateri = document.getElementById('jenisMateri');
+        const videoUrlGroup = document.getElementById('videoUrlGroup');
+        const videoUploadGroup = document.getElementById('videoUploadGroup');
+
+        // default sembunyi
+        videoUrlGroup.style.display = 'none';
+        videoUploadGroup.style.display = 'none';
+
+        jenisMateri.addEventListener('change', function() {
+            if (this.value === 'video') {
+                videoUrlGroup.style.display = 'block';
+                videoUploadGroup.style.display = 'none';
+            } else if (this.value === 'modul') {
+                videoUrlGroup.style.display = 'none';
+                videoUploadGroup.style.display = 'block';
+            } else {
+                videoUrlGroup.style.display = 'none';
+                videoUploadGroup.style.display = 'none';
+            }
+        });
+    </script>
+    <script>
+function openEditMateri(materi) {
+    const form = document.getElementById('formEditMateri');
+
+    // ROUTE UPDATE YANG BENAR
+    form.action = "{{ url('admin/learn') }}/" + materi.id;
+
+    // isi field
+    document.getElementById('editTitle').value = materi.title;
+    document.getElementById('editDescription').value = materi.description ?? '';
+    document.getElementById('editLevel').value = materi.level;
+    document.getElementById('editCategory').value = materi.category_id ?? '';
+
+    // TYPE (WAJIB)
+    document.getElementById('editTypeValue').value = materi.type;
+    document.getElementById('editTypeText').value =
+        materi.type === 'video' ? 'Video (YouTube)' : 'Modul (File)';
+
+    const videoGroup = document.getElementById('editVideoGroup');
+    const moduleGroup = document.getElementById('editModuleGroup');
+
+    if (materi.type === 'video') {
+        videoGroup.style.display = 'block';
+        moduleGroup.style.display = 'none';
+        document.getElementById('editVideoUrl').value = materi.video_url ?? '';
+    } else {
+        videoGroup.style.display = 'none';
+        moduleGroup.style.display = 'block';
+        document.getElementById('editVideoUrl').value = '';
+    }
+
+    openModal('modalEditMateri');
+}
+</script>
+
+
 @endsection

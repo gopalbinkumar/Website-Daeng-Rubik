@@ -13,10 +13,55 @@ class EventController extends Controller
     /**
      * List event
      */
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::orderBy('start_datetime', 'desc')->get();
+        $query = Event::query();
 
+        /* =====================
+         |  SEARCH
+         ===================== */
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                    ->orWhere('location', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        /* =====================
+         |  FILTER STATUS
+         ===================== */
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        /* =====================
+         |  SORT
+         ===================== */
+        switch ($request->sort) {
+            case 'oldest':
+                $query->orderBy('start_datetime', 'asc');
+                break;
+
+            case 'nearest':
+                $query->orderBy('start_datetime', 'desc');
+                break;
+
+            default:
+                // Terbaru
+                $query->latest('start_datetime');
+                break;
+        }
+
+        /* =====================
+         |  PAGINATION
+         ===================== */
+        $events = $query
+            ->paginate(10)
+            ->withQueryString();
+
+        /* =====================
+         |  DATA TAMBAHAN
+         ===================== */
         $competitionCategories = CompetitionCategory::orderBy('name')->get();
 
         return view('admin.events.index', compact(
@@ -24,7 +69,6 @@ class EventController extends Controller
             'competitionCategories'
         ));
     }
-
     /**
      * Store event
      */

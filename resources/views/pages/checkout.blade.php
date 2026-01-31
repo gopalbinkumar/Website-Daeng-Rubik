@@ -4,38 +4,19 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/checkout.css') }}">
-@ENDPUSH
+@endpush
 
 @section('content')
     @php
-        $rupiah = fn(int $n) => 'Rp ' . number_format($n, 0, ',', '.');
-        $productId = (int) request()->get('id', 1);
-        $products = [
-            1 => ['name' => 'Rubik 3x3 Budget', 'price' => 35000],
-            2 => ['name' => 'Rubik 3x3 Magnetic', 'price' => 70000],
-            3 => ['name' => 'Rubik 4x4 Beginner', 'price' => 65000],
-            4 => ['name' => 'Rubik 4x4 Pro', 'price' => 110000],
-            5 => ['name' => 'Rubik 5x5', 'price' => 125000],
-            6 => ['name' => 'Pyraminx', 'price' => 60000],
-            7 => ['name' => 'Skewb', 'price' => 75000],
-            8 => ['name' => 'Megaminx', 'price' => 165000],
-            9 => ['name' => 'Rubik 2x2 Speed', 'price' => 45000],
-            10 => ['name' => 'Rubik 6x6', 'price' => 180000],
-            11 => ['name' => 'Square-1', 'price' => 90000],
-            12 => ['name' => 'Clock Puzzle', 'price' => 55000],
-        ];
-        $product = $products[$productId] ?? $products[1];
-        // Default ongkir: Kota Makassar
-        $ongkir = 15000;
-        $total = $product['price'] + $ongkir;
+        $rupiah = fn($n) => 'Rp ' . number_format($n, 0, ',', '.');
     @endphp
 
     <section class="page-head">
         <div class="container">
             <div class="breadcrumb">Beranda &gt; Produk &gt; Checkout</div>
             <h1 class="page-title">Checkout Produk</h1>
-            <p class="muted" style="margin:8px 0 0;max-width:820px;line-height:1.7">
-                Periksa kembali detail pesanan dan isi data penerima dengan benar. Pembayaran dilakukan melalui transfer bank.
+            <p class="muted">
+                Periksa kembali detail pesanan dan isi data penerima dengan benar.
             </p>
         </div>
     </section>
@@ -43,115 +24,132 @@
     <section class="section" style="padding-top:22px;">
         <div class="container">
             <div class="checkout-layout">
-                <!-- Left Column: Form -->
-                <div class="checkout-form-column">
-                    <div class="checkout-card">
-                        <h2 class="checkout-card-title">Data Penerima</h2>
-                        <form id="checkoutForm" class="checkout-form">
+
+                <form id="checkoutForm" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="items" id="checkoutItems">
+                    <input type="hidden" name="shipping_zone" id="shippingZone">
+
+                    {{-- ================= LEFT ================= --}}
+                    <div class="checkout-form-column">
+
+                        <div class="checkout-card">
+                            <h2 class="checkout-card-title">Data Penerima</h2>
+
                             <div class="form-group">
-                                <label class="form-label">Nama Penerima <span class="required">*</span></label>
-                                <input type="text" class="form-input" placeholder="Masukkan nama penerima" required>
+                                <label class="form-label">Nama Penerima *</label>
+                                <input type="text" name="receiver_name" class="form-input"
+                                    value="{{ old('receiver_name', $user->name ?? '') }}" required>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Nomor WhatsApp Penerima <span class="required">*</span></label>
-                                <input type="tel" class="form-input" placeholder="+62 812-3456-7890" required>
-                                <small class="form-helper">Digunakan untuk konfirmasi pesanan.</small>
+                                <label class="form-label">Nomor WhatsApp *</label>
+                                <input type="tel" name="receiver_phone" class="form-input"
+                                    value="{{ old('receiver_phone', $user->whatsapp ?? '') }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Alamat Lengkap *</label>
+                                <textarea name="receiver_address" class="form-input" rows="4" required></textarea>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Alamat Lengkap <span class="required">*</span></label>
-                                <textarea class="form-input" rows="4" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan" required></textarea>
+                                <label class="form-label">Kode Pos *</label>
+                                <input type="text" name="receiver_postal_code" class="form-input" required>
                             </div>
+                        </div>
+
+                        <div class="checkout-card">
+                            <h2 class="checkout-card-title">Pengiriman</h2>
 
                             <div class="form-group">
-                                <label class="form-label">Kode Pos <span class="required">*</span></label>
-                                <input type="text" class="form-input" placeholder="Contoh: 90222" required>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="checkout-card">
-                        <h2 class="checkout-card-title">Pengiriman</h2>
-                        <div class="shipping-info">
-                            <div class="form-group">
-                                <label class="form-label">Lokasi Pengiriman <span class="required">*</span></label>
+                                <label class="form-label">Lokasi Pengiriman *</label>
                                 <select id="shippingOption" class="form-input">
-                                    <option value="makassar" selected>Kota Makassar (Ongkir Rp15.000)</option>
-                                    <option value="sulsel">Luar Kota (Sulawesi Selatan) – Ongkir Rp25.000</option>
-                                    <option value="luarprov">Luar Provinsi – Ongkir Rp40.000</option>
+                                    <option value="makassar">Kota Makassar (Rp15.000)</option>
+                                    <option value="sulsel">Luar Kota Sulsel (Rp25.000)</option>
+                                    <option value="luar_provinsi">Luar Provinsi (Rp40.000)</option>
                                 </select>
                             </div>
 
                             <div id="shippingExtraSulsel" class="form-group" style="display:none;">
                                 <label class="form-label">Nama Kota / Kabupaten</label>
-                                <input type="text" class="form-input" placeholder="Contoh: Gowa, Maros">
+                                <input type="text" name="shipping_city" id="shippingCitySulsel" class="form-input"
+                                    disabled>
                             </div>
 
                             <div id="shippingExtraLuarProv" style="display:none;">
                                 <div class="form-group">
                                     <label class="form-label">Nama Provinsi</label>
-                                    <input type="text" class="form-input" placeholder="Contoh: Jawa Barat">
+                                    <input type="text" name="shipping_province" id="shippingProvince" class="form-input"
+                                        disabled>
                                 </div>
+
                                 <div class="form-group">
                                     <label class="form-label">Nama Kota / Kabupaten</label>
-                                    <input type="text" class="form-input" placeholder="Contoh: Bandung">
+                                    <input type="text" name="shipping_city" id="shippingCityLuarProv" class="form-input"
+                                        disabled>
                                 </div>
                             </div>
 
-                            <div class="shipping-row">
-                                <span class="label">Estimasi jarak pengiriman</span>
-                                <span class="value">5–10 km dari Makassar (contoh UI)</span>
-                            </div>
-                            <div class="shipping-row">
-                                <span class="label">Ongkir</span>
-                                <span class="value" id="shippingOngkir">{{ $rupiah($ongkir) }}</span>
-                            </div>
-                            <div class="shipping-row total">
-                                <span class="label">Total Pembayaran</span>
-                                <span class="value" id="shippingTotal">{{ $rupiah($total) }}</span>
-                            </div>
-                            <p class="muted" style="margin-top:8px;font-size:13px;">
-                                Ongkir dihitung estimasi untuk tampilan UI. Nilai aktual dapat disesuaikan saat backend aktif.
-                            </p>
-                        </div>
-                    </div>
 
-                    <div class="checkout-card">
-                        <h2 class="checkout-card-title">Upload Bukti Pembayaran</h2>
-                        <div class="upload-area" onclick="document.getElementById('buktiTransfer').click()">
-                            <p>Drag & Drop atau klik untuk upload bukti transfer (JPG/PNG, maks. 5MB)</p>
+                            <div class="shipping-row">
+                                <span>Ongkir</span>
+                                <span id="shippingOngkir">{{ $rupiah($ongkir) }}</span>
+                            </div>
                         </div>
-                        <input type="file" id="buktiTransfer" accept="image/*" style="display:none;">
-                        <div id="buktiPreview" class="upload-preview" aria-live="polite"></div>
-                    </div>
-                </div>
 
-                <!-- Right Column: Summary & Payment Info -->
+                        <div class="checkout-card">
+                            <h2 class="checkout-card-title">Upload Bukti Pembayaran</h2>
+
+                            <div class="upload-area" id="uploadArea"
+                                onclick="document.getElementById('buktiTransfer').click()">
+                                <p id="uploadText">Klik untuk upload bukti transfer</p>
+                            </div>
+
+                            <input type="file" name="payment_proof" id="buktiTransfer" accept="image/*" hidden>
+
+                        </div>
+
+                    </div>
+                </form>
+
+                {{-- ================= RIGHT ================= --}}
                 <aside class="checkout-summary-column">
+
                     <div class="checkout-card">
                         <h2 class="checkout-card-title">Ringkasan Produk</h2>
-                        <div class="summary-product">
-                            <div class="summary-thumb" aria-hidden="true">
-                                <div class="cube" style="width:60px;height:60px;border-radius:14px;border-width:5px;"></div>
+
+                        @foreach ($checkoutItems as $item)
+                            <div class="summary-product">
+                                <div class="summary-thumb">
+                                    @if ($item->product->images->count())
+                                        <img src="{{ asset('storage/' . $item->product->images->first()->image_path) }}"
+                                            style="width:60px;height:60px;object-fit:cover;border-radius:12px;">
+                                    @else
+                                        <div class="cube"></div>
+                                    @endif
+                                </div>
+                                <div class="summary-info">
+                                    <p class="summary-name">{{ $item->product->name }}</p>
+                                    <p class="summary-price">
+                                        {{ $rupiah($item->unit_price * $item->quantity) }}
+                                        <span style="font-size:13px;">× {{ $item->quantity }}</span>
+                                    </p>
+                                </div>
                             </div>
-                            <div class="summary-info">
-                                <p class="summary-name">{{ $product['name'] }}</p>
-                                <p class="summary-price">{{ $rupiah($product['price']) }}</p>
-                            </div>
-                        </div>
+                        @endforeach
+
                         <div class="summary-totals">
                             <div class="row">
-                                <span>Harga Produk</span>
-                                <span>{{ $rupiah($product['price']) }}</span>
+                                <span>Subtotal</span>
+                                <span>{{ $rupiah($subtotal) }}</span>
                             </div>
                             <div class="row">
-                                <span>Ongkir (estimasi)</span>
-                                    <span id="summaryOngkir">{{ $rupiah($ongkir) }}</span>
+                                <span>Ongkir</span>
+                                <span id="summaryOngkir">{{ $rupiah($ongkir) }}</span>
                             </div>
                             <div class="row total">
-                                <span>Total Pembayaran</span>
-                                    <span id="summaryTotal">{{ $rupiah($total) }}</span>
+                                <span>Total</span>
+                                <span id="summaryTotal">{{ $rupiah($total) }}</span>
                             </div>
                         </div>
                     </div>
@@ -159,125 +157,150 @@
                     <div class="checkout-card">
                         <h2 class="checkout-card-title">Informasi Pembayaran</h2>
                         <div class="payment-info">
-                            <div class="row">
-                                <span class="label">Bank</span>
-                                <span class="value">BCA</span>
-                            </div>
-                            <div class="row">
-                                <span class="label">No. Rekening</span>
-                                <span class="value">1234567890</span>
-                            </div>
-                            <div class="row">
-                                <span class="label">Atas Nama</span>
-                                <span class="value">Daeng Rubik</span>
-                            </div>
+                            <div class="row"><span>Bank</span><span>BCA</span></div>
+                            <div class="row"><span>No Rek</span><span>1234567890</span></div>
+                            <div class="row"><span>Atas Nama</span><span>Daeng Rubik</span></div>
                         </div>
-                        <p class="muted" style="margin-top:8px;font-size:13px;">
-                            Silakan transfer sesuai <strong>total pembayaran</strong> di atas, lalu upload bukti transfer pada form.
-                        </p>
                     </div>
 
                     <div class="checkout-card actions-card">
-                        <div class="checkout-actions">
-                            <a href="{{ route('products') }}" class="btn btn-secondary" style="width:100%;">Kembali ke Produk</a>
-                            <button type="button" class="btn btn-primary" style="width:100%;" onclick="submitCheckoutDemo()">
-                                Konfirmasi Pesanan
-                            </button>
-                        </div>
-                        <p class="muted" style="margin-top:8px;font-size:12px;">
-                            (UI demo) Pesanan belum benar-benar diproses, fitur backend belum diaktifkan.
-                        </p>
+                        <button type="button" class="btn btn-primary" onclick="submitCheckoutDemo()">Konfirmasi</button>
                     </div>
+
                 </aside>
             </div>
         </div>
     </section>
 
-    <div id="checkoutToast" class="checkout-toast" role="alert" aria-live="polite">
-        <div class="toast-content">
-            <span class="toast-icon">✓</span>
-            <div>
-                <strong>Pesanan tercatat!</strong>
-                <p style="margin:4px 0 0;font-size:13px;">Admin akan menghubungi kamu via WhatsApp setelah pembayaran diverifikasi. (UI demo)</p>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const buktiInput = document.getElementById('buktiTransfer');
-        const buktiPreview = document.getElementById('buktiPreview');
+        const ship = document.getElementById('shippingOption');
 
-        if (buktiInput) {
-            buktiInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) {
-                    buktiPreview.innerHTML = '';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = () => {
-                    buktiPreview.innerHTML = `
-                        <div class="preview-item">
-                            <img src="${reader.result}" alt="Bukti transfer" />
-                            <div class="preview-meta">
-                                <strong>${file.name}</strong>
-                                <span>${(file.size / 1024).toFixed(1)} KB</span>
-                            </div>
-                        </div>
-                    `;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        const productPrice = {{ $product['price'] }};
-
-        function formatRupiah(num) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
-        }
-
-        const shippingSelect = document.getElementById('shippingOption');
-        const shippingOngkirEl = document.getElementById('shippingOngkir');
-        const shippingTotalEl = document.getElementById('shippingTotal');
-        const summaryOngkirEl = document.getElementById('summaryOngkir');
-        const summaryTotalEl = document.getElementById('summaryTotal');
         const extraSulsel = document.getElementById('shippingExtraSulsel');
         const extraLuarProv = document.getElementById('shippingExtraLuarProv');
 
-        function updateShippingUI() {
-            if (!shippingSelect) return;
-            const value = shippingSelect.value;
+        const citySulsel = document.querySelector('#shippingExtraSulsel input[name="shipping_city"]');
+        const cityLuarProv = document.querySelector('#shippingExtraLuarProv input[name="shipping_city"]');
+        const provinceInput = document.querySelector('#shippingExtraLuarProv input[name="shipping_province"]');
+
+        const shippingZoneInput = document.getElementById('shippingZone');
+
+        function rupiah(n) {
+            return 'Rp ' + n.toLocaleString('id-ID');
+        }
+
+        function updateShip() {
             let ongkir = 15000;
-            if (value === 'sulsel') ongkir = 25000;
-            if (value === 'luarprov') ongkir = 40000;
 
-            const total = productPrice + ongkir;
+            // ================= RESET SEMUA =================
+            extraSulsel.style.display = 'none';
+            extraLuarProv.style.display = 'none';
 
-            if (shippingOngkirEl) shippingOngkirEl.textContent = formatRupiah(ongkir);
-            if (shippingTotalEl) shippingTotalEl.textContent = formatRupiah(total);
-            if (summaryOngkirEl) summaryOngkirEl.textContent = formatRupiah(ongkir);
-            if (summaryTotalEl) summaryTotalEl.textContent = formatRupiah(total);
+            citySulsel.disabled = true;
+            cityLuarProv.disabled = true;
+            provinceInput.disabled = true;
 
-            if (extraSulsel && extraLuarProv) {
-                extraSulsel.style.display = value === 'sulsel' ? '' : 'none';
-                extraLuarProv.style.display = value === 'luarprov' ? '' : 'none';
+            citySulsel.value = '';
+            cityLuarProv.value = '';
+            provinceInput.value = '';
+
+            // ================= KONDISI =================
+            if (ship.value === 'makassar') {
+                ongkir = 15000;
             }
+
+            if (ship.value === 'sulsel') {
+                ongkir = 25000;
+                extraSulsel.style.display = 'block';
+                citySulsel.disabled = false;
+            }
+
+            if (ship.value === 'luar_provinsi') {
+                ongkir = 40000;
+                extraLuarProv.style.display = 'block';
+                cityLuarProv.disabled = false;
+                provinceInput.disabled = false;
+            }
+
+            // ================= UPDATE UI =================
+            document.getElementById('shippingOngkir').textContent = rupiah(ongkir);
+            document.getElementById('summaryOngkir').textContent = rupiah(ongkir);
+            document.getElementById('summaryTotal').textContent =
+                rupiah({{ $subtotal }} + ongkir);
+
+            // ================= KIRIM KE BACKEND =================
+            shippingZoneInput.value = ship.value;
         }
 
-        if (shippingSelect) {
-            shippingSelect.addEventListener('change', updateShippingUI);
-            updateShippingUI();
-        }
+        ship.addEventListener('change', updateShip);
+        updateShip();
 
+        // ================= SUBMIT =================
         function submitCheckoutDemo() {
-            const toast = document.getElementById('checkoutToast');
-            toast.classList.add('show');
+            const items = new URLSearchParams(window.location.search).get('items');
+            if (!items) {
+                alert('Tidak ada produk dipilih');
+                return;
+            }
 
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 4000);
+            document.getElementById('checkoutItems').value = items;
+
+            const form = document.getElementById('checkoutForm');
+            const formData = new FormData(form);
+
+            fetch('{{ route('checkout.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: formData
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Checkout gagal');
+                    return res.text();
+                })
+                .then(() => {
+                    alert('Checkout berhasil');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Terjadi kesalahan');
+                });
         }
     </script>
-@endsection
 
+    <script>
+        const fileInput = document.getElementById('buktiTransfer');
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadText = document.getElementById('uploadText');
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('File harus berupa gambar');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadArea.innerHTML = `
+            <img 
+                src="${e.target.result}"
+                alt="Preview Bukti Transfer"
+                style="
+                    width:100%;
+                    height:100%;
+                    object-fit:cover;
+                    border-radius:12px;
+                "
+            >
+        `;
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+
+@endsection

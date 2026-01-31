@@ -1,113 +1,170 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use App\Models\Transaction;
+use App\Models\TransactionItem;
+use App\Models\Cart;
 
 class TransactionController extends Controller
 {
-    public function index(Request $request)
+    public function store(Request $request)
     {
-        $validated = $request->validate([
-            'period' => ['nullable', 'in:daily,monthly,yearly'],
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date'],
-            'status' => ['nullable', 'in:pending,paid,failed,cancelled'],
-            'source' => ['nullable', 'in:website,shopee,tokopedia,tiktok_shop'],
+        // =========================
+        // VALIDASI DASAR
+        // =========================
+        $request->validate([
+            'receiver_name' => 'required|string|max:255',
+            'receiver_phone' => 'required|string|max:50',
+            'receiver_address' => 'required|string',
+            'receiver_postal_code' => 'required|string|max:20',
+
+            'shipping_zone' => 'required|in:makassar,sulsel,luar_provinsi',
+
+            'items' => 'required|string',
+            'payment_proof' => 'nullable|image|max:5120',
         ]);
 
-        $query = Transaction::query();
+        $user = Auth::user();
 
-        if (!empty($validated['period'])) {
-            $query->byPeriod($validated['period']);
+        // =========================
+        // NORMALISASI SHIPPING DATA
+        // =========================
+        $shippingZone = $request->shipping_zone;
+        $shippingCity = null;
+        $shippingProvince = null;
+
+        if ($shippingZone === 'sulsel') {
+            $request->validate([
+                'shipping_city' => 'required|string|max:255',
+            ]);
+            $shippingCity = $request->shipping_city;
         }
 
-        if (!empty($validated['from']) || !empty($validated['to'])) {
-            $query->dateRange($validated['from'] ?? null, $validated['to'] ?? null);
+      if ($shippingZone === 'luar_provinsi') {
+            $request->validate([
+                'shipping_city' => 'required|string|max:255',
+                'shipping_province' => 'required|string|max:255',
+            ]);
+            $shippingCity = $request->shipping_city;
+            $shippingProvince = $request->shipping_province;
         }
 
-        if (!empty($validated['status'])) {
-            $query->where('status', $validated['status']);
+        // =========================
+        // AMBIL CART USER
+        // =========================
+        $cart = Cart::with(['items.product'])
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        $itemIds = explode(',', $request->items);
+        $checkoutItems = $cart->items->whereIn('id', $itemIds);
+
+        if ($checkoutItems->isEmpty()) {
+            return back()->withErrors('Item checkout tidak valid');
         }
 
-        if (!empty($validated['source'])) {
-            $query->where('source', $validated['source']);
+        // =========================
+        // HITUNG SUBTOTAL
+        // =========================
+        $subtotal = 0;
+        foreach ($checkoutItems as $item) {
+            $subtotal += $item->unit_price * $item->quantity;
         }
 
-        $transactions = $query->with('items')->orderByDesc('created_at')->paginate(20);
+        // =========================
+        // ONGKIR SESUAI ZONE
+        // =========================
+        $shippingCost = match ($shippingZone) {
+            'makassar' => 15000,
+            'sulsel' => 25000,
+            'luar_provinsi' => 40000,
+            default => 15000,
+        };
 
-        $summary = [
-            'total_revenue' => (clone $query)->where('status', 'paid')->sum('total_amount'),
-            'transaction_count' => (clone $query)->count(),
-            'average_transaction' => (clone $query)->where('status', 'paid')->avg('total_amount'),
-        ];
+        $total = $subtotal + $shippingCost;
 
-        return response()->json([
-            'data' => $transactions,
-            'summary' => $summary,
-        ]);
+        DB::beginTransaction();
+
+        try {
+            // =========================
+            // UPLOAD BUKTI TRANSFER
+            // =========================
+            $proofPath = null;
+            if ($request->hasFile('payment_proof')) {
+                $proofPath = $request
+                    ->file('payment_proof')
+                    ->store('payment_proofs', 'public');
+            }
+
+            // =========================
+            // SIMPAN TRANSACTION
+            // =========================
+            $transaction = Transaction::create([
+                'code' => 'TRX-' . strtoupper(Str::random(10)),
+                'user_id' => $user->id,
+                'cart_id' => $cart->id,
+                'source' => 'website',
+                'status' => 'pending',
+
+                'receiver_name' => $request->receiver_name,
+                'receiver_phone' => $request->receiver_phone,
+                'receiver_address' => $request->receiver_address,
+                'receiver_postal_code' => $request->receiver_postal_code,
+
+                // 🔑 FIX PENTING
+                'shipping_zone' => $shippingZone,
+                'shipping_city' => $shippingCity,
+                'shipping_province' => $shippingProvince,
+
+                'subtotal_amount' => $subtotal,
+                'shipping_cost' => $shippingCost,
+                'total_amount' => $total,
+
+                'payment_method' => 'bank_transfer',
+                'payment_bank_name' => 'BCA',
+                'payment_account_name' => 'Daeng Rubik',
+                'payment_account_number' => '1234567890',
+                'payment_proof_path' => $proofPath,
+            ]);
+
+            // =========================
+            // SIMPAN TRANSACTION ITEMS
+            // =========================
+            foreach ($checkoutItems as $item) {
+                TransactionItem::create([
+                    'transaction_id' => $transaction->id,
+                    'product_id' => $item->product_id,
+                    'product_name' => $item->product->name,
+                    'unit_price' => $item->unit_price,
+                    'quantity' => $item->quantity,
+                    'line_total' => $item->unit_price * $item->quantity,
+                ]);
+            }
+
+            // =========================
+            // HAPUS ITEM DARI CART
+            // =========================
+            foreach ($checkoutItems as $item) {
+                $item->delete();
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('checkout')
+                ->with('success', 'Pesanan berhasil dibuat');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+            return back()->withErrors('Terjadi kesalahan saat memproses checkout');
+        }
     }
 
-    public function storeManual(Request $request)
-    {
-        $validated = $request->validate([
-            'product_name' => ['required', 'string', 'max:255'],
-            'source' => ['required', 'in:website,shopee,tokopedia,tiktok_shop'],
-            'buyer_name' => ['required', 'string', 'max:255'],
-            'transaction_date' => ['required', 'date'],
-            'quantity' => ['required', 'integer', 'min:1'],
-            'subtotal_amount' => ['required', 'integer', 'min:0'],
-            'shipping_cost' => ['nullable', 'integer', 'min:0'],
-            'payment_method' => ['nullable', 'string', 'max:50'],
-            'status' => ['nullable', 'in:pending,paid,failed,cancelled'],
-            'note' => ['nullable', 'string'],
-        ]);
 
-        $shipping = $validated['shipping_cost'] ?? 0;
-        $total = $validated['subtotal_amount'] + $shipping;
-
-        $transaction = Transaction::create([
-            'code' => 'TRX-MANUAL-' . now()->format('Ymd') . '-' . strtoupper(uniqid()),
-            'user_id' => null,
-            'cart_id' => null,
-            'source' => $validated['source'],
-            'status' => $validated['status'] ?? 'paid',
-            'receiver_name' => $validated['buyer_name'],
-            'receiver_phone' => '-',
-            'receiver_address' => $validated['note'] ?? 'Transaksi manual dari marketplace',
-            'receiver_postal_code' => '-',
-            'shipping_zone' => 'makassar',
-            'shipping_city' => null,
-            'shipping_province' => null,
-            'subtotal_amount' => $validated['subtotal_amount'],
-            'shipping_cost' => $shipping,
-            'total_amount' => $total,
-            'payment_method' => $validated['payment_method'] ?? 'bank_transfer',
-            'payment_bank_name' => 'BCA',
-            'payment_account_name' => 'Daeng Rubik',
-            'payment_account_number' => '1234567890',
-            'paid_at' => $validated['status'] === 'paid' ? $validated['transaction_date'] : null,
-        ]);
-
-        $transaction->items()->create([
-            'product_id' => null,
-            'product_name' => $validated['product_name'],
-            'unit_price' => (int) floor($validated['subtotal_amount'] / $validated['quantity']),
-            'quantity' => $validated['quantity'],
-            'line_total' => $validated['subtotal_amount'],
-        ]);
-
-        return response()->json($transaction->load('items'), 201);
-    }
-
-    public function exportPdf(Request $request)
-    {
-        // Placeholder - implement with a PDF library (dompdf/snappy) later.
-        return response()->json([
-            'message' => 'Export PDF belum diimplementasikan. Gunakan query yang sama dengan endpoint index() untuk mengambil data, lalu generate PDF menggunakan library.',
-        ]);
-    }
 }
-

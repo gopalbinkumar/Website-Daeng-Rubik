@@ -22,7 +22,7 @@
             <div class="card card-pad"
                 style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
                 <div>
-                    <span class="badge">🎥 Video Learning</span>
+                    <span class="badge"><i class="fa-solid fa-video"></i> Video Learning</span>
                     <h2 style="margin:10px 0 0;font-size:22px;letter-spacing:-.02em">
                         Video Pembelajaran Rubik
                     </h2>
@@ -31,30 +31,30 @@
                     </p>
                 </div>
                 <a href="{{ route('learn.video') }}" class="btn btn-primary">
-                    ▶ Mulai Nonton
+                    <i class="fa-solid fa-video"></i> Mulai Nonton
                 </a>
             </div>
             <div style="height:14px"></div>
             <div class="card card-pad"
                 style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
                 <div>
-                    <span class="badge">📄 PDF Learning</span>
+                    <span class="badge"><i class="fa-solid fa-file-lines"></i>  Module Learning</span>
                     <h2 style="margin:10px 0 0;font-size:22px;letter-spacing:-.02em">
-                        File PDF Rumus Rubik
+                        File Modul Rumus Rubik
                     </h2>
                     <p class="muted" style="margin:8px 0 0;line-height:1.7">
                         Rumus dan rangkuman rubik yang bisa dibaca dan diunduh.
                     </p>
                 </div>
                 <a href="{{ route('learn.module') }}" class="btn btn-primary">
-                    📥 Lihat PDF
+                    <i class="fa-solid fa-file-lines"></i> Lihat Modul
                 </a>
             </div>
 
             <div style="height:14px"></div>
 
             <div class="card card-pad">
-                <b>🔖 Watchlist / Bookmark Anda</b>
+                <h2 style="margin:10px 0 0;font-size:22px;letter-spacing:-.02em">Watchlist / Bookmark Anda</h2>
                 <p class="muted" style="margin:8px 0 0;line-height:1.7">
                     Materi yang kamu simpan untuk ditonton atau dibaca nanti.
                     (Sementara ini masih tampilan UI).

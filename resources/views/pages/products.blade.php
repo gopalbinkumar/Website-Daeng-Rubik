@@ -12,7 +12,7 @@
             <div class="breadcrumb">Beranda &gt; Produk</div>
             <h1 class="page-title">Katalog Produk</h1>
             <p class="muted" style="margin:8px 0 0;max-width:820px;line-height:1.7">
-                Temukan rubik favoritmu meski ruang jualan offline terbatas. Filter kategori, brand, dan harga (UI dulu).
+                Temukan rubik favoritmu meski ruang jualan offline terbatas. Filter kategori, brand, dan harga.
             </p>
         </div>
     </section>
@@ -259,8 +259,8 @@
 
     <script>
         /* =========================
-                   GLOBAL STATE
-                ========================= */
+                       GLOBAL STATE
+                    ========================= */
         let activeProduct = null;
         let currentImageIndex = 0;
 
@@ -344,20 +344,20 @@
                         style="width:100%;height:100%;object-fit:cover;">
 
                     ${activeProduct.images.length > 1 ? `
-                                        <button onclick="prevImage()"
-                                            style="position:absolute;left:10px;top:50%;
-                                            transform:translateY(-50%);
-                                            width:36px;height:36px;border-radius:50%;
-                                            border:none;background:rgba(0,0,0,.45);
-                                            color:#fff;font-size:22px;cursor:pointer;">‹</button>
+                                            <button onclick="prevImage()"
+                                                style="position:absolute;left:10px;top:50%;
+                                                transform:translateY(-50%);
+                                                width:36px;height:36px;border-radius:50%;
+                                                border:none;background:rgba(0,0,0,.45);
+                                                color:#fff;font-size:22px;cursor:pointer;">‹</button>
 
-                                        <button onclick="nextImage()"
-                                            style="position:absolute;right:10px;top:50%;
-                                            transform:translateY(-50%);
-                                            width:36px;height:36px;border-radius:50%;
-                                            border:none;background:rgba(0,0,0,.45);
-                                            color:#fff;font-size:22px;cursor:pointer;">›</button>
-                                    ` : ''}
+                                            <button onclick="nextImage()"
+                                                style="position:absolute;right:10px;top:50%;
+                                                transform:translateY(-50%);
+                                                width:36px;height:36px;border-radius:50%;
+                                                border:none;background:rgba(0,0,0,.45);
+                                                color:#fff;font-size:22px;cursor:pointer;">›</button>
+                                        ` : ''}
                 </div>
             </div>
 
@@ -389,9 +389,14 @@
             <i class="fa-solid fa-bag-shopping"></i> Beli Sekarang
         </button>
 
-        <button class="add-cart-btn" onclick="addToCart(${activeProduct.id})">
-            <i class="fa-solid fa-cart-arrow-down"></i> Tambah ke Keranjang
-        </button>
+        <form action="{{ route('cart.add') }}" method="POST" style="width:100%;">
+    @csrf
+    <input type="hidden" name="product_id" value="${activeProduct.id}">
+    <button type="submit" class="add-cart-btn" style="width:100%;">
+        <i class="fa-solid fa-cart-arrow-down"></i> Tambah ke Keranjang
+    </button>
+</form>
+
 
         ${marketplaceButtons ? `<div class="marketplace-row">${marketplaceButtons}</div>` : ''}
 
@@ -472,20 +477,6 @@
             if (url) window.open(url, '_blank');
         }
 
-        function addToCart(id) {
-            const p = productsData.find(x => x.id === id);
-            if (!p || !window.DaengCart) return;
-
-            window.DaengCart.add({
-                id: p.id,
-                name: p.name,
-                price: p.price
-            });
-
-            const feedback = document.querySelector('.cart-feedback');
-            if (feedback) feedback.textContent = `✅ "${p.name}" ditambahkan ke keranjang.`;
-        }
-
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeProductModal();
         });
@@ -533,6 +524,40 @@
             mRange.addEventListener('input', updateM);
         }
     </script>
+    <script>
+        function addToCart(productId) {
+            const feedback = document.querySelector('.cart-feedback');
+            if (feedback) feedback.textContent = '⏳ Menambahkan ke keranjang...';
+
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('product_id', productId);
+
+            fetch("{{ route('cart.add') }}", {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin' // ⬅️ INI KUNCI
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Request failed');
+                    return res.json();
+                })
+                .then(data => {
+                    if (feedback) {
+                        feedback.textContent = '✅ Produk berhasil ditambahkan ke keranjang';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    if (feedback) {
+                        feedback.textContent = '❌ Gagal menambahkan ke keranjang';
+                    }
+                    alert('Gagal menambahkan ke keranjang');
+                });
+        }
+    </script>
+
+
 
 
 @endsection

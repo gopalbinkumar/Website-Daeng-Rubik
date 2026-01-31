@@ -7,33 +7,6 @@
 @endpush
 
 @section('content')
-    @php
-        $tutorials = [
-            'beginner' => [
-                ['title' => 'Pengenalan Rubik 3x3', 'duration' => '5:30', 'views' => '1.2K', 'stars' => 5],
-                ['title' => 'Notasi Rubik (Singkat & Jelas)', 'duration' => '8:15', 'views' => '2.5K', 'stars' => 5],
-                ['title' => 'Cross Putih', 'duration' => '12:45', 'views' => '3.8K', 'stars' => 4],
-                ['title' => 'First Layer (F2L Dasar)', 'duration' => '14:10', 'views' => '1.1K', 'stars' => 4],
-                ['title' => 'Second Layer Edges', 'duration' => '10:20', 'views' => '950', 'stars' => 4],
-                ['title' => 'Yellow Cross (OLL Dasar)', 'duration' => '11:30', 'views' => '1.8K', 'stars' => 5],
-            ],
-            'intermediate' => [
-                ['title' => 'F2L Intermediate', 'duration' => '18:20', 'views' => '980', 'stars' => 5],
-                ['title' => 'OLL Pengenalan', 'duration' => '16:05', 'views' => '1.6K', 'stars' => 4],
-                ['title' => 'PLL Dasar', 'duration' => '19:40', 'views' => '1.3K', 'stars' => 5],
-                ['title' => 'Finger Tricks & TPS', 'duration' => '15:50', 'views' => '1.1K', 'stars' => 5],
-                ['title' => 'Cross Optimization', 'duration' => '13:25', 'views' => '890', 'stars' => 4],
-            ],
-            'advanced' => [
-                ['title' => 'Full OLL Strategy', 'duration' => '24:10', 'views' => '720', 'stars' => 5],
-                ['title' => 'Full PLL Drills', 'duration' => '22:55', 'views' => '640', 'stars' => 5],
-                ['title' => 'Lookahead & TPS', 'duration' => '20:30', 'views' => '510', 'stars' => 4],
-                ['title' => 'Advanced F2L Cases', 'duration' => '26:15', 'views' => '420', 'stars' => 5],
-                ['title' => 'Competition Strategies', 'duration' => '18:40', 'views' => '380', 'stars' => 5],
-            ],
-        ];
-    @endphp
-
     <section class="page-head">
         <div class="container">
             <div class="breadcrumb">Beranda &gt; Belajar</div>
@@ -46,6 +19,8 @@
 
     <section class="section" style="padding-top:22px;">
         <div class="container" data-tabs>
+
+            {{-- HEADER --}}
             <div class="card card-pad"
                 style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
                 <div>
@@ -61,67 +36,77 @@
 
             <div style="height:14px"></div>
 
+            {{-- TABS LEVEL --}}
             <div class="tabs" aria-label="Pilih level" style="margin-top:0">
-                <button class="tab beginner active" type="button" data-tab="basic">Beginner</button>
+                <button class="tab beginner active" type="button" data-tab="beginner">Beginner</button>
                 <button class="tab intermediate" type="button" data-tab="intermediate">Intermediate</button>
                 <button class="tab advanced" type="button" data-tab="advanced">Advanced</button>
             </div>
 
-            {{-- <a href="{{ route('videos') }}" class="btn btn-primary">
-                    ▶ Mulai Nonton
-                </a> --}}
-
             <div style="height:16px"></div>
 
-            <div class="card card-pad">
-                <div class="section-title" style="margin-bottom:10px;">
-                    <div>
-                        <h2 style="font-size:18px;margin:0">Kategori tutorial</h2>
-                        <p class="muted">Pilih jenis rubik yang kamu pelajari.</p>
+            {{-- KATEGORI --}}
+            @if ($categories->where('videos_count', '>', 0)->count())
+                <div class="card card-pad">
+                    <div class="section-title" style="margin-bottom:10px;">
+                        <div>
+                            <h2 style="font-size:18px;margin:0">Kategori tutorial</h2>
+                            <p class="muted">Pilih jenis rubik yang kamu pelajari.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid-4">
+                        @foreach ($categories->where('videos_count', '>', 0) as $cat)
+                            <div class="stat" style="box-shadow:none">
+                                <b>{{ $cat->name }}</b>
+                                <small>{{ $cat->videos_count }} materi</small>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
-                <div class="grid-4">
-                    <div class="stat" style="box-shadow:none"><b>3x3</b><small>15 materi</small></div>
-                    <div class="stat" style="box-shadow:none"><b>4x4</b><small>8 materi</small></div>
-                    <div class="stat" style="box-shadow:none"><b>5x5</b><small>5 materi</small></div>
-                    <div class="stat" style="box-shadow:none"><b>Megaminx</b><small>3 materi</small></div>
-                </div>
-            </div>
+            @endif
+
 
             <div style="height:16px"></div>
 
-            <div id="materi" data-panel="basic">
+            {{-- BEGINNER --}}
+            <div data-panel="beginner">
                 <div class="section-title">
                     <div>
-                        <h2>Materi Basic</h2>
+                        <h2>Materi Beginner</h2>
                         <p class="muted">Fondasi untuk pemula.</p>
                     </div>
                 </div>
+
                 <div class="grid-3">
-                    @foreach ($tutorials['beginner'] as $t)
+                    @forelse ($videos['beginner'] ?? [] as $video)
                         <article class="card prod">
-                            <div class="prod-img" style="aspect-ratio: 16/10;">
+                            <div class="prod-img" style="aspect-ratio:16/10;">
                                 <span class="badge ok">Beginner</span>
-                                <div style="width:82%;max-width:260px;">
-                                    <div class="cube" style="border-radius:18px;border-width:6px"></div>
-                                </div>
+                                <img src="{{ $video->youtube_thumbnail }}" alt="{{ $video->title }}"
+                                    style="width:100%;height:100%;object-fit:cover;border-radius:18px;">
                             </div>
                             <div class="prod-body">
-                                <p class="prod-name">{{ $t['title'] }}</p>
-                                <p class="muted" style="margin:0 0 8px;line-height:1.6">
-                                    ⏱ {{ $t['duration'] }} • 👁 {{ $t['views'] }} • <span class="stars">★
-                                        {{ $t['stars'] }}.0</span>
+                                <p class="prod-name">{{ $video->title }}</p>
+                                <p class="muted" style="margin:0 0 10px;line-height:1.6">
+                                    {{ Str::limit($video->description, 120) }}
                                 </p>
                                 <div style="display:flex;gap:10px;">
-                                    <button class="btn btn-primary" type="button" style="flex:1">▶ Mulai</button>
-                                    <button class="btn btn-secondary" type="button" style="flex:1">Simpan</button>
+                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener" class="btn btn-primary"
+                                        style="flex:1">
+                                        <i class="fa-solid fa-circle-play"></i> Mulai
+                                    </a>
+                                    <button class="btn btn-secondary" style="flex:1">Simpan</button>
                                 </div>
                             </div>
                         </article>
-                    @endforeach
+                    @empty
+                        <p class="muted">Belum ada materi beginner.</p>
+                    @endforelse
                 </div>
             </div>
 
+            {{-- INTERMEDIATE --}}
             <div data-panel="intermediate" style="display:none">
                 <div class="section-title">
                     <div>
@@ -129,31 +114,35 @@
                         <p class="muted">Naik level untuk efisiensi dan kecepatan.</p>
                     </div>
                 </div>
+
                 <div class="grid-3">
-                    @foreach ($tutorials['intermediate'] as $t)
+                    @forelse ($videos['intermediate'] ?? [] as $video)
                         <article class="card prod">
-                            <div class="prod-img" style="aspect-ratio: 16/10;">
+                            <div class="prod-img" style="aspect-ratio:16/10;">
                                 <span class="badge warn">Intermediate</span>
-                                <div style="width:82%;max-width:260px;">
-                                    <div class="cube" style="border-radius:18px;border-width:6px"></div>
-                                </div>
+                                <img src="{{ $video->youtube_thumbnail }}"
+                                    style="width:100%;height:100%;object-fit:cover;border-radius:18px;">
                             </div>
                             <div class="prod-body">
-                                <p class="prod-name">{{ $t['title'] }}</p>
-                                <p class="muted" style="margin:0 0 8px;line-height:1.6">
-                                    ⏱ {{ $t['duration'] }} • 👁 {{ $t['views'] }} • <span class="stars">★
-                                        {{ $t['stars'] }}.0</span>
+                                <p class="prod-name">{{ $video->title }}</p>
+                                <p class="muted" style="margin:0 0 10px;line-height:1.6">
+                                    {{ Str::limit($video->description, 120) }}
                                 </p>
                                 <div style="display:flex;gap:10px;">
-                                    <button class="btn btn-primary" type="button" style="flex:1">▶ Mulai</button>
-                                    <button class="btn btn-secondary" type="button" style="flex:1">Simpan</button>
+                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener" class="btn btn-primary"
+                                        style="flex:1"><i class="fa-solid fa-circle-play"></i>
+                                        Mulai</a>
+                                    <button class="btn btn-secondary" style="flex:1">Simpan</button>
                                 </div>
                             </div>
                         </article>
-                    @endforeach
+                    @empty
+                        <p class="muted">Belum ada materi intermediate.</p>
+                    @endforelse
                 </div>
             </div>
 
+            {{-- ADVANCED --}}
             <div data-panel="advanced" style="display:none">
                 <div class="section-title">
                     <div>
@@ -161,32 +150,36 @@
                         <p class="muted">Strategi lengkap & drills.</p>
                     </div>
                 </div>
+
                 <div class="grid-3">
-                    @foreach ($tutorials['advanced'] as $t)
+                    @forelse ($videos['advanced'] ?? [] as $video)
                         <article class="card prod">
-                            <div class="prod-img" style="aspect-ratio: 16/10;">
+                            <div class="prod-img" style="aspect-ratio:16/10;">
                                 <span class="badge hot">Advanced</span>
-                                <div style="width:82%;max-width:260px;">
-                                    <div class="cube" style="border-radius:18px;border-width:6px"></div>
-                                </div>
+                                <img src="{{ $video->youtube_thumbnail }}"
+                                    style="width:100%;height:100%;object-fit:cover;border-radius:18px;">
                             </div>
                             <div class="prod-body">
-                                <p class="prod-name">{{ $t['title'] }}</p>
-                                <p class="muted" style="margin:0 0 8px;line-height:1.6">
-                                    ⏱ {{ $t['duration'] }} • 👁 {{ $t['views'] }} • <span class="stars">★
-                                        {{ $t['stars'] }}.0</span>
+                                <p class="prod-name">{{ $video->title }}</p>
+                                <p class="muted" style="margin:0 0 10px;line-height:1.6">
+                                    {{ Str::limit($video->description, 120) }}
                                 </p>
                                 <div style="display:flex;gap:10px;">
-                                    <button class="btn btn-primary" type="button" style="flex:1">▶ Mulai</button>
-                                    <button class="btn btn-secondary" type="button" style="flex:1">Simpan</button>
+                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener" class="btn btn-primary"
+                                        style="flex:1"><i class="fa-solid fa-circle-play"></i>
+                                        Mulai</a>
+                                    <button class="btn btn-secondary" style="flex:1">Simpan</button>
                                 </div>
                             </div>
                         </article>
-                    @endforeach
+                    @empty
+                        <p class="muted">Belum ada materi advanced.</p>
+                    @endforelse
                 </div>
             </div>
 
             <div style="height:18px"></div>
         </div>
     </section>
+
 @endsection

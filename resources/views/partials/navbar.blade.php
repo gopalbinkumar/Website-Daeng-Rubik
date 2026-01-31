@@ -69,6 +69,8 @@
     .dropdown-danger:hover {
         background: rgba(220, 38, 38, .08);
     }
+ 
+    
 </style>
 
 <header class="topbar">
@@ -93,14 +95,13 @@
             </nav>
 
             <div class="nav-actions">
-                <a href="{{ route('cart') }}" class="icon-btn cart-badge" id="cartButton" data-count="0"
-                    aria-label="Keranjang">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 6h15l-1.5 9h-12z" />
-                        <circle cx="9" cy="19" r="1.5" />
-                        <circle cx="18" cy="19" r="1.5" />
-                    </svg>
+                <a href="{{ route('cart') }}" class="icon-btn cart-badge" aria-label="Keranjang">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    @if ($cartItemCount > 0)
+                        <span class="cart-count">{{ $cartItemCount }}</span>
+                    @endif
                 </a>
+
 
                 <button class="icon-btn" type="button" aria-label="Cari">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -111,10 +112,7 @@
 
                 <div class="user-dropdown">
                     <button class="icon-btn" id="userDropdownBtn" aria-label="User menu">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="8" r="4" />
-                            <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
-                        </svg>
+                        <i class="fa-solid fa-user"></i>
                     </button>
 
                     <div class="dropdown-menu" id="userDropdownMenu">

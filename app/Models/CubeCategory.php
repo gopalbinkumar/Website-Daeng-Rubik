@@ -13,4 +13,10 @@ class CubeCategory extends Model
     {
         return $this->hasMany(Product::class, 'cube_category_id');
     }
+
+    public function learningMaterials()
+    {
+        return $this->hasMany(LearningMaterial::class, 'category_id');
+    }
+
 }

@@ -12,137 +12,178 @@
     </div>
 
     <div class="table-wrapper">
-        <div class="table-toolbar">
-            <input type="text" class="search-input" placeholder="🔍 Search event...">
-            <select class="filter-select">
-                <option>Status: Semua</option>
-                <option>Upcoming</option>
-                <option>Ongoing</option>
-                <option>Finished</option>
-            </select>
-            <select class="sort-select">
-                <option>Sort: Terbaru</option>
-                <option>Terdekat</option>
-                <option>Popular</option>
-            </select>
-        </div>
+        <form method="GET" action="{{ route('admin.events.index') }}">
+            <div class="table-toolbar">
+                <input type="text" name="search" class="search-input" placeholder="🔍 Search event..."
+                    value="{{ request('search') }}">
 
-        <table class="table">
-            <thead>
+                <select name="status" class="filter-select" onchange="this.form.submit()">
+                    <option value="">Status: Semua</option>
+                    <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>
+                        Upcoming
+                    </option>
+                    <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>
+                        Ongoing
+                    </option>
+                    <option value="finished" {{ request('status') == 'finished' ? 'selected' : '' }}>
+                        Finished
+                    </option>
+                </select>
+
+                <select name="sort" class="sort-select" onchange="this.form.submit()">
+                    <option value="">Sort: Terbaru</option>
+                    <option value="nearest" {{ request('sort') == 'nearest' ? 'selected' : '' }}>
+                        Terdekat
+                    </option>
+                    <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>
+                        Terlama
+                    </option>
+                </select>
+
+        </form>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Judul Event</th>
+                <th>Kategori Event</th>
+                <th>Tanggal</th>
+                <th>Lokasi</th>
+                <th>Status</th>
+                <th style="width: 120px;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($events as $event)
                 <tr>
-                    <th>Judul Event</th>
-                    <th>Kategori Event</th>
-                    <th>Tanggal</th>
-                    <th>Lokasi</th>
-                    <th>Status</th>
-                    <th style="width: 120px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($events as $event)
-                    <tr>
-                        {{-- Judul --}}
-                        <td>
-                            <strong>{{ $event->title }}</strong>
-                        </td>
+                    {{-- Judul --}}
+                    <td>
+                        <strong>{{ $event->title }}</strong>
+                    </td>
 
-                        {{-- Kategori Event --}}
-                        <td>
-                            @if ($event->category === 'kompetisi')
-                                Kompetisi
-                            @elseif ($event->category === 'gathering')
-                                Gathering
-                            @else
-                                {{ $event->custom_category ?? 'Event Lainnya' }}
-                            @endif
-                        </td>
+                    {{-- Kategori Event --}}
+                    <td>
+                        @if ($event->category === 'kompetisi')
+                            Kompetisi
+                        @elseif ($event->category === 'gathering')
+                            Gathering
+                        @else
+                            {{ $event->custom_category ?? 'Event Lainnya' }}
+                        @endif
+                    </td>
 
-                        {{-- Tanggal --}}
-                        <td>
-                            {{ $event->start_datetime->format('d M Y') }}<br>
-                            <small style="color: var(--admin-text-muted);">
-                                {{ $event->start_datetime->format('H:i') }} WIB
-                            </small>
-                        </td>
+                    {{-- Tanggal --}}
+                    <td>
+                        {{ $event->start_datetime->format('d M Y') }}<br>
+                        <small style="color: var(--admin-text-muted);">
+                            {{ $event->start_datetime->format('H:i') }} WIB
+                        </small>
+                    </td>
 
-                        {{-- Lokasi --}}
-                        <td>
-                            {{ $event->location }}
-                        </td>
+                    {{-- Lokasi --}}
+                    <td>
+                        {{ $event->location }}
+                    </td>
 
-                        {{-- Status --}}
-                        <td>
-                            @php
-                                $badgeClass = match ($event->status) {
-                                    'upcoming' => 'badge-warning',
-                                    'ongoing' => 'badge-success',
-                                    'finished' => 'badge-secondary',
-                                    default => 'badge-warning',
-                                };
-                            @endphp
+                    {{-- Status --}}
+                    <td>
+                        @php
+                            $badgeClass = match ($event->status) {
+                                'upcoming' => 'badge-warning',
+                                'ongoing' => 'badge-success',
+                                'finished' => 'badge-secondary',
+                                default => 'badge-warning',
+                            };
+                        @endphp
 
-                            <span class="badge {{ $badgeClass }}">
-                                {{ ucfirst($event->status) }}
-                            </span>
-                        </td>
+                        <span class="badge {{ $badgeClass }}">
+                            {{ ucfirst($event->status) }}
+                        </span>
+                    </td>
 
-                        {{-- Aksi --}}
-                        <td>
-                            <div class="table-actions">
-                                <button class="btn btn-icon btn-secondary" onclick="openEditEvent(this)"
-                                    data-id="{{ $event->id }}" data-title="{{ $event->title }}"
-                                    data-category="{{ $event->category }}"
-                                    data-custom-category="{{ $event->custom_category }}"
-                                    data-description="{{ $event->description }}"
-                                    data-start-date="{{ $event->start_datetime->format('Y-m-d') }}"
-                                    data-start-time="{{ $event->start_datetime->format('H:i') }}"
-                                    data-end-date="{{ $event->end_datetime->format('Y-m-d') }}"
-                                    data-end-time="{{ $event->end_datetime->format('H:i') }}"
-                                    data-location="{{ $event->location }}" data-ticket-price="{{ $event->ticket_price }}"
-                                    data-max-participants="{{ $event->max_participants }}"
-                                    data-total-prize="{{ $event->total_prize }}" data-status="{{ $event->status }}"
-                                    data-cover="{{ $event->cover_image ? asset('storage/'.$event->cover_image) : '' }}"
+                    {{-- Aksi --}}
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-icon btn-secondary" onclick="openEditEvent(this)"
+                                data-id="{{ $event->id }}" data-title="{{ $event->title }}"
+                                data-category="{{ $event->category }}"
+                                data-custom-category="{{ $event->custom_category }}"
+                                data-description="{{ $event->description }}"
+                                data-start-date="{{ $event->start_datetime->format('Y-m-d') }}"
+                                data-start-time="{{ $event->start_datetime->format('H:i') }}"
+                                data-end-date="{{ $event->end_datetime->format('Y-m-d') }}"
+                                data-end-time="{{ $event->end_datetime->format('H:i') }}"
+                                data-location="{{ $event->location }}" data-ticket-price="{{ $event->ticket_price }}"
+                                data-max-participants="{{ $event->max_participants }}"
+                                data-total-prize="{{ $event->total_prize }}" data-status="{{ $event->status }}"
+                                data-cover="{{ $event->cover_image ? asset('storage/' . $event->cover_image) : '' }}"
+                                {{-- ⬇️ INI PENTING --}} data-competition-categories='@json(
+                                    $event->competitionCategories->map(fn($c) => [
+                                            'id' => $c->id,
+                                            'name' => $c->name,
+                                        ]))'>
+                                <i class="fa-solid fa-edit"></i>
+                            </button>
 
-                                    {{-- ⬇️ INI PENTING --}} data-competition-categories='@json(
-                                        $event->competitionCategories->map(fn($c) => [
-                                                'id' => $c->id,
-                                                'name' => $c->name,
-                                            ]))'>
-                                    <i class="fa-solid fa-edit"></i>
+                            <form method="POST" action="{{ route('admin.events.destroy', $event->id) }}"
+                                style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-icon btn-danger"
+                                    onclick="return confirm('Hapus event {{ $event->title }}?')" title="Hapus">
+                                    <i class="fa-solid fa-trash"></i>
                                 </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" style="text-align:center; color:var(--admin-text-muted);">
+                        Belum ada event
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
 
-                                <form method="POST" action="{{ route('admin.events.destroy', $event->id) }}"
-                                    style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-icon btn-danger"
-                                        onclick="return confirm('Hapus event {{ $event->title }}?')" title="Hapus">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" style="text-align:center; color:var(--admin-text-muted);">
-                            Belum ada event
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        <div class="pagination">
-            <div class="pagination-info">Menampilkan 1-10 dari 50 event</div>
-            <div class="pagination-controls">
-                <button class="page-btn">‹</button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">›</button>
-            </div>
+    <div class="pagination">
+        <div class="pagination-info">
+            Menampilkan
+            {{ $events->firstItem() }}–{{ $events->lastItem() }}
+            dari {{ $events->total() }} event
         </div>
+
+        <div class="pagination-controls">
+            {{-- PREV --}}
+            @if ($events->onFirstPage())
+                <button class="page-btn" disabled>‹</button>
+            @else
+                <a href="{{ $events->previousPageUrl() }}">
+                    <button class="page-btn">‹</button>
+                </a>
+            @endif
+
+            {{-- PAGE NUMBERS --}}
+            @for ($i = 1; $i <= $events->lastPage(); $i++)
+                <a href="{{ $events->url($i) }}">
+                    <button class="page-btn {{ $events->currentPage() == $i ? 'active' : '' }}">
+                        {{ $i }}
+                    </button>
+                </a>
+            @endfor
+
+            {{-- NEXT --}}
+            @if ($events->hasMorePages())
+                <a href="{{ $events->nextPageUrl() }}">
+                    <button class="page-btn">›</button>
+                </a>
+            @else
+                <button class="page-btn" disabled>›</button>
+            @endif
+        </div>
+    </div>
+
     </div>
 
     <!-- Modal Add Event -->
@@ -424,4 +465,31 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.table-toolbar form');
+            const searchInput = form.querySelector('input[name="search"]');
+            const selects = form.querySelectorAll('select');
+
+            let typingTimer;
+            const debounceTime = 500; // ms
+
+            // 🔍 Auto submit saat mengetik (debounce)
+            searchInput.addEventListener('input', function() {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    form.submit();
+                }, debounceTime);
+            });
+
+            // 🎯 Auto submit saat filter / sort berubah
+            selects.forEach(select => {
+                select.addEventListener('change', function() {
+                    form.submit();
+                });
+            });
+        });
+    </script>
+
 @endsection

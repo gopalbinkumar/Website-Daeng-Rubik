@@ -5,6 +5,11 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\LearningMaterialController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\TransactionController;
+
 
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
@@ -12,18 +17,34 @@ Route::get('/', [HomeController::class, 'home'])->name('home');
 Route::get('/produk', [ProductController::class, 'userIndex'])
     ->name('products');
 
-//halaman pembelajaran
-Route::prefix('belajar')->name('learn.')->group(function () {
-    Route::view('/', 'pages.learn.index')->name('index');
-    Route::view('/video', 'pages.learn.video')->name('video');
-    Route::view('/modul', 'pages.learn.module')->name('module');
-});
+Route::get('/keranjang', [CartController::class, 'index'])->name('cart');
+Route::post('/keranjang/add', [CartController::class, 'add'])->name('cart.add');
+Route::delete('/keranjang/item/{item}', [CartController::class, 'remove'])->name('cart.remove');
+Route::patch('/keranjang/item/{item}/qty', [CartController::class, 'updateQuantity'])
+    ->name('cart.updateQty');
 
+
+//halaman pembelajaran
+Route::prefix('belajar')
+    ->name('learn.')
+    ->controller(LearningMaterialController::class)
+    ->group(function () {
+
+        Route::get('/', 'indexUser')->name('index');
+        Route::get('/video', 'videos')->name('video');
+        Route::get('/modul', 'modules')->name('module');
+
+    });
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+    ->name('checkout')
+    ->middleware('auth');
+Route::post('/checkout', [TransactionController::class, 'store'])
+    ->name('checkout.store')
+    ->middleware('auth'); // checkout wajib login
 
 Route::view('/event', 'pages.events')->name('events');
 Route::view('/event/daftar', 'pages.event-register')->name('events.register');
-Route::view('/checkout', 'pages.checkout')->name('checkout');
-Route::view('/keranjang', 'pages.cart')->name('cart');
 Route::view('/tentang', 'pages.about')->name('about');
 Route::view('/kontak', 'pages.contact')->name('contact');
 
@@ -70,7 +91,18 @@ Route::middleware(['auth', 'admin'])
 
             });
 
-        Route::view('/materi', 'admin.learn.index')->name('learn.index');
+        Route::prefix('learn')
+            ->controller(LearningMaterialController::class)
+            ->group(function () {
+
+                Route::get('/', 'index')->name('learn.index');
+                Route::post('/', 'store')->name('learn.store');
+                Route::put('/{learningMaterial}', 'update')->name('learn.update');
+                Route::delete('/{learningMaterial}', 'destroy')->name('learn.destroy');
+
+            });
+
+        // Route::view('/materi', 'admin.learn.index')->name('learn.index');
         Route::view('/admin', 'admin.admins.index')->name('admins.index');
         Route::view('/pengaturan', 'admin.settings')->name('settings');
         Route::view('/laporan/penjualan', 'admin.reports.sales')->name('reports.sales');

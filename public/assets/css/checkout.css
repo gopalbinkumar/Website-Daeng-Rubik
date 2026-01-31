@@ -273,7 +273,7 @@ textarea.form-input{
 }
 
 .btn-primary{
-  background:linear-gradient(90deg,var(--red),var(--blue),var(--yellow));
+  background:var(--red);
   color:#fff;
   box-shadow:0 10px 24px rgba(25,118,210,0.4);
 }

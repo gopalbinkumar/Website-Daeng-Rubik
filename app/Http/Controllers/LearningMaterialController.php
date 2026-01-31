@@ -1,126 +1,201 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\LearningMaterial;
+use App\Models\CubeCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class LearningMaterialController extends Controller
 {
-    /**
-     * List materi pembelajaran (public).
-     * Filter: level, category, search.
-     */
-    public function index(Request $request)
+    /* =====================
+     |  LIST
+     ===================== */
+    public function index()
     {
-        $validated = $request->validate([
-            'level' => ['nullable', 'in:basic,intermediate,advanced'],
-            'category' => ['nullable', 'string', 'max:100'],
-            'search' => ['nullable', 'string', 'max:255'],
-        ]);
+        $materials = LearningMaterial::with('category')
+            ->orderBy('position')
+            ->latest()
+            ->get();
 
-        $query = LearningMaterial::query()->where('is_published', true);
+        $categories = CubeCategory::orderBy('name')->get();
 
-        if (!empty($validated['level'])) {
-            $query->where('level', $validated['level']);
-        }
-
-        if (!empty($validated['category'])) {
-            $query->where('category', $validated['category']);
-        }
-
-        if (!empty($validated['search'])) {
-            $q = $validated['search'];
-            $query->where(function ($sub) use ($q) {
-                $sub->where('title', 'like', '%' . $q . '%')
-                    ->orWhere('description', 'like', '%' . $q . '%');
-            });
-        }
-
-        $materials = $query->orderBy('position')
-            ->orderByDesc('created_at')
-            ->paginate(20);
-
-        return response()->json($materials);
+        return view('admin.learn.index', compact('materials', 'categories'));
     }
 
-    /**
-     * Detail satu materi.
-     */
-    public function show(LearningMaterial $learningMaterial)
+    public function indexUser()
     {
-        return response()->json($learningMaterial);
+        return view('pages.learn.index');
     }
 
-    /**
-     * Tambah materi (admin).
-     */
+
+    public function videos()
+    {
+        // ambil semua video yang publish
+        $videos = LearningMaterial::with('category')
+            ->where('type', 'video')
+            ->where('is_published', 1)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('level'); // beginner / intermediate / advanced
+
+        // kategori + jumlah materi
+        $categories = CubeCategory::withCount([
+            'learningMaterials as videos_count' => function ($q) {
+                $q->where('type', 'video')
+                    ->where('is_published', 1);
+            }
+        ])->get();
+
+        return view('pages.learn.video', compact('videos', 'categories'));
+    }
+
+    public function modules()
+    {
+        // Ambil materi MODUL (PDF) yang publish
+        $modules = LearningMaterial::with('category')
+            ->where('type', 'modul')
+            ->where('is_published', 1)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('level'); // beginner / intermediate / advanced
+
+        // kategori + jumlah materi
+        $categories = CubeCategory::withCount([
+            'learningMaterials as videos_count' => function ($q) {
+                $q->where('type', 'modul')
+                    ->where('is_published', 1);
+            }
+        ])->get();
+
+        return view('pages.learn.module', compact('modules', 'categories'));
+    }
+
+
+
+    /* =====================
+     |  CREATE
+     ===================== */
+    public function create()
+    {
+        $categories = CubeCategory::orderBy('name')->get();
+
+        return view('admin.learn.index', compact('categories'));
+    }
+
+    /* =====================
+     |  STORE
+     ===================== */
     public function store(Request $request)
     {
-        $validated = $this->validatePayload($request);
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'required|in:video,modul',
+            'level' => 'required|in:beginner,intermediate,advanced',
+            'category_id' => 'nullable|exists:cube_categories,id',
+            'video_url' => 'required_if:type,video|nullable|url',
+            'module_file' => 'required_if:type,modul|nullable|file',
+            'is_published' => 'boolean',
+            'position' => 'integer|min:0',
+        ]);
 
-        if (empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['title']);
+        $data = $validated;
+
+        $data['slug'] = Str::slug($request->title);
+
+        // reset field sesuai type
+        $data['video_url'] = $request->type === 'video'
+            ? $request->video_url
+            : null;
+
+        $data['module_path'] = null;
+
+        if ($request->type === 'modul' && $request->hasFile('module_file')) {
+            $data['module_path'] = $request
+                ->file('module_file')
+                ->store('learning-modules', 'public');
         }
 
-        $material = LearningMaterial::create($validated);
+        $data['is_published'] = $request->boolean('is_published', true);
+        $data['position'] = $request->position ?? 0;
 
-        return response()->json($material, 201);
+        LearningMaterial::create($data);
+
+        return redirect()
+            ->route('admin.learn.index')
+            ->with('success', 'Materi berhasil ditambahkan');
+
     }
 
-    /**
-     * Update materi (admin).
-     */
+    /* =====================
+     |  EDIT
+     ===================== */
+    public function edit(LearningMaterial $learningMaterial)
+    {
+        $categories = CubeCategory::orderBy('name')->get();
+
+        return view(
+            'admin.learning-materials.edit',
+            compact('learningMaterial', 'categories')
+        );
+    }
+
+    /* =====================
+     |  UPDATE
+     ===================== */
     public function update(Request $request, LearningMaterial $learningMaterial)
     {
-        $validated = $this->validatePayload($request, $learningMaterial->id);
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'required|in:video,modul',
+            'level' => 'required|in:beginner,intermediate,advanced',
+            'category_id' => 'nullable|exists:cube_categories,id',
+            'video_url' => 'nullable|url',
+            'module_file' => 'nullable|file',
+        ]);
 
-        if (isset($validated['title']) && empty($validated['slug'])) {
-            $validated['slug'] = Str::slug($validated['title']);
+        $data = $validated;
+
+        // update slug jika judul berubah
+        if ($learningMaterial->title !== $request->title) {
+            $data['slug'] = Str::slug($request->title);
         }
 
-        $learningMaterial->update($validated);
+        // reset field sesuai type
+        if ($request->type === 'video') {
+            $data['video_url'] = $request->video_url;
+            $data['module_path'] = null;
+        } else {
+            $data['video_url'] = null;
 
-        return response()->json($learningMaterial);
+            if ($request->hasFile('module_file')) {
+                $data['module_path'] = $request
+                    ->file('module_file')
+                    ->store('learning-modules', 'public');
+            }
+        }
+
+        $learningMaterial->update($data);
+
+        return redirect()
+            ->route('admin.learn.index')
+            ->with('success', 'Materi berhasil diperbarui');
     }
 
-    /**
-     * Hapus materi (admin).
-     */
+    /* =====================
+     |  DELETE
+     ===================== */
     public function destroy(LearningMaterial $learningMaterial)
     {
-        $learningMaterial->delete();
-
-        return response()->json(['message' => 'Deleted']);
-    }
-
-    /**
-     * Validasi payload create/update.
-     */
-    protected function validatePayload(Request $request, ?int $id = null): array
-    {
-        $uniqueSlug = 'unique:learning_materials,slug';
-        if ($id) {
-            $uniqueSlug .= ',' . $id;
+        if ($learningMaterial->module_path) {
+            \Storage::disk('public')->delete($learningMaterial->module_path);
         }
 
-        return $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', $uniqueSlug],
-            'description' => ['nullable', 'string'],
-            'level' => ['required', 'in:basic,intermediate,advanced'],
-            'category' => ['nullable', 'string', 'max:100'],
-            'video_provider' => ['nullable', 'in:youtube,local,other'],
-            'video_url' => ['nullable', 'string', 'max:500'],
-            'video_path' => ['nullable', 'string', 'max:500'],
-            'duration_seconds' => ['nullable', 'integer', 'min:0'],
-            'views_count' => ['nullable', 'integer', 'min:0'],
-            'rating' => ['nullable', 'integer', 'min:0', 'max:5'],
-            'is_published' => ['nullable', 'boolean'],
-            'position' => ['nullable', 'integer', 'min:0'],
-        ]);
+        $learningMaterial->delete();
+
+        return back()->with('success', 'Materi berhasil dihapus');
     }
 }
-
