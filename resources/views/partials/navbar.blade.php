@@ -95,7 +95,7 @@
             </nav>
 
             <div class="nav-actions">
-                <a href="{{ route('cart') }}" class="icon-btn cart-badge" aria-label="Keranjang">
+                <a href="{{ route('cart.index') }}" class="icon-btn cart-badge" aria-label="Keranjang">
                     <i class="fa-solid fa-cart-shopping"></i>
                     @if ($cartItemCount > 0)
                         <span class="cart-count">{{ $cartItemCount }}</span>
@@ -103,12 +103,12 @@
                 </a>
 
 
-                <button class="icon-btn" type="button" aria-label="Cari">
+                {{-- <button class="icon-btn" type="button" aria-label="Cari">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 21l-4.3-4.3" />
                         <circle cx="11" cy="11" r="7" />
                     </svg>
-                </button>
+                </button> --}}
 
                 <div class="user-dropdown">
                     <button class="icon-btn" id="userDropdownBtn" aria-label="User menu">
@@ -126,15 +126,15 @@
                             <div class="dropdown-divider"></div>
 
                             <a href="">
-                                👤 Profil Saya
+                                <i class="fa-regular fa-user-circle"></i> Profil Saya
                             </a>
 
                             <a href="">
-                                🧩 Event Saya
+                                <i class="fa-regular fa-calendar-check"></i> Event Saya
                             </a>
 
-                            <a href="">
-                                💳 Transaksi
+                            <a href="{{ route('transactions') }}">
+                                <i class="fa-solid fa-wallet"></i> Transaksi
                             </a>
 
                             <div class="dropdown-divider"></div>
@@ -142,15 +142,15 @@
                             <form method="POST" action="{{ route('auth.logout') }}">
                                 @csrf
                                 <button type="submit" class="dropdown-danger">
-                                    🚪 Logout
+                                    <i class="fa-solid fa-right-from-bracket"></i> Logout
                                 </button>
                             </form>
                         @else
                             <a href="{{ route('auth.login') }}">
-                                🔑 Login
+                                <i class="fa-solid fa-right-to-bracket"></i> Login
                             </a>
                             <a href="{{ route('auth.register') }}">
-                                📝 Daftar Akun
+                                <i class="fa-solid fa-user-plus"></i> Daftar Akun
                             </a>
                         @endauth
 
@@ -192,9 +192,13 @@
     </nav>
 
     <div class="drawer-footer">
-        <a class="btn btn-primary" href="{{ route('auth.login') }}" style="flex:1;justify-content:center;">Login</a>
-        <a class="btn btn-outline" href="{{ route('auth.register') }}"
-            style="flex:1;justify-content:center;">Daftar</a>
+        @auth
+        <a class="btn btn-outline" href="{{ route('auth.logout') }}"
+            style="flex:1;justify-content:center;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        @else
+        <a class="btn btn-primary" href="{{ route('auth.login') }}" style="flex:1;justify-content:center;">
+            <i class="fa-solid fa-right-to-bracket"></i> Login</a>
+        @endauth
     </div>
 </aside>
 

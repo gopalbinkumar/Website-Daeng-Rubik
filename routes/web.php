@@ -1,34 +1,37 @@
-<?php
-
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\EventController;
-use App\Http\Controllers\LearningMaterialController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\TransactionController;
-
-
-
-Route::get('/', [HomeController::class, 'home'])->name('home');
-
-Route::get('/produk', [ProductController::class, 'userIndex'])
-    ->name('products');
-
-Route::get('/keranjang', [CartController::class, 'index'])->name('cart');
-Route::post('/keranjang/add', [CartController::class, 'add'])->name('cart.add');
-Route::delete('/keranjang/item/{item}', [CartController::class, 'remove'])->name('cart.remove');
-Route::patch('/keranjang/item/{item}/qty', [CartController::class, 'updateQuantity'])
-    ->name('cart.updateQty');
+    <?php
+    use Illuminate\Support\Facades\Route;
+    use App\Http\Controllers\UserController;
+    use App\Http\Controllers\ProductController;
+    use App\Http\Controllers\HomeController;
+    use App\Http\Controllers\EventController;
+    use App\Http\Controllers\LearningMaterialController;
+    use App\Http\Controllers\CartController;
+    use App\Http\Controllers\CheckoutController;
+    use App\Http\Controllers\TransactionController;
+    use App\Http\Controllers\SalesReportController;
 
 
-//halaman pembelajaran
-Route::prefix('belajar')
-    ->name('learn.')
-    ->controller(LearningMaterialController::class)
-    ->group(function () {
+    //landing page
+    Route::get('/', [HomeController::class, 'home'])->name('home');
+
+    Route::get('/produk', [ProductController::class, 'userIndex'])
+        ->name('products');
+
+    //keranjang
+    Route::prefix('keranjang')->name('cart.')->group(function () {
+        Route::get('/', [CartController::class, 'index'])
+            ->name('index');
+        Route::post('/add', [CartController::class, 'add'])
+            ->name('add');
+        Route::delete('/item/{item}', [CartController::class, 'remove'])
+            ->name('remove');
+        Route::patch('/item/{item}/qty', [CartController::class, 'updateQuantity'])
+            ->name('updateQty');
+    });
+
+
+    //halaman pembelajaran
+    Route::prefix('belajar')->name('learn.')->controller(LearningMaterialController::class)->group(function () {
 
         Route::get('/', 'indexUser')->name('index');
         Route::get('/video', 'videos')->name('video');
@@ -37,41 +40,50 @@ Route::prefix('belajar')
     });
 
     Route::get('/checkout', [CheckoutController::class, 'index'])
-    ->name('checkout')
-    ->middleware('auth');
-Route::post('/checkout', [TransactionController::class, 'store'])
-    ->name('checkout.store')
-    ->middleware('auth'); // checkout wajib login
+        ->name('checkout')
+        ->middleware('auth');
+    Route::post('/checkout', [TransactionController::class, 'store'])
+        ->name('checkout.store')
+        ->middleware('auth');
 
-Route::view('/event', 'pages.events')->name('events');
-Route::view('/event/daftar', 'pages.event-register')->name('events.register');
-Route::view('/tentang', 'pages.about')->name('about');
-Route::view('/kontak', 'pages.contact')->name('contact');
+    Route::view('/event', 'pages.events')->name('events');
+    Route::view('/event/daftar', 'pages.event-register')->name('events.register');
+    Route::view('/tentang', 'pages.about')->name('about');
+    Route::view('/kontak', 'pages.contact')->name('contact');
 
-// Auth Routes
-Route::prefix('auth')->name('auth.')->group(function () {
-    Route::get('/login', [UserController::class, 'showLogin'])->name('login');
-    Route::post('/login', [UserController::class, 'login'])->name('login.post');
-    Route::post('/logout', [UserController::class, 'logout'])->name('logout');
-    Route::get('/register', [UserController::class, 'showRegister'])->name('register');
-    Route::post('/register', [UserController::class, 'register'])->name('register.post');
-    Route::view('/lupa-password', 'auth.forgot-password')->name('forgot');
-});
+    Route::view('/transactions', 'pages.transactions')
+    ->name('transactions');
+
+    // Auth Routes
+    Route::prefix('auth')->name('auth.')->group(function () {
+
+        Route::get('/login', [UserController::class, 'showLogin'])->name('login');
+        Route::post('/login', [UserController::class, 'login'])->name('login.post');
+
+        Route::get('/register', [UserController::class, 'showRegister'])->name('register');
+        Route::post('/register', [UserController::class, 'register'])->name('register.post');
+
+        Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+
+        Route::view('/lupa-password', 'auth.forgot-password')->name('forgot');
+    });
 
 
-// =================
-//   ADMIN ROUTES
-// =================
-Route::middleware(['auth', 'admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
 
-        Route::view('/', 'admin.dashboard')->name('dashboard');
+    // =================
+    //   ADMIN ROUTES
+    // =================
+    Route::middleware(['auth', 'admin'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
 
-        Route::prefix('produk')
-            ->controller(ProductController::class)
-            ->group(function () {
+            Route::view('/', 'admin.dashboard')->name('dashboard');
+
+            //produk
+            Route::prefix('produk')
+                ->controller(ProductController::class)
+                ->group(function () {
 
                 Route::get('/', 'adminIndex')->name('products.index');
                 Route::post('/', 'store')->name('products.store');
@@ -80,9 +92,10 @@ Route::middleware(['auth', 'admin'])
 
             });
 
-        Route::prefix('event')
-            ->controller(EventController::class)
-            ->group(function () {
+            //event
+            Route::prefix('event')
+                ->controller(EventController::class)
+                ->group(function () {
 
                 Route::get('/', 'index')->name('events.index');
                 Route::post('/', 'store')->name('events.store');
@@ -91,9 +104,10 @@ Route::middleware(['auth', 'admin'])
 
             });
 
-        Route::prefix('learn')
-            ->controller(LearningMaterialController::class)
-            ->group(function () {
+            //pembelajaran
+            Route::prefix('learn')
+                ->controller(LearningMaterialController::class)
+                ->group(function () {
 
                 Route::get('/', 'index')->name('learn.index');
                 Route::post('/', 'store')->name('learn.store');
@@ -102,14 +116,17 @@ Route::middleware(['auth', 'admin'])
 
             });
 
-        // Route::view('/materi', 'admin.learn.index')->name('learn.index');
-        Route::view('/admin', 'admin.admins.index')->name('admins.index');
-        Route::view('/pengaturan', 'admin.settings')->name('settings');
-        Route::view('/laporan/penjualan', 'admin.reports.sales')->name('reports.sales');
+            Route::view('/admin', 'admin.admins.index')->name('admins.index');
+            Route::view('/pengaturan', 'admin.settings')->name('settings');
 
-        Route::post('/logout', [UserController::class, 'logout'])
-            ->name('logout');
+            //penjualan
+            Route::get('/laporan/penjualan', [SalesReportController::class, 'index'])
+                ->name('reports.sales');
+            Route::post('/transactions/{transaction}/verify', [SalesReportController::class, 'verify'])
+                ->name('transactions.verify');
+            ;
 
 
-    });
-
+            Route::post('/logout', [UserController::class, 'logout'])
+                ->name('logout');
+        });

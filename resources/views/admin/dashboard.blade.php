@@ -58,6 +58,61 @@
                     </div>
                 </div>
             </div>
+            <div class="card-header">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Aktivitas Terkini</h3>
+            </div>
+            <div class="card-body">
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fa-solid fa-box"></i></div>
+                    <div class="activity-content">
+                        <div class="activity-text">Produk baru ditambahkan</div>
+                        <div class="activity-time">2 jam yang lalu</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fa-solid fa-calendar"></i></div>
+                    <div class="activity-content">
+                        <div class="activity-text">Event baru dibuat</div>
+                        <div class="activity-time">5 jam yang lalu</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fa-solid fa-book"></i></div>
+                    <div class="activity-content">
+                        <div class="activity-text">Materi baru diupload</div>
+                        <div class="activity-time">1 hari yang lalu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Aktivitas Terkini</h3>
+            </div>
+            <div class="card-body">
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fa-solid fa-box"></i></div>
+                    <div class="activity-content">
+                        <div class="activity-text">Produk baru ditambahkan</div>
+                        <div class="activity-time">2 jam yang lalu</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fa-solid fa-calendar"></i></div>
+                    <div class="activity-content">
+                        <div class="activity-text">Event baru dibuat</div>
+                        <div class="activity-time">5 jam yang lalu</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon"><i class="fa-solid fa-book"></i></div>
+                    <div class="activity-content">
+                        <div class="activity-text">Materi baru diupload</div>
+                        <div class="activity-time">1 hari yang lalu</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="card">

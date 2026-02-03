@@ -299,6 +299,13 @@ class ProductController extends Controller
         }
 
         /* =========================
+   SEARCH PRODUK (NAMA)
+========================= */
+if ($request->filled('search')) {
+    $query->where('name', 'LIKE', '%' . $request->search . '%');
+}
+
+        /* =========================
            PAGINATION
         ========================= */
         $products = $query

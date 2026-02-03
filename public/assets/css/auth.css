@@ -437,6 +437,10 @@
   background: rgba(17,24,39,0.15);
 }
 
+input[type="checkbox"] {
+    accent-color: var(--red);
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .auth-page {

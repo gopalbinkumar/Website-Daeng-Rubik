@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,600,700,800,900&display=swap" rel="stylesheet" />
 
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.1/css/all.css">
+
     <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
 </head>
@@ -73,7 +75,7 @@
                         <label class="form-label">Nama Lengkap <span class="required">*</span></label>
                         <div class="input-wrapper">
                             <input type="text" name="name" class="form-input" placeholder="Masukkan nama lengkap Anda" required>
-                            <span class="input-icon">👤</span>
+                            <span class="input-icon"><i class="fa-regular fa-user"></i></span>
                         </div>
                     </div>
 
@@ -81,7 +83,7 @@
                         <label class="form-label">Email <span class="required">*</span></label>
                         <div class="input-wrapper">
                             <input type="email" name="email" class="form-input" placeholder="email@example.com" required>
-                            <span class="input-icon">✉️</span>
+                            <span class="input-icon"><i class="fa-regular fa-envelope"></i></span>
                         </div>
                     </div>
 
@@ -89,7 +91,7 @@
                         <label class="form-label">Nomor WhatsApp <span class="required">*</span></label>
                         <div class="input-wrapper">
                             <input type="tel" name="whatsapp" class="form-input" placeholder="+62 812-3456-7890" required>
-                            <span class="input-icon">💬</span>
+                            <span class="input-icon"><i class="fa-brands fa-whatsapp"></i></span>
                         </div>
                         <small class="form-helper">Untuk konfirmasi pesanan & event</small>
                     </div>
@@ -99,7 +101,7 @@
                         <div class="input-wrapper">
                             <input type="password" name="password" id="password" class="form-input" placeholder="Minimal 8 karakter"
                                 required>
-                            <span class="input-icon">🔒</span>
+                            <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
                             <button type="button" class="toggle-password">👁</button>
                         </div>
                         <div class="password-strength">
@@ -115,7 +117,7 @@
                         <div class="input-wrapper">
                             <input type="password" name="password_confirmation" id="confirmPassword" class="form-input" placeholder="Ulangi password"
                                 required>
-                            <span class="input-icon">🔒</span>
+                            <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
                             <button type="button" class="toggle-password">👁</button>
                         </div>
                         <small class="form-error" style="display: none;">

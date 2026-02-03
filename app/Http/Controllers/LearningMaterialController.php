@@ -12,17 +12,27 @@ class LearningMaterialController extends Controller
     /* =====================
      |  LIST
      ===================== */
-    public function index()
+    public function index(Request $request)
     {
         $materials = LearningMaterial::with('category')
-            ->orderBy('position')
-            ->latest()
-            ->get();
+            ->when($request->search, function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%');
+            })
+            ->when($request->level, function ($q) use ($request) {
+                $q->where('level', $request->level);
+            })
+            ->when($request->category, function ($q) use ($request) {
+                $q->where('category_id', $request->category);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
 
         $categories = CubeCategory::orderBy('name')->get();
 
         return view('admin.learn.index', compact('materials', 'categories'));
     }
+
 
     public function indexUser()
     {

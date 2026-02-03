@@ -20,92 +20,34 @@
     <section class="section" style="padding-top:22px;">
         <div class="container">
             <div class="two-col">
-                <aside class="card filter desktop-only" aria-label="Filter produk">
-                    <form method="GET" action="{{ route('products') }}">
-                        <h3><i class="fa-solid fa-magnifying-glass"></i> Filter</h3>
-                        <div class="divider"></div>
-
-                        {{-- KATEGORI --}}
-                        <h3>Kategori</h3>
-
-                        <div class="category-grid">
-                            @foreach ($cubeCategories as $cat)
-                                <label class="field">
-                                    <input type="checkbox" name="category[]" value="{{ $cat->id }}"
-                                        {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
-                                    {{ $cat->name }}
-                                </label>
-                            @endforeach
-                        </div>
-
-                        <div class="divider"></div>
-
-                        {{-- HARGA --}}
-                        <h3>Harga</h3>
-                        <div class="range">
-                            <span id="priceMinLabel">Rp.0</span>
-                            <span id="priceMaxLabel">Rp.2000000</span>
-                        </div>
-
-                        <input type="hidden" name="min_price" id="minPriceInput" value="0">
-                        <input type="hidden" name="max_price" id="maxPriceInput"
-                            value="{{ request('max_price', 2000000) }}">
-
-
-                        <input type="range" id="priceRange" min="0" max="2000000" step="5000"
-                            value="{{ request('max_price', 2000000) }}" style="width:100%;margin-top:8px">
-
-                        <div class="divider"></div>
-
-
-                        {{-- BRAND --}}
-                        <h3>Brand</h3>
-                        @foreach (['MoYu', 'GAN', 'QiYi', 'YJ'] as $brand)
-                            <label class="field">
-                                <input type="checkbox" name="brand[]" value="{{ $brand }}"
-                                    {{ in_array($brand, request('brand', [])) ? 'checked' : '' }}>
-                                {{ $brand }}
-                            </label>
-                        @endforeach
-
-                        <div class="divider"></div>
-
-                        <button class="btn btn-primary" type="submit" style="width:100%">
-                            Terapkan Filter
-                        </button>
-
-                        <a href="{{ route('products') }}" class="btn btn-outline" style="width:100%;margin-top:8px">
-                            Reset Filter
-                        </a>
-                    </form>
-                </aside>
-
-
                 <div>
-                    <div class="sortbar">
-                        <div class="muted" style="font-weight:700;">
+                    <form method="GET">
+                        <div class="sortbar">
+                            {{-- <div class="muted" style="font-weight:700;">
                             Menampilkan <b style="color:var(--text)">{{ $products->count() }}</b> dari <b
                                 style="color:var(--text)">{{ $products->total() }}</b> produk
+                        </div> --}}
+                            <input type="text" name="search" class="search-input" placeholder="Cari produk"
+                                value="{{ request('search') }}">
+                            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                                <button id="openFilter" class="btn btn-secondary mobile-filter-btn"
+                                    type="button">Filter</button>
+                                <select class="select" onchange="location=this.value">
+                                    <option value="{{ request()->fullUrlWithQuery(['sort' => null]) }}">
+                                        Terbaru
+                                    </option>
+                                    <option value="{{ request()->fullUrlWithQuery(['sort' => 'price_low']) }}"
+                                        {{ request('sort') === 'price_low' ? 'selected' : '' }}>
+                                        Harga Terendah
+                                    </option>
+                                    <option value="{{ request()->fullUrlWithQuery(['sort' => 'price_high']) }}"
+                                        {{ request('sort') === 'price_high' ? 'selected' : '' }}>
+                                        Harga Tertinggi
+                                    </option>
+                                </select>
+                            </div>
                         </div>
-                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                            <button id="openFilter" class="btn btn-secondary mobile-filter-btn"
-                                type="button">Filter</button>
-                            <select class="select" onchange="location=this.value">
-                                <option value="{{ request()->fullUrlWithQuery(['sort' => null]) }}">
-                                    Terbaru
-                                </option>
-                                <option value="{{ request()->fullUrlWithQuery(['sort' => 'price_low']) }}"
-                                    {{ request('sort') === 'price_low' ? 'selected' : '' }}>
-                                    Harga Terendah
-                                </option>
-                                <option value="{{ request()->fullUrlWithQuery(['sort' => 'price_high']) }}"
-                                    {{ request('sort') === 'price_high' ? 'selected' : '' }}>
-                                    Harga Tertinggi
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
+                    </form>
                     <div class="grid-3">
                         @foreach ($products as $p)
                             <article class="card prod">
@@ -181,6 +123,67 @@
 
 
                 </div>
+
+                <aside class="card filter desktop-only" aria-label="Filter produk">
+                    <form method="GET" action="{{ route('products') }}">
+                        <h3><i class="fa-solid fa-filter"></i>
+                            Filter</h3>
+                        <div class="divider"></div>
+
+                        {{-- KATEGORI --}}
+                        <h3>Kategori</h3>
+
+                        <div class="category-grid">
+                            @foreach ($cubeCategories as $cat)
+                                <label class="field">
+                                    <input type="checkbox" name="category[]" value="{{ $cat->id }}"
+                                        {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
+                                    {{ $cat->name }}
+                                </label>
+                            @endforeach
+                        </div>
+
+                        <div class="divider"></div>
+
+                        {{-- HARGA --}}
+                        <h3>Harga</h3>
+                        <div class="range">
+                            <span id="priceMinLabel">Rp.0</span>
+                            <span id="priceMaxLabel">Rp.2000000</span>
+                        </div>
+
+                        <input type="hidden" name="min_price" id="minPriceInput" value="0">
+                        <input type="hidden" name="max_price" id="maxPriceInput"
+                            value="{{ request('max_price', 2000000) }}">
+
+
+                        <input type="range" id="priceRange" min="0" max="2000000" step="5000"
+                            value="{{ request('max_price', 2000000) }}" style="width:100%;margin-top:8px">
+
+                        <div class="divider"></div>
+
+
+                        {{-- BRAND --}}
+                        <h3>Brand</h3>
+                        @foreach (['MoYu', 'GAN', 'QiYi', 'YJ'] as $brand)
+                            <label class="field">
+                                <input type="checkbox" name="brand[]" value="{{ $brand }}"
+                                    {{ in_array($brand, request('brand', [])) ? 'checked' : '' }}>
+                                {{ $brand }}
+                            </label>
+                        @endforeach
+
+                        <div class="divider"></div>
+
+                        <button class="btn btn-primary" type="submit" style="width:100%">
+                            Terapkan Filter
+                        </button>
+
+                        <a href="{{ route('products') }}" class="btn btn-outline" style="width:100%;margin-top:8px">
+                            Reset Filter
+                        </a>
+                    </form>
+                </aside>
             </div>
     </section>
 
@@ -194,7 +197,7 @@
         <div class="card" style="padding:14px">
 
             <form method="GET" action="{{ route('products') }}">
-
+                <input type="hidden" name="search" value="{{ request('search') }}">
                 {{-- ================= KATEGORI ================= --}}
                 <h3>Kategori</h3>
                 @foreach ($cubeCategories as $cat)
@@ -259,8 +262,8 @@
 
     <script>
         /* =========================
-                       GLOBAL STATE
-                    ========================= */
+                                       GLOBAL STATE
+                                    ========================= */
         let activeProduct = null;
         let currentImageIndex = 0;
 
@@ -344,20 +347,20 @@
                         style="width:100%;height:100%;object-fit:cover;">
 
                     ${activeProduct.images.length > 1 ? `
-                                            <button onclick="prevImage()"
-                                                style="position:absolute;left:10px;top:50%;
-                                                transform:translateY(-50%);
-                                                width:36px;height:36px;border-radius:50%;
-                                                border:none;background:rgba(0,0,0,.45);
-                                                color:#fff;font-size:22px;cursor:pointer;">‹</button>
+                                                            <button onclick="prevImage()"
+                                                                style="position:absolute;left:10px;top:50%;
+                                                                transform:translateY(-50%);
+                                                                width:36px;height:36px;border-radius:50%;
+                                                                border:none;background:rgba(0,0,0,.45);
+                                                                color:#fff;font-size:22px;cursor:pointer;">‹</button>
 
-                                            <button onclick="nextImage()"
-                                                style="position:absolute;right:10px;top:50%;
-                                                transform:translateY(-50%);
-                                                width:36px;height:36px;border-radius:50%;
-                                                border:none;background:rgba(0,0,0,.45);
-                                                color:#fff;font-size:22px;cursor:pointer;">›</button>
-                                        ` : ''}
+                                                            <button onclick="nextImage()"
+                                                                style="position:absolute;right:10px;top:50%;
+                                                                transform:translateY(-50%);
+                                                                width:36px;height:36px;border-radius:50%;
+                                                                border:none;background:rgba(0,0,0,.45);
+                                                                color:#fff;font-size:22px;cursor:pointer;">›</button>
+                                                        ` : ''}
                 </div>
             </div>
 

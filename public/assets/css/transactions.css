@@ -1,0 +1,252 @@
+/* ===============================
+   PAGE HEADER
+=============================== */
+.page-head {
+    padding: 26px 0 10px;
+    background: linear-gradient(180deg, #fff, var(--bg-soft));
+}
+
+.breadcrumb {
+    color: rgba(17, 24, 39, 0.6);
+    font-weight: 650;
+    font-size: 13px;
+}
+
+.page-title {
+    margin: 10px 0 0;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+}
+
+/* ===============================
+   SORTBAR (SEARCH + STATUS)
+=============================== */
+.sortbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    backdrop-filter: blur(10px);
+    margin-bottom: 14px;
+}
+
+.select {
+    border: 1px solid rgba(17, 24, 39, 0.12);
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: #fff;
+    font-weight: 700;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 16px;
+    border: 1px solid rgba(17, 24, 39, 0.12);
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* ===============================
+   TRANSACTION CARDS
+=============================== */
+.prod {
+    overflow: hidden;
+    transition: transform 0.15s ease;
+}
+
+.prod:hover {
+    transform: translateY(-2px);
+}
+
+.prod-body {
+    padding: 14px;
+}
+
+.prod-name {
+    font-weight: 850;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+}
+
+.prod-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.prod-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+/* ===============================
+   PAGINATION
+=============================== */
+.pagination {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    justify-content: center;
+}
+
+.page-chip {
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(17, 24, 39, 0.1);
+    background: #fff;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.page-chip.active {
+    border-color: rgba(25, 118, 210, 0.35);
+    background: rgba(25, 118, 210, 0.08);
+    color: var(--blue);
+}
+
+/* ===============================
+   MODAL (DETAIL TRANSAKSI)
+=============================== */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 98;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.modal-backdrop.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.product-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    max-width: 820px;
+    width: 90%;
+    max-height: 90vh;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.product-modal.open {
+    opacity: 1;
+    pointer-events: all;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.product-modal-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-height: 90vh;
+}
+
+.product-modal-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    border-right: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.product-modal-body {
+    padding: 32px;
+    overflow-y: auto;
+}
+
+.product-modal-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.product-modal-description,
+.product-modal-specs {
+    margin-top: 16px;
+}
+
+/* ===============================
+   MOBILE
+=============================== */
+@media (max-width: 720px) {
+    .sortbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .sortbar > div {
+        display: flex;
+        gap: 10px;
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .product-modal {
+        width: 95%;
+        max-height: 95vh;
+        border-radius: 20px 20px 0 0;
+        top: auto;
+        bottom: 0;
+        transform: translate(-50%, 100%);
+    }
+
+    .product-modal.open {
+        transform: translate(-50%, 0);
+    }
+
+    .product-modal-content {
+        grid-template-columns: 1fr;
+    }
+
+    .product-modal-image {
+        border-right: none;
+        border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+        padding: 24px;
+    }
+
+    .product-modal-body {
+        padding: 24px;
+    }
+}

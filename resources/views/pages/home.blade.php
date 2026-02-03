@@ -51,7 +51,7 @@
             <div class="hero-grid">
                 <div>
                     <span class="badge">
-                        <span aria-hidden="true">🧩</span>
+                        <span aria-hidden="true"><i class="fa-solid fa-cubes"></i></span>
                         Rubik Store • Event • Belajar
                     </span>
 

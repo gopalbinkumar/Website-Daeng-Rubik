@@ -38,21 +38,29 @@ class TransactionController extends Controller
         $shippingCity = null;
         $shippingProvince = null;
 
-        if ($shippingZone === 'sulsel') {
+        if ($shippingZone === 'makassar') {
+            // Otomatis
+            $shippingCity = 'Makassar';
+            $shippingProvince = 'Sulawesi Selatan';
+        } elseif ($shippingZone === 'sulsel') {
+            // Kota input, provinsi tetap
             $request->validate([
                 'shipping_city' => 'required|string|max:255',
             ]);
-            $shippingCity = $request->shipping_city;
-        }
 
-      if ($shippingZone === 'luar_provinsi') {
+            $shippingCity = $request->shipping_city;
+            $shippingProvince = 'Sulawesi Selatan';
+        } elseif ($shippingZone === 'luar_provinsi') {
+            // Kota & provinsi input
             $request->validate([
                 'shipping_city' => 'required|string|max:255',
                 'shipping_province' => 'required|string|max:255',
             ]);
+
             $shippingCity = $request->shipping_city;
             $shippingProvince = $request->shipping_province;
         }
+
 
         // =========================
         // AMBIL CART USER
