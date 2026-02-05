@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\Cart;
+use App\Services\TelegramService;
 
 class TransactionController extends Controller
 {
@@ -162,16 +163,30 @@ class TransactionController extends Controller
             }
 
             DB::commit();
-
-            return redirect()
-                ->route('checkout')
-                ->with('success', 'Pesanan berhasil dibuat');
-
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
-            return back()->withErrors('Terjadi kesalahan saat memproses checkout');
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memproses checkout'
+            ], 500);
         }
+
+        // 🔔 TELEGRAM DI LUAR TRANSAKSI DB (TIDAK BOLEH GAGALKAN CHECKOUT)
+        try {
+            $transaction->load(['user', 'items']);
+            TelegramService::sendOrder($transaction);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        // ✅ RESPONSE KHUSUS UNTUK FETCH / AJAX
+        return response()->json([
+            'success' => true,
+            'message' => 'Pesanan berhasil dibuat'
+        ]);
+
     }
 
 

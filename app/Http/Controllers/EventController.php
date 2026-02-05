@@ -7,9 +7,31 @@ use App\Models\CompetitionCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class EventController extends Controller
 {
+
+    public function publicIndex()
+    {
+        // 🔥 Featured = event kompetisi terdekat (upcoming)
+        $featured = Event::where('category', 'kompetisi')
+            ->where('status', 'upcoming')
+            ->where('start_datetime', '>=', now())
+            ->orderBy('start_datetime', 'asc')
+            ->with('competitionCategories')
+            ->first();
+
+        // 🔹 SEMUA event upcoming (TERMASUK featured)
+        $events = Event::where('status', 'upcoming')
+            ->where('start_datetime', '>=', now())
+            ->orderBy('start_datetime', 'asc')
+            ->with('competitionCategories')
+            ->get();
+
+        return view('pages.events', compact('featured', 'events'));
+
+    }
     /**
      * List event
      */

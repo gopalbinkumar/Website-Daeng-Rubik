@@ -1,0 +1,99 @@
+/* Competition Detail Page
+   WCA-like result table, Daeng Rubik style
+*/
+
+.competition-detail-page .page-head {
+    padding: 26px 0 18px;
+    background: linear-gradient(180deg, #fff, var(--bg-soft));
+}
+
+.competition-detail-page .page-head .page-title {
+    margin-top: 10px;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+}
+
+.competition-detail-page .badge.competition-badge {
+    background: rgba(229, 57, 53, 0.08);
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 750;
+    border-radius: 999px;
+    padding: 6px 12px;
+}
+
+/* Filter bar */
+.competition-detail-page .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.competition-detail-page .results-filter-select {
+    border-radius: 999px;
+    border: 1px solid rgba(17, 24, 39, 0.12);
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    background: #fff;
+}
+
+/* Table styling */
+.competition-detail-page .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.competition-detail-page table.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.competition-detail-page table.table thead tr {
+    background: rgba(17, 24, 39, 0.04);
+}
+
+.competition-detail-page table.table th,
+.competition-detail-page table.table td {
+    padding: 8px 10px;
+    vertical-align: middle;
+}
+
+.competition-detail-page table.table tbody tr.table-row-hover {
+    transition: background-color 0.12s ease;
+}
+
+.competition-detail-page table.table tbody tr.table-row-hover:hover {
+    background: rgba(17, 24, 39, 0.02);
+}
+
+.competition-detail-page table.table td.text-end {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.competition-detail-page table.table td.best-cell,
+.competition-detail-page table.table td.average-cell {
+    font-weight: 800;
+}
+
+/* Empty state dalam tabel */
+.competition-detail-page .results-empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 14px 0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .competition-detail-page .card.card-pad {
+        padding: 16px 14px;
+    }
+
+    .competition-detail-page table.table {
+        min-width: 960px;
+    }
+}
+

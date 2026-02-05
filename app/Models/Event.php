@@ -46,6 +46,23 @@ class Event extends Model
         );
     }
 
+    public function registrations()
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+
+    public function participants()
+    {
+        return $this->belongsToMany(User::class, 'event_registrations')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
+
+    public function competitionResults()
+    {
+        return $this->hasMany(CompetitionResult::class);
+    }
+
     /**
      * Scope event kompetisi
      */

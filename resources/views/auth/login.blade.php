@@ -30,7 +30,7 @@
 
                 <div class="auth-features">
                     <div class="feature-item">
-                        <div class="feature-icon">🛒</div>
+                        <div class="feature-icon"><i class="fa-solid fa-cart-shopping   "></i></div>
                         <div>
                             <strong>Katalog Lengkap</strong><br>
                             <small>100+ produk rubik berkualitas</small>
@@ -38,7 +38,7 @@
                     </div>
 
                     <div class="feature-item">
-                        <div class="feature-icon">🎉</div>
+                        <div class="feature-icon"><i class="fa-solid fa-calendar-days"></i></div>
                         <div>
                             <strong>Event Rutin</strong><br>
                             <small>Kompetisi & workshop berkala</small>
@@ -46,7 +46,7 @@
                     </div>
 
                     <div class="feature-item">
-                        <div class="feature-icon">📚</div>
+                        <div class="feature-icon"><i class="fa-solid fa-book"></i></div>
                         <div>
                             <strong>Materi Gratis</strong><br>
                             <small>Tutorial dari basic hingga advanced</small>

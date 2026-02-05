@@ -137,7 +137,7 @@
     padding: 14px;
 }
 .prod-name {
-    font-weight: 850;
+    font-weight: 800;
     letter-spacing: -0.01em;
     margin: 0 0 6px;
 }
@@ -148,7 +148,7 @@
     gap: 10px;
 }
 .price {
-    font-weight: 900;
+    font-weight: 750;
 }
 .stars {
     color: #f59e0b;

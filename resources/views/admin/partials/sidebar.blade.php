@@ -20,6 +20,11 @@
             <span>Event Rubik</span>
         </a>
 
+        {{-- <a href="{{ route('admin.events.competition.index') }}" class="menu-item {{ request()->routeIs('admin.events.competition.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-trophy"></i>
+            <span>Hasil Kompetisi</span>
+        </a> --}}
+
         <a href="{{ route('admin.learn.index') }}" class="menu-item {{ request()->routeIs('admin.learn.*') ? 'active' : '' }}">
             <i class="fa-solid fa-book"></i>
             <span>Materi Pembelajaran</span>

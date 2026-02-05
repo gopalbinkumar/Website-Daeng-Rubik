@@ -10,74 +10,60 @@ class SalesReportController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Transaction::query();
-
         /*
-        |--------------------------------------------------------------------------
-        | FILTER: STATUS
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
+        | BASE QUERY (SEMUA FILTER DI SINI)
+        |------------------------------------------------------------------
         */
+        $baseQuery = Transaction::query();
+
+        // FILTER: STATUS
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $baseQuery->where('status', $request->status);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | FILTER: PRODUK (PAKAI TRANSACTION ITEMS - BENAR)
-        |--------------------------------------------------------------------------
-        */
+        // FILTER: PRODUK
         if ($request->filled('product')) {
-            $query->whereHas('items', function ($q) use ($request) {
+            $baseQuery->whereHas('items', function ($q) use ($request) {
                 $q->where('product_name', $request->product);
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | FILTER: DATE RANGE (PRIORITAS)
-        |--------------------------------------------------------------------------
-        */
+        // FILTER: DATE RANGE (PRIORITAS)
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('created_at', [
+            $baseQuery->whereBetween('created_at', [
                 $request->start_date . ' 00:00:00',
                 $request->end_date . ' 23:59:59',
             ]);
         }
-        /*
-        |--------------------------------------------------------------------------
-        | FILTER: PERIOD (JIKA TIDAK ADA DATE RANGE)
-        |--------------------------------------------------------------------------
-        */
+        // FILTER: PERIOD
         elseif ($request->filled('period')) {
             if ($request->period === 'monthly') {
-                $query->whereMonth('created_at', now()->month)
-                      ->whereYear('created_at', now()->year);
-            }
-
-            if ($request->period === 'yearly') {
-                $query->whereYear('created_at', now()->year);
+                $baseQuery->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year);
+            } elseif ($request->period === 'yearly') {
+                $baseQuery->whereYear('created_at', now()->year);
             }
             // daily = semua data
         }
 
         /*
-        |--------------------------------------------------------------------------
-        | DATA TABLE + EAGER LOAD YANG BENAR
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
+        | TABLE DATA (PAKAI PAGINATION)
+        |------------------------------------------------------------------
         */
-        $transactions = $query
-            ->with('items') // 🔥 INI KUNCI
+        $transactions = (clone $baseQuery)
+            ->with('items')
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
         /*
-        |--------------------------------------------------------------------------
-        | SUMMARY (HANYA STATUS PAID, FILTER SAMA)
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
+        | SUMMARY (TANPA PAGINATION)
+        |------------------------------------------------------------------
         */
-        $summaryQuery = clone $query;
-        $summaryQuery->where('status', 'paid');
+        $summaryQuery = (clone $baseQuery)->where('status', 'paid');
 
         $totalRevenue = $summaryQuery->sum('total_amount');
         $totalTransaction = $summaryQuery->count();
@@ -86,9 +72,9 @@ class SalesReportController extends Controller
             : 0;
 
         /*
-        |--------------------------------------------------------------------------
-        | LIST PRODUK UNTUK DROPDOWN (REAL DARI TRANSAKSI)
-        |--------------------------------------------------------------------------
+        |------------------------------------------------------------------
+        | DROPDOWN PRODUK
+        |------------------------------------------------------------------
         */
         $products = TransactionItem::select('product_name')
             ->distinct()
@@ -103,6 +89,7 @@ class SalesReportController extends Controller
             'products'
         ));
     }
+
 
     /*
     |--------------------------------------------------------------------------

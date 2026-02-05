@@ -1,0 +1,83 @@
+/* Admin - Tabel Hasil Kompetisi */
+
+.admin-results-index .table-wrapper {
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px 18px 18px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.admin-results-index .table-toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 12px;
+}
+
+.admin-results-index .filter-select {
+    min-width: 180px;
+    border-radius: 12px;
+    border: 1px solid var(--admin-border);
+    padding: 8px 10px;
+    background: #fff;
+    font-size: 13px;
+}
+
+.admin-results-index table.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-results-index table.table thead tr {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+.admin-results-index table.table th,
+.admin-results-index table.table td {
+    padding: 9px 10px;
+    vertical-align: middle;
+}
+
+.admin-results-index table.table tbody tr:nth-child(even) {
+    background: rgba(15, 23, 42, 0.01);
+}
+
+.admin-results-index table.table tbody tr:hover {
+    background: rgba(15, 23, 42, 0.04);
+}
+
+.admin-results-index .pagination {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--admin-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-results-index .pagination-info {
+    font-size: 13px;
+    color: var(--admin-text-muted);
+}
+
+.admin-results-index .pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+@media (max-width: 768px) {
+    .admin-results-index .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-results-index .filter-select {
+        width: 100%;
+    }
+}
+

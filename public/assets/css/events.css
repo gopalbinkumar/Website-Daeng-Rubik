@@ -42,7 +42,11 @@
 }
 .prod-img .badge{position:absolute;top:12px;left:12px}
 .prod-body{padding:14px}
-.prod-name{font-weight:850;letter-spacing:-.01em;margin:0 0 6px}
+.prod-name{
+  /* font-weight:850;
+  letter-spacing:-.01em; */
+  margin:0 0 6px
+}
 
 /* Tabs */
 .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
@@ -71,6 +75,25 @@
 }
 
 /* Event Modal */
+
+/* MODAL BACKDROP (BLUR + DARK) */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px); /* Safari */
+    z-index: 98;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.modal-backdrop.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
 .event-modal {
   position: fixed;
   top: 50%;

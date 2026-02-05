@@ -129,7 +129,7 @@
                                 <i class="fa-regular fa-user-circle"></i> Profil Saya
                             </a>
 
-                            <a href="">
+                            <a href="{{ route('user.events.index') }}">
                                 <i class="fa-regular fa-calendar-check"></i> Event Saya
                             </a>
 

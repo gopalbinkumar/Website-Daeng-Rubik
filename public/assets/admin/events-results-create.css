@@ -1,0 +1,64 @@
+/* Admin - Input Hasil Kompetisi
+   Fokus: form rapi, mudah discan, minim error
+*/
+
+.admin-results-create .card {
+    padding: 20px;
+    border-radius: 18px;
+}
+
+.admin-results-create .form-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+}
+
+.admin-results-create .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
+}
+
+.admin-results-create .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-results-create .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--admin-text);
+}
+
+.admin-results-create .form-helper {
+    font-size: 12px;
+    color: var(--admin-text-muted);
+}
+
+.admin-results-create .form-input {
+    text-align: left;
+}
+
+.admin-results-create input[name^="attempt"],
+.admin-results-create input[name="best"],
+.admin-results-create input[name="average"] {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.admin-results-create .modal-footer {
+    padding-top: 12px;
+    border-top: 1px solid var(--admin-border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 992px) {
+    .admin-results-create .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
