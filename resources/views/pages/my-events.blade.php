@@ -166,13 +166,13 @@
                                         <td>
                                             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                                                 @if ($isCompetition)
-                                                    <a href=""
+                                                    <a href="{{ route('events.competition.show') }}"
                                                         class="btn btn-primary btn-sm" style="flex:1;min-width:130px;">
                                                         Detail Kompetisi
                                                     </a>
                                                 @endif
                                                 {{-- Contoh: lihat tiket / detail umum --}}
-                                                <a href="{{ route('events') }}" class="btn btn-outline-secondary btn-sm"
+                                                <a href="{{ route('events.competition.show') }}" class="btn btn-outline-secondary btn-sm"
                                                     style="flex:1;min-width:110px;">
                                                     Detail Event
                                                 </a>

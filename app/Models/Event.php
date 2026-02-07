@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Event extends Model
 {
@@ -28,11 +29,20 @@ class Event extends Model
 
     protected $casts = [
         'start_datetime' => 'datetime',
-        'end_datetime'   => 'datetime',
-        'ticket_price'   => 'integer',
+        'end_datetime' => 'datetime',
+        'ticket_price' => 'integer',
         'max_participants' => 'integer',
-        'total_prize'    => 'integer',
+        'total_prize' => 'integer',
     ];
+
+    protected static function booted()
+{
+    static::creating(function ($event) {
+        if (empty($event->slug)) {
+            $event->slug = Str::slug($event->title);
+        }
+    });
+}
 
     /**
      * Relasi ke kategori lomba (WCA)
@@ -86,4 +96,18 @@ class Event extends Model
     {
         return $this->category === 'kompetisi';
     }
+
+    public function getBadgeClassAttribute()
+    {
+        return match ($this->category) {
+            'kompetisi' => 'hot',
+            default => 'muted',
+        };
+    }
+
+    public function getBadgeLabelAttribute()
+    {
+        return ucfirst($this->category);
+    }
+
 }

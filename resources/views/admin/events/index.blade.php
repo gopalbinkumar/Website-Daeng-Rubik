@@ -4,6 +4,13 @@
 @section('page-title', 'Event Rubik')
 
 @section('content')
+
+    <style>
+        .form-input[readonly] {
+            background-color: #ffffff;
+            cursor: not-allowed;
+        }
+    </style>
     <div class="page-header">
         <h2 class="page-title">Event Rubik</h2>
         <button class="btn btn-primary" onclick="openModal('modalAddEvent')">
@@ -350,8 +357,8 @@
 
                 <!-- Judul -->
                 <div class="form-group">
-                    <label class="form-label">Judul Event <span class="required">*</span></label>
-                    <input type="text" class="form-input" name="title" required>
+                    <label class="form-label">Judul Event</label>
+                    <input type="text" class="form-input" name="title" readonly>
                 </div>
 
                 <!-- Kategori -->

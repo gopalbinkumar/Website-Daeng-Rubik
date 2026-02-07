@@ -170,6 +170,16 @@
                 </aside>
             </div>
         </div>
+        <!-- Modal Alert (Reuse Event Modal) -->
+        <div id="eventModalBackdrop" class="modal-backdrop" onclick="closeEventModal()"></div>
+
+        <div id="eventModal" class="event-modal" role="dialog" aria-modal="true">
+
+            <div id="eventModalContent" class="event-modal-content">
+                <!-- Diisi via JavaScript -->
+            </div>
+        </div>
+
     </section>
 
     <script>
@@ -191,7 +201,6 @@
         function updateShip() {
             let ongkir = 15000;
 
-            // ================= RESET SEMUA =================
             extraSulsel.style.display = 'none';
             extraLuarProv.style.display = 'none';
 
@@ -203,10 +212,7 @@
             cityLuarProv.value = '';
             provinceInput.value = '';
 
-            // ================= KONDISI =================
-            if (ship.value === 'makassar') {
-                ongkir = 15000;
-            }
+            if (ship.value === 'makassar') ongkir = 15000;
 
             if (ship.value === 'sulsel') {
                 ongkir = 25000;
@@ -221,31 +227,160 @@
                 provinceInput.disabled = false;
             }
 
-            // ================= UPDATE UI =================
             document.getElementById('shippingOngkir').textContent = rupiah(ongkir);
             document.getElementById('summaryOngkir').textContent = rupiah(ongkir);
             document.getElementById('summaryTotal').textContent =
                 rupiah({{ $subtotal }} + ongkir);
 
-            // ================= KIRIM KE BACKEND =================
             shippingZoneInput.value = ship.value;
         }
 
         ship.addEventListener('change', updateShip);
         updateShip();
 
-        // ================= SUBMIT =================
+        /* ================= MODAL STATES ================= */
+
+        function openModal() {
+            document.getElementById('eventModalBackdrop').classList.add('open');
+            document.getElementById('eventModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModalBackdrop').classList.remove('open');
+            document.getElementById('eventModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function showLoadingModal() {
+            const content = document.getElementById('eventModalContent');
+
+            content.innerHTML = `
+            <div class="event-modal-body">
+                <div class="modal-spinner"></div>
+                <p style="font-size:15px;color:#555">
+                    Mengirim checkout...
+                </p>
+            </div>
+        `;
+
+            openModal();
+        }
+
+        function showSuccessModal(message) {
+            const content = document.getElementById('eventModalContent');
+
+            content.innerHTML = `
+        <div class="event-modal-body" style="text-align:center">
+            <i class="fa-solid fa-circle-check"
+               style="font-size:48px;color:#2e7d32;margin-bottom:12px"></i>
+
+            <h3 class="event-modal-title">Berhasil</h3>
+
+            <p style="font-size:15px;color:#2e7d32">
+                ${message}
+            </p>
+
+            <p style="font-size:13px;color:#777;margin-top:8px">
+                Mengalihkan ke halaman transaksi...
+            </p>
+            </div>
+            `;
+
+            // ⏱️ tampilkan modal sebentar lalu redirect
+            setTimeout(() => {
+                window.location.href = '/mytransactions';
+            }, 1500); // 1.5 detik
+        }
+
+
+        function showErrorModal(message) {
+            const content = document.getElementById('eventModalContent');
+
+            content.innerHTML = `
+                <div class="event-modal-body" style="text-align:center">
+                    <i class="fa-solid fa-circle-exclamation"
+                    style="font-size:48px;color:#e53935;margin-bottom:12px"></i>
+
+                    <h3 class="event-modal-title">Perhatian</h3>
+
+                    <p style="font-size:15px;color:#e53935">
+                        ${message}
+                    </p>
+
+                    <div class="event-modal-actions">
+                        <button class="btn btn-primary" onclick="closeEventModal()">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            openModal();
+        }
+
+
+        /* ================= SUBMIT ================= */
+
         function submitCheckoutDemo() {
             const items = new URLSearchParams(window.location.search).get('items');
             if (!items) {
-                alert('Tidak ada produk dipilih');
+                showErrorModal('Tidak ada produk dipilih');
                 return;
             }
 
             document.getElementById('checkoutItems').value = items;
-
             const form = document.getElementById('checkoutForm');
+
+            // ================= 1️⃣ DATA PENERIMA =================
+            const receiverFields = [
+                'receiver_name',
+                'receiver_phone',
+                'receiver_address',
+                'receiver_postal_code'
+            ];
+
+            for (const name of receiverFields) {
+                const field = form.querySelector(`[name="${name}"]`);
+                if (!field || !field.value.trim()) {
+                    showErrorModal('Data penerima belum lengkap');
+                    return;
+                }
+            }
+
+            // ================= 2️⃣ DATA PENGIRIMAN =================
+            const shippingZone = document.getElementById('shippingZone').value;
+
+            if (!shippingZone) {
+                showErrorModal('Data pengiriman belum lengkap');
+                return;
+            }
+
+            if (shippingZone === 'sulsel' && !citySulsel.value.trim()) {
+                showErrorModal('Data pengiriman belum lengkap');
+                return;
+            }
+
+            if (
+                shippingZone === 'luar_provinsi' &&
+                (!cityLuarProv.value.trim() || !provinceInput.value.trim())
+            ) {
+                showErrorModal('Data pengiriman belum lengkap');
+                return;
+            }
+
+            // ================= 3️⃣ BUKTI PEMBAYARAN =================
+            const fileInput = document.getElementById('buktiTransfer');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showErrorModal('Silakan upload bukti pembayaran terlebih dahulu');
+                return;
+            }
+
+            // ================= 4️⃣ SUBMIT =================
             const formData = new FormData(form);
+
+            // ⏳ tampilkan loading modal
+            showLoadingModal();
 
             fetch('{{ route('checkout.store') }}', {
                     method: 'POST',
@@ -254,19 +389,26 @@
                     },
                     body: formData
                 })
-                .then(res => {
-                    if (!res.ok) throw new Error('Checkout gagal');
-                    return res.text();
+                .then(async res => {
+                    if (!res.ok) {
+                        const error = await res.json();
+                        throw error;
+                    }
+                    return res.json();
                 })
                 .then(() => {
-                    alert('Checkout berhasil');
+                    showSuccessModal('Checkout berhasil');
                 })
                 .catch(err => {
-                    console.error(err);
-                    alert('Terjadi kesalahan');
+                    if (err.errors) {
+                        showErrorModal(Object.values(err.errors)[0][0]);
+                    } else {
+                        showErrorModal('Terjadi kesalahan saat checkout');
+                    }
                 });
         }
     </script>
+
 
     <script>
         const fileInput = document.getElementById('buktiTransfer');
@@ -302,5 +444,7 @@
             reader.readAsDataURL(file);
         });
     </script>
+
+
 
 @endsection

@@ -56,7 +56,7 @@
                         </div>
 
                         <div style="display:flex;gap:12px;">
-                            <a href="{{ route('events.register', $featured->id) }}" class="btn btn-primary" style="flex:1">
+                            <a href="{{ route('events.register', $featured->slug) }}" class="btn btn-primary" style="flex:1">
                                 Daftar sekarang
                             </a>
                             <button class="btn btn-secondary" onclick="openEventModal({{ $featured->id }})" style="flex:1">
@@ -102,8 +102,7 @@
 
                             <div style="display:flex;gap:10px;">
                                 @if ($ev->category === 'kompetisi')
-                                    <a href="{{ route('events.register', $ev->id) }}" class="btn btn-primary"
-                                        style="flex:1">
+                                    <a href="{{ route('events.register', $ev->slug) }}" class="btn btn-primary" style="flex:1">
                                         Daftar
                                     </a>
                                 @endif
@@ -122,7 +121,6 @@
     <!-- Event Detail Modal -->
     <div id="eventModalBackdrop" class="modal-backdrop" aria-hidden="true" onclick="closeEventModal()"></div>
     <div id="eventModal" class="event-modal" role="dialog" aria-label="Detail Event" aria-modal="true">
-        {{-- <button class="modal-close" onclick="closeEventModal()" aria-label="Tutup modal">✕</button> --}}
         <div id="eventModalContent" class="event-modal-content">
             <!-- Content akan diisi via JavaScript -->
         </div>

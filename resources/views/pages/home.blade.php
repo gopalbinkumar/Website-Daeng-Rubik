@@ -70,7 +70,7 @@
                     </div>
                 </div>
 
-                <div class="hero-art">
+                {{-- <div class="hero-art">
                     <div class="cube" aria-hidden="true"></div>
                     <div class="hero-mini">
                         <div class="mini">
@@ -86,7 +86,7 @@
                             <small>Dari pemula sampai pro</small>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </section>

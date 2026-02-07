@@ -13,6 +13,7 @@ use App\Http\Controllers\UserEventController;
 use App\Http\Controllers\CompetitionResultController;
 use App\Http\Controllers\DashboardAdminController;
 use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\EventRegistrationController;
 
 Route::get('/test-telegram', function () {
     Http::post("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage", [
@@ -65,19 +66,28 @@ Route::get('/event', [EventController::class, 'publicIndex'])
     ->name('events');
 
 
-Route::view('/event/daftar', 'pages.event-register')->name('events.register');
+Route::middleware('auth')->group(function () {
+    Route::get('/event/registrasi/{slug}', [EventRegistrationController::class, 'create'])
+        ->name('events.register');
+
+
+
+    Route::post('/event/registrasi', [EventRegistrationController::class, 'store'])
+        ->name('events.register.store');
+});
+
 Route::view('/tentang', 'pages.about')->name('about');
 Route::view('/kontak', 'pages.contact')->name('contact');
 
-Route::view('/transactions', 'pages.transactions')
+Route::view('/mytransactions', 'pages.transactions')
     ->name('transactions');
 
 
 Route::view('/user/events', 'pages.my-events')
     ->name('user.events.index');
-    
 
-Route::view('/events/competition', 'pages.competition-detail')
+
+Route::view('/event/detail', 'pages.competition-detail')
     ->name('events.competition.show');
 
 // =================
@@ -116,7 +126,7 @@ Route::middleware(['auth', 'admin'])
     ->group(function () {
 
         Route::get('/', [HomeController::class, 'dashboardadmin'])
-    ->name('dashboard');
+            ->name('dashboard');
 
 
         //produk
@@ -159,11 +169,11 @@ Route::middleware(['auth', 'admin'])
         Route::view('/pengaturan', 'admin.settings')->name('settings');
 
 
-Route::view('/competition/create', 'admin.events.results-create')
-    ->name('events.competition.create');
+        Route::view('/competition/create', 'admin.events.results-create')
+            ->name('events.competition.create');
 
-Route::view('/competition', 'admin.events.results-index')
-    ->name('events.competition.index');
+        Route::view('/competition', 'admin.events.results-index')
+            ->name('events.competition.index');
         // Hasil kompetisi
         // Route::prefix('events/competition')
         //     ->name('events.competition.')

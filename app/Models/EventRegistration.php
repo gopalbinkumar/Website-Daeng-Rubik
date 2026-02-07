@@ -14,6 +14,9 @@ class EventRegistration extends Model
     protected $fillable = [
         'user_id',
         'event_id',
+        'participant_name',
+        'participant_email',
+        'participant_whatsapp',
         'status',
     ];
 
@@ -26,4 +29,13 @@ class EventRegistration extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    public function competitionCategories()
+    {
+        return $this->belongsToMany(
+            \App\Models\CompetitionCategory::class,
+            'event_registration_categories'
+        );
+    }
+
 }
