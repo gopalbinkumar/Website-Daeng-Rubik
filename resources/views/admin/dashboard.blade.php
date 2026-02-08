@@ -32,7 +32,7 @@
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
         {{-- AKTIVITAS TERKINI --}}
-        <div class="card">
+        {{-- <div class="card">
             <div class="card-header">
                 <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Aktivitas Terkini</h3>
             </div>
@@ -59,7 +59,17 @@
                 @endforelse
 
             </div>
+        </div> --}}
+
+        <div class="card">
+            <div class="card-header">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Pendapatan Penjualan </h3>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="120"></canvas>
+            </div>
         </div>
+
 
         {{-- PRODUK TERBARU --}}
         <div class="card">
@@ -97,4 +107,79 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        fetch("{{ route('admin.reports.monthly-revenue') }}")
+            .then(res => res.json())
+            .then(data => {
+
+                // === build 12 bulan terakhir (label + key) ===
+                const labels = [];
+                const map = {};
+
+                for (let i = 11; i >= 0; i--) {
+                    const d = new Date();
+                    d.setMonth(d.getMonth() - i);
+
+                    const month = d.getMonth() + 1;
+                    const year = d.getFullYear();
+
+                    const key = `${year}-${month}`;
+                    map[key] = 0;
+
+                    labels.push(
+                        d.toLocaleString('id-ID', {
+                            month: 'short',
+                            year: 'numeric'
+                        })
+                    );
+                }
+
+                // === isi data dari backend ===
+                data.forEach(item => {
+                    const key = `${item.year}-${item.month}`;
+                    if (map.hasOwnProperty(key)) {
+                        map[key] = item.total;
+                    }
+                });
+
+                const values = Object.values(map);
+
+                new Chart(document.getElementById('revenueChart'), {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: '#2563eb'
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx =>
+                                        'Rp ' + ctx.raw.toLocaleString('id-ID')
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: v => 'Rp ' + v.toLocaleString('id-ID')
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
+
+
 @endsection

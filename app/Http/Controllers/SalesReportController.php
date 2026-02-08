@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SalesReportController extends Controller
 {
@@ -109,4 +111,25 @@ class SalesReportController extends Controller
 
         return back()->with('success', 'Pembayaran berhasil diverifikasi');
     }
+
+    public function monthlyRevenueChart()
+{
+    $start = now()->subMonths(11)->startOfMonth();
+    $end   = now()->endOfMonth();
+
+    $data = Transaction::where('status', 'paid')
+        ->whereBetween('created_at', [$start, $end])
+        ->select(
+            DB::raw('YEAR(created_at) as year'),
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('SUM(total_amount) as total')
+        )
+        ->groupBy('year', 'month')
+        ->orderBy('year')
+        ->orderBy('month')
+        ->get();
+
+    return response()->json($data);
+}
+    
 }

@@ -79,8 +79,10 @@ Route::middleware('auth')->group(function () {
 Route::view('/tentang', 'pages.about')->name('about');
 Route::view('/kontak', 'pages.contact')->name('contact');
 
-Route::view('/mytransactions', 'pages.transactions')
-    ->name('transactions');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mytransactions', [TransactionController::class, 'index'])
+        ->name('transactions');
+});
 
 
 Route::view('/user/events', 'pages.my-events')
@@ -189,7 +191,11 @@ Route::middleware(['auth', 'admin'])
             ->name('reports.sales');
         Route::post('/transactions/{transaction}/verify', [SalesReportController::class, 'verify'])
             ->name('transactions.verify');
-        ;
+        
+        Route::get(
+            '/reports/monthly-revenue',
+            [SalesReportController::class, 'monthlyRevenueChart']
+        )->name('reports.monthly-revenue');
 
 
         Route::post('/logout', [UserController::class, 'logout'])

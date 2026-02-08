@@ -23,18 +23,19 @@
     <section class="section" style="padding-top:22px;">
         <div class="container">
 
-            {{-- SORT / SEARCH BAR (reuse) --}}
+            {{-- SORT / SEARCH BAR --}}
             <form method="GET">
                 <div class="sortbar">
                     <input type="text" name="search" class="search-input" placeholder="Cari kode transaksi..."
-                        value="">
+                        value="{{ request('search') }}">
 
                     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                        <select class="select">
-                            <option>Status: Semua</option>
-                            <option>Menunggu</option>
-                            <option>Terverifikasi</option>
-                            <option>Gagal</option>
+                        <select class="select" name="status" onchange="this.form.submit()">
+                            <option value="">Status: Semua</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
+                            <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Terverifikasi
+                            </option>
+                            <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Gagal</option>
                         </select>
                     </div>
                 </div>
@@ -42,102 +43,112 @@
 
             {{-- ================= TRANSACTION LIST ================= --}}
             <div class="grid-3">
-
-                {{-- CARD TRANSAKSI --}}
-                @php
-                    $transactions = [
-                        ['code' => 'TRX-20240201-001', 'status' => 'Menunggu'],
-                        ['code' => 'TRX-20240128-014', 'status' => 'Terverifikasi'],
-                        ['code' => 'TRX-20240120-009', 'status' => 'Gagal'],
-                        ['code' => 'TRX-20240115-003', 'status' => 'Terverifikasi'],
-                        ['code' => 'TRX-20240110-001', 'status' => 'Menunggu'],
-                    ];
-                @endphp
-
-                @foreach ($transactions as $trx)
+                @forelse ($transactions as $trx)
                     <article class="card prod">
                         <div class="prod-body">
 
                             <p class="prod-name">
-                                {{ $trx['code'] }}
+                                {{ $trx->code }}
                             </p>
 
                             <div class="prod-meta">
                                 <span class="badge badge-secondary">
-                                    {{ $trx['status'] }}
+                                    {{ ucfirst($trx->status) }}
                                 </span>
                             </div>
 
                             <div class="prod-actions">
                                 <button class="btn btn-primary" type="button" style="flex:1"
-                                    onclick="openTransactionModal('{{ $trx['code'] }}')">
+                                    onclick="openTransactionModal('{{ $trx->code }}')">
                                     Lihat Detail
                                 </button>
-
                             </div>
 
                         </div>
                     </article>
-                @endforeach
-
+                @empty
+                    <p class="muted">Belum ada transaksi.</p>
+                @endforelse
             </div>
 
-            {{-- ================= PAGINATION (DUMMY) ================= --}}
-            <div class="pagination" aria-label="Pagination">
-                <span class="page-chip disabled">‹</span>
-                <span class="page-chip active">1</span>
-                <a href="#" class="page-chip">2</a>
-                <a href="#" class="page-chip">3</a>
-                <a href="#" class="page-chip">›</a>
-            </div>
+            {{-- ================= PAGINATION ================= --}}
+            @if ($transactions->total() > 9)
+                <div class="pagination" aria-label="Pagination">
+
+                    {{-- Prev --}}
+                    @if ($transactions->onFirstPage())
+                        <span class="page-chip disabled">‹</span>
+                    @else
+                        <a href="{{ $transactions->previousPageUrl() }}" class="page-chip">‹</a>
+                    @endif
+
+                    {{-- Page Numbers --}}
+                    @for ($i = 1; $i <= $transactions->lastPage(); $i++)
+                        @if ($i == $transactions->currentPage())
+                            <span class="page-chip active">{{ $i }}</span>
+                        @else
+                            <a href="{{ $transactions->url($i) }}" class="page-chip">{{ $i }}</a>
+                        @endif
+                    @endfor
+
+                    {{-- Next --}}
+                    @if ($transactions->hasMorePages())
+                        <a href="{{ $transactions->nextPageUrl() }}" class="page-chip">›</a>
+                    @else
+                        <span class="page-chip disabled">›</span>
+                    @endif
+
+                </div>
+            @endif
+
 
         </div>
     </section>
-    <!-- Transaction Detail Modal -->
+
+    {{-- ================= MODAL ================= --}}
     <div id="transactionModalBackdrop" class="modal-backdrop" aria-hidden="true" onclick="closeTransactionModal()"></div>
 
     <div id="transactionModal" class="product-modal" role="dialog" aria-label="Detail Transaksi" aria-modal="true">
 
         <button class="modal-close" onclick="closeTransactionModal()">✕</button>
 
-        <div id="transactionModalContent" class="product-modal-content">
-            <!-- diisi via JS -->
-        </div>
+        <div id="transactionModalContent" class="product-modal-content"></div>
     </div>
 
-    <script>
-        const transactionsData = {
-            "TRX-20240201-001": {
-                code: "TRX-20240201-001",
-                status: "Menunggu",
-                name: "Gopal Kumar",
-                phone: "0812-3456-7890",
-                address: "Jl. Perintis Kemerdekaan No. 123, Makassar",
-                proof_image: "{{ asset('assets/img/placeholder-product.png') }}",
-                items: [{
-                        name: "Rubik GAN 356 XS",
-                        qty: 1
-                    },
-                    {
-                        name: "Rubik MoYu RS3M",
-                        qty: 2
-                    }
-                ]
-            },
-            "TRX-20240128-014": {
-                code: "TRX-20240128-014",
-                status: "Terverifikasi",
-                name: "Andi Pratama",
-                phone: "0821-9988-7766",
-                address: "Jl. Pettarani No. 45, Makassar",
-                proof_image: "{{ asset('assets/img/placeholder-product.png') }}",
-                items: [{
-                    name: "Rubik QiYi Warrior",
-                    qty: 1
-                }]
+    {{-- ================= PREPARE DATA (ANTI ERROR) ================= --}}
+    @php
+        $transactionsData = [];
+
+        foreach ($transactions as $trx) {
+            $items = [];
+
+            foreach ($trx->items as $item) {
+                $items[] = [
+                    'name' => $item->product_name,
+                    'qty' => $item->quantity,
+                ];
             }
-        };
+
+            $transactionsData[$trx->code] = [
+                'code' => $trx->code,
+                'status' => ucfirst($trx->status),
+                'name' => $trx->receiver_name,
+                'phone' => $trx->receiver_phone,
+                'address' => $trx->receiver_address,
+                'proof_image' => $trx->payment_proof_path
+                    ? asset('storage/' . $trx->payment_proof_path)
+                    : asset('assets/img/placeholder-product.png'),
+                'items' => $items,
+            ];
+        }
+    @endphp
+
+    {{-- ================= JS DATA ================= --}}
+    <script>
+        const transactionsData = {!! json_encode($transactionsData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!};
     </script>
+
+    {{-- ================= MODAL SCRIPT ================= --}}
     <script>
         function openTransactionModal(code) {
             const trx = transactionsData[code];
@@ -148,20 +159,20 @@
             const content = document.getElementById('transactionModalContent');
 
             let itemsHtml = '';
-            trx.items.forEach((item, i) => {
+            trx.items.forEach(item => {
                 itemsHtml += `<li>${item.name} (x${item.qty})</li>`;
             });
 
             content.innerHTML = `
         <div class="product-modal-image">
             <img src="${trx.proof_image}"
-                style="width:100%;max-width:360px;aspect-ratio:1/1;
-                object-fit:cover;border-radius:18px;
-                border:6px solid var(--line);margin:0 auto;display:block;">
-            <p class="muted" style="text-align:center;margin-top:6px">
-                Bukti Pembayaran
-            </p>
+                style="width:100%;max-width:360px;
+                object-fit:contain;
+                border:6px solid var(--line);
+                margin:0 auto;
+                display:block;">
         </div>
+
 
         <div class="product-modal-body">
             <h2 class="product-modal-title">${trx.code}</h2>
@@ -195,7 +206,7 @@
             document.body.style.overflow = '';
         }
 
-        document.addEventListener('keydown', e => {
+        document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeTransactionModal();
         });
     </script>

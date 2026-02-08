@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Transaction;
@@ -11,8 +12,32 @@ use App\Models\TransactionItem;
 use App\Models\Cart;
 use App\Services\TelegramService;
 
+
 class TransactionController extends Controller
 {
+    public function index(Request $request)
+    {
+
+        $query = Transaction::with('items')
+            ->where('user_id', Auth::id()) // 🔒 FILTER USER LOGIN
+            ->latest();
+
+        // search kode transaksi
+        if ($request->filled('search')) {
+            $query->where('code', 'like', '%' . $request->search . '%');
+        }
+
+        // filter status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $transactions = $query->paginate(9);
+
+        return view('pages.transactions', compact('transactions'));
+    }
+
+
     public function store(Request $request)
     {
         // =========================

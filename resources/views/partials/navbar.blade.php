@@ -69,8 +69,6 @@
     .dropdown-danger:hover {
         background: rgba(220, 38, 38, .08);
     }
- 
-    
 </style>
 
 <header class="topbar">
@@ -139,7 +137,7 @@
 
                             <div class="dropdown-divider"></div>
 
-                            <form method="POST" action="{{ route('auth.logout') }}">
+                            <form action="{{ route('auth.logout') }}" method="POST">
                                 @csrf
                                 <button type="submit" class="dropdown-danger">
                                     <i class="fa-solid fa-right-from-bracket"></i> Logout
@@ -193,13 +191,19 @@
 
     <div class="drawer-footer">
         @auth
-        <a class="btn btn-outline" href="{{ route('auth.logout') }}"
-            style="flex:1;justify-content:center;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <form action="{{ route('auth.logout') }}" method="POST" style="flex:1;">
+                @csrf
+                <button type="submit" class="btn btn-outline" style="width:100%;justify-content:center;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </form>
         @else
-        <a class="btn btn-primary" href="{{ route('auth.login') }}" style="flex:1;justify-content:center;">
-            <i class="fa-solid fa-right-to-bracket"></i> Login</a>
+            <a class="btn btn-primary" href="{{ route('auth.login') }}" style="flex:1;justify-content:center;">
+                <i class="fa-solid fa-right-to-bracket"></i> Login
+            </a>
         @endauth
     </div>
+
 </aside>
 
 <script>
