@@ -1,64 +1,201 @@
-/* Admin - Input Hasil Kompetisi
-   Fokus: form rapi, mudah discan, minim error
-*/
+/* ===============================
+   Admin - Input Hasil Kompetisi
+   Layout: Form 1 kolom | Tabel lebar
+   =============================== */
 
-.admin-results-create .card {
+.admin-results-create {
     padding: 20px;
     border-radius: 18px;
 }
 
-.admin-results-create .form-section-title {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    margin-bottom: 10px;
-}
-
-.admin-results-create .form-row {
+/* ===============================
+   GRID UTAMA
+   =============================== */
+.results-layout {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px 20px;
+    grid-template-columns: 360px 1fr; /* FORM KECIL | TABEL BESAR */
+    gap: 24px;
 }
 
-.admin-results-create .form-group {
+/* ===============================
+   FORM (KIRI)
+   =============================== */
+.results-form {
+    max-width: 360px;
+}
+
+/* Semua form-row default: 1 kolom, jarak rapat */
+.results-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px; /* DIPERKECIL */
+}
+
+/* ===============================
+   SECTION TITLE
+   =============================== */
+.form-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 14px 0 6px; /* LEBIH RAPAT */
+}
+
+/* ===============================
+   INPUT & SELECT
+   =============================== */
+.form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px; /* RAPAT */
 }
 
-.admin-results-create .form-label {
+.form-input,
+.form-select {
     font-size: 13px;
-    font-weight: 600;
-    color: var(--admin-text);
+    padding: 9px 12px;
 }
 
-.admin-results-create .form-helper {
-    font-size: 12px;
+/* ===============================
+   ATTEMPT INPUT – SUPER RAPAT
+   =============================== */
+
+.attempt-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px !important; /* ← DIPERKECIL (sebelumnya 8px / 10px) */
+}
+
+.attempt-grid .form-group {
+    margin: 0;
+}
+
+/* ===============================
+   FOOTER BUTTON
+   =============================== */
+.modal-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--admin-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* ===============================
+   TABEL HASIL (KANAN)
+   =============================== */
+.results-preview {
+    border-left: 1px solid var(--admin-border);
+    padding-left: 24px;
+}
+
+/* Table spacing lebih padat */
+.table th,
+.table td {
+    padding: 10px 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.table .text-end {
+    text-align: right;
+}
+
+/* ===============================
+   RESULT SUMMARY – FIX 2 KOLOM
+   =============================== */
+
+.result-summary-fixed {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.result-box {
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: var(--admin-bg);
+}
+
+.result-label {
+    font-size: 11px;
     color: var(--admin-text-muted);
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
-.admin-results-create .form-input {
-    text-align: left;
-}
-
-.admin-results-create input[name^="attempt"],
-.admin-results-create input[name="best"],
-.admin-results-create input[name="average"] {
+.result-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--admin-text);
     text-align: right;
     font-variant-numeric: tabular-nums;
 }
 
-.admin-results-create .modal-footer {
-    padding-top: 12px;
-    border-top: 1px solid var(--admin-border);
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
+.attempt-input.is-disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
 }
 
+.results-preview .table-wrapper {
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+.results-preview table thead th {
+    position: sticky;
+    top: 0;
+    background: #f3f4f6;
+    color: black;
+    z-index: 2;
+    box-shadow: 0 1px 0 #e5e7eb;
+}
+
+/* Dropdown peserta */
+#participantDropdown {
+    font-size: 13px; /* tulisan lebih kecil */
+    line-height: 1.4;
+    max-height: 200px; /* ± 5 item sebelum scroll */
+    overflow-y: auto;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Item peserta */
+#participantDropdown > div {
+    padding: 6px 10px; /* lebih ringkas */
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Hover state */
+#participantDropdown > div:hover {
+    background: #f3f4f6;
+}
+
+/* ===============================
+   RESPONSIVE
+   =============================== */
 @media (max-width: 992px) {
-    .admin-results-create .form-row {
+    .results-layout {
         grid-template-columns: 1fr;
     }
-}
 
+    .results-form {
+        max-width: 100%;
+    }
+
+    .results-preview {
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid var(--admin-border);
+        padding-top: 20px;
+    }
+
+    .attempt-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

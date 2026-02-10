@@ -34,14 +34,11 @@
             @if ($featured)
                 <div class="card featured" data-status="{{ $featured->status }}" data-featured="main">
                     <div class="featured-media"
-                        style="
-                                background-image:url('{{ $featured->cover_image ? asset('storage/' . $featured->cover_image) : asset('assets/img/event-default.jpg') }}');
-                                background-size:contain;
-                                background-repeat:no-repeat;
-                                background-position:center;
-                                background-color:#f5f5f5;
-                            ">
+                        style="--bg:url('{{ $featured->cover_image ? asset('storage/' . $featured->cover_image) : asset('assets/img/event-default.jpg') }}')">
+                        <img src="{{ $featured->cover_image ? asset('storage/' . $featured->cover_image) : asset('assets/img/event-default.jpg') }}"
+                            alt="{{ $featured->title }}">
                     </div>
+
 
 
                     <div class="featured-body">
@@ -56,7 +53,8 @@
                         </div>
 
                         <div style="display:flex;gap:12px;">
-                            <a href="{{ route('events.register', $featured->slug) }}" class="btn btn-primary" style="flex:1">
+                            <a href="{{ route('events.register', $featured->slug) }}" class="btn btn-primary"
+                                style="flex:1">
                                 Daftar sekarang
                             </a>
                             <button class="btn btn-secondary" onclick="openEventModal({{ $featured->id }})" style="flex:1">
@@ -75,13 +73,10 @@
                     <article class="card prod" data-status="{{ $ev->status }}"
                         data-featured="{{ $featured && $featured->id === $ev->id ? '1' : '0' }}">
                         <div class="prod-img"
-                            style="
-                                    background-image:url('{{ $ev->cover_image ? asset('storage/' . $ev->cover_image) : asset('assets/img/event-default.jpg') }}');
-                                    background-size:contain;
-                                    background-repeat:no-repeat;
-                                    background-position:center;
-                                    background-color:#f5f5f5;
-                                ">
+                            style="--bg:url('{{ $ev->cover_image ? asset('storage/' . $ev->cover_image) : asset('assets/img/event-default.jpg') }}')">
+
+                            <img src="{{ $ev->cover_image ? asset('storage/' . $ev->cover_image) : asset('assets/img/event-default.jpg') }}"
+                                alt="{{ $ev->title }}" class="prod-cover">
 
                             <span class="badge {{ $ev->category === 'kompetisi' ? 'hot' : 'ok' }}">
                                 {{ $ev->category === 'lainnya' ? $ev->custom_category : ucfirst($ev->category) }}
@@ -91,6 +86,7 @@
                                 <div class="cube"></div>
                             @endif
                         </div>
+
 
                         <div class="prod-body">
                             <h3 class="prod-name">{{ $ev->title }}</h3>
@@ -102,7 +98,8 @@
 
                             <div style="display:flex;gap:10px;">
                                 @if ($ev->category === 'kompetisi')
-                                    <a href="{{ route('events.register', $ev->slug) }}" class="btn btn-primary" style="flex:1">
+                                    <a href="{{ route('events.register', $ev->slug) }}" class="btn btn-primary"
+                                        style="flex:1">
                                         Daftar
                                     </a>
                                 @endif

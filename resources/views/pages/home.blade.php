@@ -95,6 +95,76 @@
         <div class="container">
             <div class="section-title">
                 <div>
+                    <h2>Event rubik terdekat</h2>
+                    <p class="muted">Ikuti kompetisi, meetup, dan workshop.</p>
+                </div>
+                <a class="btn btn-secondary" href="{{ route('events') }}">Semua event</a>
+            </div>
+
+            @if ($featuredEvent)
+                <div class="card featured" data-status="{{ $featuredEvent->status }}" data-featured="main">
+                    <div class="featured-media"
+                        style="--bg:url('{{ $featuredEvent->cover_image ? asset('storage/' . $featuredEvent->cover_image) : asset('assets/img/event-default.jpg') }}')">
+                        <img src="{{ $featuredEvent->cover_image ? asset('storage/' . $featuredEvent->cover_image) : asset('assets/img/event-default.jpg') }}"
+                            alt="{{ $featuredEvent->title }}">
+                    </div>
+
+
+
+                    <div class="featured-body">
+                        <span class="badge hot">Featured</span>
+                        <h3>{{ $featuredEvent->title }}</h3>
+                        <p class="muted">{{ Str::limit($featuredEvent->description, 120) }}</p>
+
+                        <div class="kv">
+                            <div><i class="fa-regular fa-calendar-days"></i>
+                                {{ $featuredEvent->start_datetime->translatedFormat('d M Y • H:i') }}</div>
+                            <div><i class="fa-solid fa-location-dot"></i> {{ $featuredEvent->location }}</div>
+                        </div>
+
+                        <div style="display:flex;gap:12px;">
+                            <a href="{{ route('events.register', $featuredEvent->slug) }}" class="btn btn-primary"
+                                style="flex:1">
+                                Daftar sekarang
+                            </a>
+                            <button class="btn btn-secondary" onclick="openEventModal({{ $featuredEvent->id }})" style="flex:1">
+                                Lihat detail
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            </div>
+
+            <div style="height:16px"></div>
+
+            {{-- <div class="grid-4">
+                @foreach (array_slice($events, 1) as $ev)
+                    <article class="card prod">
+                        <div class="prod-img" style="aspect-ratio: 16/10;">
+                            <span class="badge {{ $ev['badge'][0] }}">{{ $ev['badge'][1] }}</span>
+                            <div style="width:82%;max-width:260px;">
+                                <div class="cube" style="border-radius:18px;border-width:6px"></div>
+                            </div>
+                        </div>
+                        <div class="prod-body">
+                            <p class="prod-name">{{ $ev['title'] }}</p>
+                            <p class="muted" style="margin:0 0 8px;line-height:1.6">
+                                📅 {{ $ev['date'] }}<br>
+                                📍 {{ $ev['location'] }}
+                            </p>
+                            <a class="btn btn-primary" href="{{ route('events') }}" style="width:100%;">Lihat detail</a>
+                        </div>
+                    </article>
+                @endforeach
+            </div> --}}
+        </div>
+    </section>
+
+    <section class="section" style="padding-top:0;">
+        <div class="container">
+            <div class="section-title">
+                <div>
                     <h2>Produk unggulan</h2>
                     <p class="muted">Pilihan favorit komunitas Daeng Rubik.</p>
                 </div>
@@ -142,60 +212,7 @@
     </section>
 
 
-    <section class="section" style="padding-top:0;">
-        <div class="container">
-            <div class="section-title">
-                <div>
-                    <h2>Event rubik terdekat</h2>
-                    <p class="muted">Ikuti kompetisi, meetup, dan workshop.</p>
-                </div>
-                <a class="btn btn-secondary" href="{{ route('events') }}">Semua event</a>
-            </div>
-
-            @php($e = $events[0])
-            <div class="card featured">
-                <div class="featured-media" aria-hidden="true"></div>
-                <div class="featured-body">
-                    <span class="badge {{ $e['badge'][0] }}">{{ $e['badge'][1] }}</span>
-                    <h3 style="margin:10px 0 6px;font-size:20px;letter-spacing:-.02em">{{ $e['title'] }}</h3>
-                    <p class="muted" style="margin:0;line-height:1.7">{{ $e['desc'] }}</p>
-                    <div class="kv">
-                        <div><span class="k" aria-hidden="true">📅</span><span>{{ $e['date'] }}</span></div>
-                        <div><span class="k" aria-hidden="true">📍</span><span>{{ $e['location'] }}</span></div>
-                        <div><span class="k" aria-hidden="true">🧾</span><span>Pendaftaran online (UI dulu)</span>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                        <a class="btn btn-primary" href="{{ route('events') }}">Daftar sekarang</a>
-                        <a class="btn btn-secondary" href="{{ route('events') }}">Lihat detail</a>
-                    </div>
-                </div>
-            </div>
-
-            <div style="height:16px"></div>
-
-            <div class="grid-4">
-                @foreach (array_slice($events, 1) as $ev)
-                    <article class="card prod">
-                        <div class="prod-img" style="aspect-ratio: 16/10;">
-                            <span class="badge {{ $ev['badge'][0] }}">{{ $ev['badge'][1] }}</span>
-                            <div style="width:82%;max-width:260px;">
-                                <div class="cube" style="border-radius:18px;border-width:6px"></div>
-                            </div>
-                        </div>
-                        <div class="prod-body">
-                            <p class="prod-name">{{ $ev['title'] }}</p>
-                            <p class="muted" style="margin:0 0 8px;line-height:1.6">
-                                📅 {{ $ev['date'] }}<br>
-                                📍 {{ $ev['location'] }}
-                            </p>
-                            <a class="btn btn-primary" href="{{ route('events') }}" style="width:100%;">Lihat detail</a>
-                        </div>
-                    </article>
-                @endforeach
-            </div>
-        </div>
-    </section>
+    
 
     {{-- <section class="section" style="background:var(--bg-soft);border-top:1px solid rgba(17,24,39,.06);border-bottom:1px solid rgba(17,24,39,.06)">
         <div class="container">

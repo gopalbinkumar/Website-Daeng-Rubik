@@ -14,7 +14,8 @@ class CompetitionResult extends Model
     protected $fillable = [
         'event_id',
         'competition_category_id',
-        'user_id',
+        'round_id',
+        'user_id',              // ✅ WAJIB
         'participant_name',
         'rank',
         'attempt1',
@@ -28,13 +29,13 @@ class CompetitionResult extends Model
 
     protected $casts = [
         'rank' => 'integer',
-        'attempt1' => 'float',
-        'attempt2' => 'float',
-        'attempt3' => 'float',
-        'attempt4' => 'float',
-        'attempt5' => 'float',
-        'best' => 'float',
-        'average' => 'float',
+        'attempt1' => 'string',
+        'attempt2' => 'string',
+        'attempt3' => 'string',
+        'attempt4' => 'string',
+        'attempt5' => 'string',
+        'best' => 'string',
+        'average' => 'string',
     ];
 
     public function event()
@@ -51,4 +52,10 @@ class CompetitionResult extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function round()
+    {
+        return $this->belongsTo(CompetitionRound::class, 'round_id');
+    }
+
 }

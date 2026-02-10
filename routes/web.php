@@ -92,16 +92,6 @@ Route::view('/user/events', 'pages.my-events')
 Route::view('/event/detail', 'pages.competition-detail')
     ->name('events.competition.show');
 
-// =================
-//   USER EVENTS
-// =================
-// Route::middleware('auth')->group(function () {
-//     Route::get('/user/events', [UserEventController::class, 'index'])
-//         ->name('user.events.index');
-
-//     Route::get('/events/{event}/competition', [UserEventController::class, 'showCompetition'])
-//         ->name('events.competition.show');
-// });
 
 // Auth Routes
 Route::prefix('auth')->name('auth.')->group(function () {
@@ -127,77 +117,137 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
 
+        /* =====================
+         | DASHBOARD
+         ===================== */
         Route::get('/', [HomeController::class, 'dashboardadmin'])
             ->name('dashboard');
 
 
-        //produk
+        /* =====================
+         | PRODUK
+         ===================== */
         Route::prefix('produk')
             ->controller(ProductController::class)
+            ->name('products.')
             ->group(function () {
 
-            Route::get('/', 'adminIndex')->name('products.index');
-            Route::post('/', 'store')->name('products.store');
-            Route::put('/{product}', 'update')->name('products.update');
-            Route::delete('/{product}', 'destroy')->name('products.destroy');
+                Route::get('/', 'adminIndex')->name('index');
+                Route::post('/', 'store')->name('store');
+                Route::put('/{product}', 'update')->name('update');
+                Route::delete('/{product}', 'destroy')->name('destroy');
+            });
 
-        });
 
-        //event
+        /* =====================
+         | EVENT
+         ===================== */
         Route::prefix('event')
             ->controller(EventController::class)
+            ->name('events.')
             ->group(function () {
 
-            Route::get('/', 'index')->name('events.index');
-            Route::post('/', 'store')->name('events.store');
-            Route::put('/{event}', 'update')->name('events.update');
-            Route::delete('/{event}', 'destroy')->name('events.destroy');
+                Route::get('/', 'index')->name('index');
+                Route::post('/', 'store')->name('store');
+                Route::put('/{event}', 'update')->name('update');
+                Route::delete('/{event}', 'destroy')->name('destroy');
+            });
 
-        });
 
-        //pembelajaran
+        /* =====================
+         | EVENT — PESERTA KOMPETISI
+         ===================== */
+        Route::prefix('events/participants')
+            ->controller(EventRegistrationController::class)
+            ->name('events.participants.')
+            ->group(function () {
+
+                Route::get('/', 'adminIndex')->name('index');
+                Route::post('/{registration}/accept', 'accept')->name('accept');
+                Route::post('/{registration}/reject', 'reject')->name('reject');
+                Route::put('/{registration}', 'update')->name('update');
+            });
+
+
+        /* =====================
+         | EVENT — HASIL KOMPETISI
+         ===================== */
+        Route::prefix('events/competition')
+            ->controller(CompetitionResultController::class)
+            ->name('events.competition.')
+            ->group(function () {
+
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+
+                // 🔥 INI YANG TADI HILANG
+                Route::post('/', 'store')->name('store');
+            });
+
+        /* =====================
+            | AJAX SUPPORT
+            ===================== */
+
+        // autocomplete peserta diterima
+        Route::get(
+            '/events/{eventId}/accepted-participants',
+            [CompetitionResultController::class, 'acceptedParticipants']
+        )->name('events.accepted-participants');
+
+        // 🔥 CHECK EXISTING RESULT (CREATE = EDIT)
+        Route::get(
+            '/events/{event}/competition/check',
+            [CompetitionResultController::class, 'check']
+        )->name('events.competition.check');
+
+Route::get(
+    '/events/{event}/competition/results',
+    [CompetitionResultController::class, 'resultsByCategoryRound']
+)->name('events.competition.results');
+
+
+        /* =====================
+         | PEMBELAJARAN
+         ===================== */
         Route::prefix('learn')
             ->controller(LearningMaterialController::class)
+            ->name('learn.')
             ->group(function () {
 
-            Route::get('/', 'index')->name('learn.index');
-            Route::post('/', 'store')->name('learn.store');
-            Route::put('/{learningMaterial}', 'update')->name('learn.update');
-            Route::delete('/{learningMaterial}', 'destroy')->name('learn.destroy');
+                Route::get('/', 'index')->name('index');
+                Route::post('/', 'store')->name('store');
+                Route::put('/{learningMaterial}', 'update')->name('update');
+                Route::delete('/{learningMaterial}', 'destroy')->name('destroy');
+            });
 
-        });
 
-        Route::view('/admin', 'admin.admins.index')->name('admins.index');
+        /* =====================
+         | ADMIN & PENGATURAN
+         ===================== */
+        Route::view('/admins', 'admin.admins.index')->name('admins.index');
         Route::view('/pengaturan', 'admin.settings')->name('settings');
 
 
-        Route::view('/competition/create', 'admin.events.results-create')
-            ->name('events.competition.create');
-
-        Route::view('/competition', 'admin.events.results-index')
-            ->name('events.competition.index');
-        // Hasil kompetisi
-        // Route::prefix('events/competition')
-        //     ->name('events.competition.')
-        //     ->controller(CompetitionResultController::class)
-        //     ->group(function () {
-        //     Route::get('/', 'index')->name('index');
-        //     Route::get('/create', 'create')->name('create');
-        //     Route::post('/', 'store')->name('store');
-        // });
-    
-        //penjualan
+        /* =====================
+         | LAPORAN & PENJUALAN
+         ===================== */
         Route::get('/laporan/penjualan', [SalesReportController::class, 'index'])
             ->name('reports.sales');
-        Route::post('/transactions/{transaction}/verify', [SalesReportController::class, 'verify'])
-            ->name('transactions.verify');
-        
+
+        Route::post(
+            '/transactions/{transaction}/verify',
+            [SalesReportController::class, 'verify']
+        )->name('transactions.verify');
+
         Route::get(
             '/reports/monthly-revenue',
             [SalesReportController::class, 'monthlyRevenueChart']
         )->name('reports.monthly-revenue');
 
 
+        /* =====================
+         | LOGOUT
+         ===================== */
         Route::post('/logout', [UserController::class, 'logout'])
             ->name('logout');
     });

@@ -7,6 +7,8 @@ use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class SalesReportController extends Controller
 {
@@ -51,17 +53,6 @@ class SalesReportController extends Controller
 
         /*
         |------------------------------------------------------------------
-        | TABLE DATA (PAKAI PAGINATION)
-        |------------------------------------------------------------------
-        */
-        $transactions = (clone $baseQuery)
-            ->with('items')
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        /*
-        |------------------------------------------------------------------
         | SUMMARY (TANPA PAGINATION)
         |------------------------------------------------------------------
         */
@@ -72,6 +63,38 @@ class SalesReportController extends Controller
         $avgTransaction = $totalTransaction
             ? $totalRevenue / $totalTransaction
             : 0;
+
+        /*
+        |------------------------------------------------------------------
+        | EXPORT PDF (PREVIEW + PRINT)
+        |------------------------------------------------------------------
+        */
+        if ($request->get('export') === 'pdf') {
+
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadView('admin.reports.sales-pdf', [
+                'transactions' => (clone $baseQuery)->with('items')->latest()->get(),
+                'totalRevenue' => $totalRevenue,
+                'totalTransaction' => $totalTransaction,
+                'avgTransaction' => $avgTransaction,
+                'filter' => $request->all(),
+            ]);
+
+            // ⬇⬇⬇ INI YANG BIKIN PREVIEW BROWSER
+            return $pdf->stream('laporan-penjualan.pdf');
+        }
+
+
+        /*
+        |------------------------------------------------------------------
+        | TABLE DATA (PAKAI PAGINATION)
+        |------------------------------------------------------------------
+        */
+        $transactions = (clone $baseQuery)
+            ->with('items')
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         /*
         |------------------------------------------------------------------
@@ -91,6 +114,7 @@ class SalesReportController extends Controller
             'products'
         ));
     }
+
 
 
     /*
@@ -113,23 +137,23 @@ class SalesReportController extends Controller
     }
 
     public function monthlyRevenueChart()
-{
-    $start = now()->subMonths(11)->startOfMonth();
-    $end   = now()->endOfMonth();
+    {
+        $start = now()->subMonths(11)->startOfMonth();
+        $end = now()->endOfMonth();
 
-    $data = Transaction::where('status', 'paid')
-        ->whereBetween('created_at', [$start, $end])
-        ->select(
-            DB::raw('YEAR(created_at) as year'),
-            DB::raw('MONTH(created_at) as month'),
-            DB::raw('SUM(total_amount) as total')
-        )
-        ->groupBy('year', 'month')
-        ->orderBy('year')
-        ->orderBy('month')
-        ->get();
+        $data = Transaction::where('status', 'paid')
+            ->whereBetween('created_at', [$start, $end])
+            ->select(
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(total_amount) as total')
+            )
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
 
-    return response()->json($data);
-}
-    
+        return response()->json($data);
+    }
+
 }

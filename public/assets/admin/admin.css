@@ -97,6 +97,48 @@ body {
     font-size: 20px;
 }
 
+/* Submenu */
+.submenu {
+    display: none;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.submenu.show {
+    display: block;
+}
+
+.submenu-item {
+    display: block;
+    padding: 10px 20px 10px 52px; /* geser ke kanan */
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.submenu-item:hover {
+    background: var(--admin-sidebar-hover);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.submenu-item.active {
+    background: var(--admin-sidebar-active);
+    color: #fff;
+    border-left-color: var(--admin-primary);
+}
+
+/* Arrow dropdown */
+.menu-item .arrow {
+    margin-left: auto;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.menu-item.open .arrow {
+    transform: rotate(180deg);
+}
+
 /* Topbar */
 .admin-topbar {
     height: 64px;
@@ -375,7 +417,6 @@ body {
     background: #fff;
     cursor: pointer;
 }
-
 
 /* Report filters (Laporan Penjualan) */
 .report-filters {
@@ -847,4 +888,22 @@ body {
     .form-row {
         grid-template-columns: 1fr;
     }
+}
+
+/* =========================
+   HIDE SIDEBAR (HALAMAN KHUSUS)
+========================= */
+
+body.hide-admin-sidebar .admin-sidebar {
+    display: none;
+}
+
+/* Geser konten jadi full width */
+body.hide-admin-sidebar .admin-main {
+    margin-left: 0 !important;
+    width: 100%;
+}
+
+body.hide-admin-sidebar .admin-content {
+    max-width: 100%;
 }

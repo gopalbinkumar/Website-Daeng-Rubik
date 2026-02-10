@@ -9,6 +9,70 @@ use App\Models\EventRegistration;
 
 class EventRegistrationController extends Controller
 {
+    public function adminIndex(Request $request)
+    {
+        // semua event kompetisi (urut terdekat)
+        $competitionEvents = Event::competition()
+            ->orderBy('start_datetime', 'asc')
+            ->get();
+
+        /**
+         * JIKA FILTER EVENT DIPILIH
+         * → TAMPILKAN PESERTA
+         */
+        if ($request->filled('event_id')) {
+            $participants = EventRegistration::with([
+                'event.competitionCategories', // 🔥 INI PENTING
+                'competitionCategories'        // 🔥 INI PENTING
+            ])
+                ->where('event_id', $request->event_id)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10)
+                ->withQueryString();
+
+            return view('admin.events.participant-list', [
+                'competitionEvents' => $competitionEvents,
+                'participants' => $participants,
+                'summaryMode' => false,
+            ]);
+        }
+
+        /**
+         * JIKA SEMUA EVENT
+         * → TAMPILKAN RINGKASAN EVENT
+         */
+        $eventSummaries = Event::competition()
+            ->withCount('registrations')
+            ->orderBy('start_datetime', 'asc')
+            ->paginate(10);
+
+        return view('admin.events.participant-list', [
+            'competitionEvents' => $competitionEvents,
+            'eventSummaries' => $eventSummaries,
+            'summaryMode' => true,
+        ]);
+    }
+
+
+    public function accept(EventRegistration $registration)
+    {
+        $registration->update([
+            'status' => 'accepted',
+        ]);
+
+        return back()->with('success', 'Pendaftaran diterima');
+    }
+
+    public function reject(EventRegistration $registration)
+    {
+        $registration->update([
+            'status' => 'rejected',
+        ]);
+
+        return back()->with('success', 'Pendaftaran ditolak');
+    }
+
+
     public function create($slug)
     {
         $event = Event::competition()
@@ -62,4 +126,18 @@ class EventRegistrationController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function update(Request $request, EventRegistration $registration)
+    {
+        $request->validate([
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:competition_categories,id',
+        ]);
+
+        $registration->competitionCategories()
+            ->sync($request->categories ?? []);
+
+        return back()->with('success', 'Data peserta berhasil diperbarui');
+    }
+
 }

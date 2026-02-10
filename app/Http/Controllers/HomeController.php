@@ -23,7 +23,14 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
-        return view('pages.home', compact('featuredProducts'));
+        $featuredEvent = Event::where('category', 'kompetisi')
+            ->where('status', 'upcoming')
+            ->where('start_datetime', '>=', now())
+            ->orderBy('start_datetime', 'asc')
+            ->with('competitionCategories')
+            ->first();
+
+        return view('pages.home', compact('featuredProducts', 'featuredEvent'));
     }
 
     /**
