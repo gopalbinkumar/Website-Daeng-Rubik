@@ -9,9 +9,11 @@ use App\Models\CubeCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\ProductImage;
+use App\Models\CartItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-
+use App\Models\TransactionItem;
+use Illuminate\Database\QueryException;
 
 
 class ProductController extends Controller
@@ -88,7 +90,7 @@ class ProductController extends Controller
             'is_active' => 'boolean',
 
             'images' => 'required|array|max:3',
-            'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
+            'images.*' => 'image|max:4096',
 
             'marketplace_links.tokopedia' => 'nullable|url',
             'marketplace_links.shopee' => 'nullable|url',
@@ -154,13 +156,26 @@ class ProductController extends Controller
             'difficulty_level' => 'required',
             'description' => 'required',
             'is_active' => 'boolean',
-            'images.*' => 'nullable|image|max:2048',
+            'images.*' => 'nullable|image|max:4096',
 
             // 🔥 TAMBAHKAN INI
             'marketplace_links.tokopedia' => 'nullable|url',
             'marketplace_links.shopee' => 'nullable|url',
             'marketplace_links.tiktok_shop' => 'nullable|url',
         ]);
+
+        $pendingQty = TransactionItem::whereHas('transaction', function ($q) {
+            $q->where('status', 'pending');
+        })
+            ->where('product_id', $product->id)
+            ->sum('quantity');
+
+        if ($validated['stock'] < $pendingQty) {
+            return back()->with(
+                'error',
+                "Stok tidak boleh lebih kecil dari total order pending ($pendingQty)"
+            );
+        }
 
         $product->update([
             'name' => $validated['name'],
@@ -175,6 +190,16 @@ class ProductController extends Controller
             'description' => $validated['description'],
             'is_active' => $validated['is_active'] ?? false,
         ]);
+
+        // Sinkronkan harga di semua cart aktif
+        CartItem::where('product_id', $product->id)
+            ->whereHas('cart', function ($q) {
+                $q->where('status', 'active');
+            })
+            ->update([
+                'unit_price' => $product->price
+            ]);
+
 
         // LOOP SLOT TETAP 0–2
         foreach ([0, 1, 2] as $position) {
@@ -217,14 +242,32 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil diperbarui');
     }
 
-
     public function destroy(Product $product)
     {
+        // 🔥 Cek apakah ada transaksi pending
+        $hasPending = $product->transactionItems()
+            ->whereHas('transaction', function ($q) {
+                $q->where('status', 'pending');
+            })
+            ->exists();
+
+        if ($hasPending) {
+            return redirect()
+                ->route('admin.products.index')
+                ->with(
+                    'error',
+                    'Produk tidak dapat dihapus karena masih memiliki transaksi pending.'
+                );
+        }
+
+        // 🔥 Soft delete
         $product->delete();
+
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Produk berhasil dihapus');
     }
+
 
     protected function syncMarketplaceLinks(Product $product, array $links): void
     {
@@ -257,6 +300,7 @@ class ProductController extends Controller
     {
         $query = Product::with(['primaryImage', 'cubeCategory'])
             ->where('is_active', true);
+
 
         // 🔎 FILTER KATEGORI (MULTI)
         if ($request->filled('category')) {
@@ -301,18 +345,24 @@ class ProductController extends Controller
         /* =========================
    SEARCH PRODUK (NAMA)
 ========================= */
-if ($request->filled('search')) {
-    $query->where('name', 'LIKE', '%' . $request->search . '%');
-}
+        if ($request->filled('search')) {
+            $query->where('name', 'LIKE', '%' . $request->search . '%');
+        }
 
         /* =========================
            PAGINATION
         ========================= */
         $products = $query
-            ->paginate(9)
+            ->paginate(12)
             ->withQueryString(); // 🔥 filter tidak hilang saat pindah halaman
 
-        $cubeCategories = CubeCategory::orderBy('name')->get();
+        $cubeCategories = CubeCategory::orderByRaw
+        ("
+        CASE 
+            WHEN name = 'Lainnya' THEN 1
+            ELSE 0
+        END
+        ")->orderBy('name')->get();
         return view('pages.products', compact('products', 'cubeCategories'));
     }
 

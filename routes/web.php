@@ -14,6 +14,21 @@ use App\Http\Controllers\CompetitionResultController;
 use App\Http\Controllers\DashboardAdminController;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\EventRegistrationController;
+use App\Http\Controllers\UserCompetitionController;
+use App\Http\Controllers\WeightedScoringController;
+
+use App\Mail\ResetCodeMail;
+use Illuminate\Support\Facades\Mail;
+
+Route::get('/test-otp', function () {
+
+    Mail::to('drgnclasher@gmail.com')
+        ->send(new ResetCodeMail(123456));
+
+    return 'OTP terkirim!';
+});
+
+
 
 Route::get('/test-telegram', function () {
     Http::post("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage", [
@@ -50,10 +65,21 @@ Route::prefix('keranjang')->name('cart.')->group(function () {
 Route::prefix('belajar')->name('learn.')->controller(LearningMaterialController::class)->group(function () {
 
     Route::get('/', 'indexUser')->name('index');
-    Route::get('/video', 'videos')->name('video');
-    Route::get('/modul', 'modules')->name('module');
+    Route::get('/video', 'videos')->middleware('auth')->name('video');
+    Route::get('/modul', 'modules')->middleware('auth')->name('module');
+    Route::get('/bookmark', 'bookmarks')->name('bookmark');
 
 });
+Route::get(
+    '/belajar/bookmark',
+    [LearningMaterialController::class, 'bookmarks']
+)->name('learn.bookmark');
+
+Route::middleware('auth')->post(
+    '/learn/{learningMaterial}/bookmark',
+    [LearningMaterialController::class, 'toggleBookmark']
+)->name('learn.bookmark.toggle');
+
 
 Route::get('/checkout', [CheckoutController::class, 'index'])
     ->name('checkout')
@@ -70,8 +96,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/event/registrasi/{slug}', [EventRegistrationController::class, 'create'])
         ->name('events.register');
 
-
-
     Route::post('/event/registrasi', [EventRegistrationController::class, 'store'])
         ->name('events.register.store');
 });
@@ -79,18 +103,30 @@ Route::middleware('auth')->group(function () {
 Route::view('/tentang', 'pages.about')->name('about');
 Route::view('/kontak', 'pages.contact')->name('contact');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/mytransactions', [TransactionController::class, 'index'])
+
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/my-profile', [UserController::class, 'profile'])
+        ->name('profile');
+
+    Route::put('/my-profile', [UserController::class, 'updateProfile'])
+        ->name('profile.update');
+
+    Route::put('/my-profile/password', [UserController::class, 'updatePassword'])
+        ->name('profile.password');
+
+    Route::get('/my-transactions', [TransactionController::class, 'index'])
         ->name('transactions');
+
+    Route::get('/my-competitions',[UserCompetitionController::class, 'index']
+        )->name('user.competitions');
 });
 
-
-Route::view('/user/events', 'pages.my-events')
-    ->name('user.events.index');
-
-
-Route::view('/event/detail', 'pages.competition-detail')
-    ->name('events.competition.show');
+Route::get(
+    '/competition/result/{id}/{slug}',
+    [UserCompetitionController::class, 'show']
+)->name('events.competition.show');
 
 
 // Auth Routes
@@ -104,10 +140,27 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
-    Route::view('/lupa-password', 'auth.forgot-password')->name('forgot');
+    Route::get('/lupa-password', function () {
+        return view('auth.forgot-password');
+    })->name('forgot');
+
+    Route::post('/forgot-password/send-code', [UserController::class, 'sendResetCode'])
+        ->name('forgot.send.code');
+
+    Route::post('/forgot-password/verify-code', [UserController::class, 'checkResetCode'])
+        ->name('forgot.verify.code');
+
+    Route::post('/forgot-password/update-password', [UserController::class, 'updateForgotPassword'])
+        ->name('forgot.update.password');
+
 });
 
 
+Route::middleware(['auth', 'admin'])
+    ->get(
+        '/admin/weighted-scoring',
+        [WeightedScoringController::class, 'api']
+    )->name('admin.weighted.index');
 
 // =================
 //   ADMIN ROUTES
@@ -179,15 +232,12 @@ Route::middleware(['auth', 'admin'])
 
                 Route::get('/', 'index')->name('index');
                 Route::get('/create', 'create')->name('create');
-
-                // 🔥 INI YANG TADI HILANG
                 Route::post('/', 'store')->name('store');
             });
 
         /* =====================
             | AJAX SUPPORT
             ===================== */
-
         // autocomplete peserta diterima
         Route::get(
             '/events/{eventId}/accepted-participants',
@@ -200,10 +250,10 @@ Route::middleware(['auth', 'admin'])
             [CompetitionResultController::class, 'check']
         )->name('events.competition.check');
 
-Route::get(
-    '/events/{event}/competition/results',
-    [CompetitionResultController::class, 'resultsByCategoryRound']
-)->name('events.competition.results');
+        Route::get(
+            '/events/{event}/competition/results',
+            [CompetitionResultController::class, 'resultsByCategoryRound']
+        )->name('events.competition.results');
 
 
         /* =====================
@@ -213,7 +263,6 @@ Route::get(
             ->controller(LearningMaterialController::class)
             ->name('learn.')
             ->group(function () {
-
                 Route::get('/', 'index')->name('index');
                 Route::post('/', 'store')->name('store');
                 Route::put('/{learningMaterial}', 'update')->name('update');
@@ -224,9 +273,17 @@ Route::get(
         /* =====================
          | ADMIN & PENGATURAN
          ===================== */
-        Route::view('/admins', 'admin.admins.index')->name('admins.index');
         Route::view('/pengaturan', 'admin.settings')->name('settings');
 
+        /* ===============================
+             ADMIN USER MANAGEMENT
+        =================================*/
+        // tampilkan semua user
+        Route::get('/users', [UserController::class, 'index'])
+            ->name('users.index');
+        // hapus user
+        Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])
+            ->name('users.destroy');
 
         /* =====================
          | LAPORAN & PENJUALAN
@@ -238,6 +295,10 @@ Route::get(
             '/transactions/{transaction}/verify',
             [SalesReportController::class, 'verify']
         )->name('transactions.verify');
+        Route::post(
+            '/transactions/{transaction}/reject',
+            [SalesReportController::class, 'reject']
+        )->name('transactions.reject');
 
         Route::get(
             '/reports/monthly-revenue',

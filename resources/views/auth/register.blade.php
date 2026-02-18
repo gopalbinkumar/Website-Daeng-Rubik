@@ -4,12 +4,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Daftar - Daeng Rubik</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,600,700,800,900&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.1/css/all.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
@@ -69,12 +72,13 @@
                 <h1 class="auth-title">Daftar Akun Baru</h1>
                 <p class="auth-subtitle">Mulai perjalanan rubik Anda bersama kami</p>
 
-                <form class="auth-form" method="POST" action="{{ route('auth.register.post') }}">
+                <form id="registerForm" class="auth-form" method="POST" action="{{ route('auth.register.post') }}">
                     @csrf
                     <div class="form-group">
                         <label class="form-label">Nama Lengkap <span class="required">*</span></label>
                         <div class="input-wrapper">
-                            <input type="text" name="name" class="form-input" placeholder="Masukkan nama lengkap Anda" required>
+                            <input type="text" name="name" class="form-input"
+                                placeholder="Masukkan nama lengkap Anda" required>
                             <span class="input-icon"><i class="fa-regular fa-user"></i></span>
                         </div>
                     </div>
@@ -82,7 +86,8 @@
                     <div class="form-group">
                         <label class="form-label">Email <span class="required">*</span></label>
                         <div class="input-wrapper">
-                            <input type="email" name="email" class="form-input" placeholder="email@example.com" required>
+                            <input type="email" name="email" class="form-input" placeholder="email@example.com"
+                                required>
                             <span class="input-icon"><i class="fa-regular fa-envelope"></i></span>
                         </div>
                     </div>
@@ -90,19 +95,21 @@
                     <div class="form-group">
                         <label class="form-label">Nomor WhatsApp <span class="required">*</span></label>
                         <div class="input-wrapper">
-                            <input type="tel" name="whatsapp" class="form-input" placeholder="+62 812-3456-7890" required>
+                            <input type="number" name="whatsapp" class="form-input" placeholder="081234567890"
+                                required>
                             <span class="input-icon"><i class="fa-brands fa-whatsapp"></i></span>
                         </div>
-                        <small class="form-helper">Untuk konfirmasi pesanan & event</small>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Password <span class="required">*</span></label>
                         <div class="input-wrapper">
-                            <input type="password" name="password" id="password" class="form-input" placeholder="Minimal 8 karakter"
-                                required>
+                            <input type="password" name="password" id="password" class="form-input"
+                                placeholder="Minimal 8 karakter" required>
                             <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
-                            <button type="button" class="toggle-password">👁</button>
+                            <button type="button" class="toggle-password">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
                         </div>
                         <div class="password-strength">
                             <div class="strength-bar">
@@ -115,10 +122,12 @@
                     <div class="form-group">
                         <label class="form-label">Konfirmasi Password <span class="required">*</span></label>
                         <div class="input-wrapper">
-                            <input type="password" name="password_confirmation" id="confirmPassword" class="form-input" placeholder="Ulangi password"
-                                required>
+                            <input type="password" name="password_confirmation" id="confirmPassword"
+                                class="form-input" placeholder="Ulangi password" required>
                             <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
-                            <button type="button" class="toggle-password">👁</button>
+                            <button type="button" class="toggle-password">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
                         </div>
                         <small class="form-error" style="display: none;">
                             ⚠️ Password tidak cocok
@@ -142,6 +151,52 @@
     </div>
 
     <script src="{{ asset('assets/auth.js') }}" defer></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            let form = this;
+            let formData = new FormData(form);
+
+            fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: data.message,
+                            confirmButtonText: 'Login Sekarang',
+                            confirmButtonColor: '#E53935',
+                            customClass: {
+                                confirmButton: 'auth-btn'
+                            }
+                        }).then(() => {
+                            window.location.href = "{{ route('auth.login') }}";
+                        });
+                    }
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan, coba lagi.',
+                        confirmButtonColor: '#E53935',
+                        customClass: {
+                            confirmButton: 'auth-btn'
+                        }
+                    });
+                });
+        });
+    </script>
+
+
 </body>
 
 </html>

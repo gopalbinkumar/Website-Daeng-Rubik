@@ -22,16 +22,9 @@
             <div class="cart-layout">
                 <div class="cart-main">
                     <div class="cart-card">
-                        <div class="cart-card-header">
-                            <h2>Daftar Produk</h2>
-                        </div>
-
                         {{-- EMPTY STATE --}}
                         @if (!$cart || $cart->items->isEmpty())
                             <div class="cart-empty">
-                                <div class="empty-illustration">
-                                    <div class="cube"></div>
-                                </div>
                                 <h3>Keranjang masih kosong</h3>
                                 <p>Tambahkan produk dari halaman katalog untuk melihatnya di sini.</p>
                                 <a href="{{ route('products') }}" class="btn btn-primary">
@@ -39,6 +32,9 @@
                                 </a>
                             </div>
                         @else
+                            <div class="cart-card-header">
+                                <h2>Daftar Produk</h2>
+                            </div>
                             <div class="cart-table-wrapper">
                                 <table class="cart-table">
                                     <thead>
@@ -47,9 +43,7 @@
                                                 <input type="checkbox" id="checkAll">
                                             </th>
                                             <th>Produk</th>
-                                            <th>Harga</th>
                                             <th>Jumlah</th>
-                                            <th>Subtotal</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -78,41 +72,26 @@
                                                         </div>
                                                         <div>
                                                             <div class="name">{{ $item->product->name }}</div>
-                                                            <div class="meta">ID #{{ $item->product->id }}</div>
+                                                            <div class="meta">Rp
+                                                                {{ number_format($item->unit_price, 0, ',', '.') }}</div>
                                                         </div>
                                                     </div>
                                                 </td>
 
                                                 <td>
-                                                    Rp {{ number_format($item->unit_price, 0, ',', '.') }}
-                                                </td>
+                                                    <div class="qty-control" data-id="{{ $item->id }}">
 
-                                                <td>
-                                                    <div class="qty-control">
-                                                        <form action="{{ route('cart.updateQty', $item->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <input type="hidden" name="action" value="dec">
-                                                            <button type="submit"
-                                                                {{ $item->quantity <= 1 ? 'disabled' : '' }}>−</button>
-                                                        </form>
+                                                        <button type="button" class="qty-btn" data-action="dec">
+                                                            −
+                                                        </button>
 
-                                                        <span>{{ $item->quantity }}</span>
+                                                        <span class="qty-value">{{ $item->quantity }}</span>
 
-                                                        <form action="{{ route('cart.updateQty', $item->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <input type="hidden" name="action" value="inc">
-                                                            <button type="submit"
-                                                                {{ $item->quantity >= $item->product->stock ? 'disabled' : '' }}>+</button>
-                                                        </form>
+                                                        <button type="button" class="qty-btn" data-action="inc">
+                                                            +
+                                                        </button>
+
                                                     </div>
-                                                </td>
-
-                                                <td>
-                                                    Rp {{ number_format($subtotal, 0, ',', '.') }}
                                                 </td>
 
                                                 <td>
@@ -200,11 +179,101 @@
             });
 
             if (selected.length === 0) {
-                alert('Pilih minimal 1 produk untuk checkout');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Belum Ada Produk',
+                    text: 'Silakan pilih minimal 1 produk untuk melanjutkan ke checkout.',
+                    confirmButtonColor: '#E53935'
+                });
+
                 return;
             }
+
 
             window.location.href = `{{ route('checkout') }}?items=${selected.join(',')}`;
         }
     </script>
+
+    <script>
+        document.querySelectorAll('.qty-btn').forEach(btn => {
+
+            btn.addEventListener('click', async function() {
+
+                const wrapper = this.closest('.qty-control');
+                const itemId = wrapper.dataset.id;
+                const action = this.dataset.action;
+                const qtySpan = wrapper.querySelector('.qty-value');
+
+                try {
+
+                    const res = await fetch(
+                        `{{ url('keranjang/item') }}/${itemId}/qty`, {
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                action
+                            })
+                        }
+                    );
+
+                    const data = await res.json();
+
+                    // ❌ Jika error dari backend
+                    if (!res.ok) {
+
+                        Swal.fire({
+                            icon: 'warning',
+                            // title: 'Perhatian',
+                            text: data.message || 'Tidak dapat mengupdate jumlah.',
+                            confirmButtonColor: '#E53935',
+                            cancelButtonColor: '#fff',
+                            customClass: {
+                                confirmButton: 'btn btn-primary',
+                                cancelButton: 'btn btn-secondary'
+                            }
+                        });
+
+                        return;
+                    }
+
+                    // ✅ Update quantity UI
+                    qtySpan.textContent = data.quantity;
+
+                    // Update summary checkbox dataset
+                    const checkbox = document.querySelector(`.cart-check[data-id="${itemId}"]`);
+                    if (checkbox) {
+                        checkbox.dataset.qty = data.quantity;
+                    }
+
+                    updateSummary();
+
+                } catch (err) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan',
+                        text: 'Gagal mengupdate jumlah produk.',
+                        confirmButtonColor: '#E53935',
+                        cancelButtonColor: '#fff',
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                            cancelButton: 'btn btn-secondary'
+                        }
+                    });
+
+                }
+
+            });
+
+        });
+    </script>
+
+
+
+
+
 @endsection

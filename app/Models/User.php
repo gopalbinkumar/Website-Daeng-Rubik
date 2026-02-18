@@ -23,6 +23,8 @@ class User extends Authenticatable
         'whatsapp',
         'password',
         'role',
+        'reset_code',
+        'reset_code_expires_at',
     ];
 
 
@@ -62,4 +64,20 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    public function bookmarks()
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function bookmarkedMaterials()
+    {
+        return $this->belongsToMany(
+            LearningMaterial::class,
+            'bookmarks',
+            'user_id',
+            'learning_material_id'
+        );
+    }
+
 }

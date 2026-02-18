@@ -183,7 +183,7 @@
 }
 
 .cart-item-info .name {
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 2px;
 }
 
@@ -240,14 +240,145 @@
     font-weight: 800;
 }
 
+input[type="checkbox"] {
+    accent-color: var(--red);
+}
+
+
 @media (max-width: 980px) {
     .cart-layout {
         grid-template-columns: 1fr;
     }
 }
 
+/* ===============================
+   MOBILE CART FIT ONE SCREEN
+================================= */
 @media (max-width: 720px) {
-    .cart-card {
-        padding: 18px 16px;
+
+    .cart-table-wrapper {
+        overflow-x: hidden;
+    }
+
+    .cart-table {
+        width: 100%;
+        table-layout: fixed;
+        font-size: 11px;
+    }
+
+    .cart-table th,
+    .cart-table td {
+        padding: 6px 4px;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    /* === 4 KOLOM === */
+
+    .cart-table th:nth-child(1),
+    .cart-table td:nth-child(1) {
+        width: 8%;
+        text-align: center;
+    }
+
+    .cart-table th:nth-child(2),
+    .cart-table td:nth-child(2) {
+        width: 55%;
+    }
+
+    .cart-table th:nth-child(3),
+    .cart-table td:nth-child(3) {
+        width: 22%;
+        text-align: center;
+    }
+
+    .cart-table th:nth-child(4),
+    .cart-table td:nth-child(4) {
+        width: 15%;
+        text-align: center;
+    }
+
+    /* =========================
+       FIX GAMBAR PRODUK
+    ========================== */
+
+    .cart-item-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0; /* 🔥 penting supaya flex tidak overflow */
+    }
+
+    .cart-item-info .thumb {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        flex-shrink: 0; /* 🔥 supaya tidak mengecil */
+        background: #fff;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cart-item-info .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* 🔥 tampil full */
+        display: block;
+    }
+
+    /* =========================
+       TEXT HANDLING
+    ========================== */
+
+    .cart-item-info > div {
+        min-width: 0; /* 🔥 WAJIB agar ellipsis jalan */
+        overflow: hidden;
+    }
+
+    .cart-item-info .name {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cart-item-info .meta {
+        font-size: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* =========================
+       QTY CONTROL
+    ========================== */
+
+    .qty-control {
+        gap: 2px;
+        padding: 2px 4px;
+    }
+
+    .qty-control button {
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+    }
+
+    .qty-control span {
+        font-size: 11px;
+        min-width: 14px;
+    }
+
+    .cart-table td:last-child i {
+        font-size: 12px;
+    }
+
+    .summary-row {
+        font-size: 12px;
     }
 }
+
+
+

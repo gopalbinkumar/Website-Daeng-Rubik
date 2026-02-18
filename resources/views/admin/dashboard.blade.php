@@ -25,41 +25,43 @@
 
         <div class="stat-card">
             <div class="stat-icon"><i class="fa-solid fa-user"></i></div>
-            <div class="stat-value">{{ $totalAdmins }}</div>
-            <div class="stat-label">Total Admin</div>
+            <div class="stat-value">{{ $totalUsers }}</div>
+            <div class="stat-label">Total Pengguna</div>
         </div>
     </div>
+    {{-- @php
+        $ranking = [
+            ['product' => 'Rubik 3x3', 'score' => 10.0],
+            ['product' => 'Rubik 4x4', 'score' => 6.93],
+            ['product' => 'Pyraminx', 'score' => 6.25],
+            // ['product' => 'Rubik 2x2', 'score' => 5.76],
+            // ['product' => 'Megaminx', 'score' => 4.42],
+        ];
+    @endphp --}}
+
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-        {{-- AKTIVITAS TERKINI --}}
-        {{-- <div class="card">
+        {{-- weighted scoring --}}
+        <div class="card">
             <div class="card-header">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Aktivitas Terkini</h3>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">
+                    Rekomendasi Prioritas Restock
+                </h3>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="restockCard">
 
-                @forelse ($activities as $act)
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fa-solid {{ $act['icon'] }}"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-text">{{ $act['text'] }}</div>
-                            <div class="activity-time">
-                                {{ $act['time']->diffForHumans() }}
-                            </div>
+                <div class="activity-item">
+                    <div class="activity-content">
+                        <div class="activity-text">
+                            Memuat data...
                         </div>
                     </div>
-                @empty
-                    <div class="activity-item">
-                        <div class="activity-content">
-                            <div class="activity-text">Belum ada aktivitas</div>
-                        </div>
-                    </div>
-                @endforelse
+                </div>
 
             </div>
-        </div> --}}
+        </div>
+
+
 
         <div class="card">
             <div class="card-header">
@@ -101,6 +103,36 @@
                 @empty
                     <div style="padding: 12px 0; color: var(--admin-text-muted);">
                         Belum ada produk
+                    </div>
+                @endforelse
+
+            </div>
+        </div>
+
+        {{-- AKTIVITAS TERKINI --}}
+        <div class="card">
+            <div class="card-header">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Aktivitas Terkini</h3>
+            </div>
+            <div class="card-body">
+
+                @forelse ($activities as $act)
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fa-solid {{ $act['icon'] }}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">{{ $act['text'] }}</div>
+                            <div class="activity-time">
+                                {{ $act['time']->diffForHumans() }}
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="activity-item">
+                        <div class="activity-content">
+                            <div class="activity-text">Belum ada aktivitas</div>
+                        </div>
                     </div>
                 @endforelse
 
@@ -178,6 +210,57 @@
                         }
                     }
                 });
+            });
+    </script>
+    <script>
+        fetch("{{ route('admin.weighted.index') }}")
+            .then(res => res.json())
+            .then(data => {
+
+                const container = document.getElementById('restockCard');
+                container.innerHTML = '';
+
+                if (data.length === 0) {
+                    container.innerHTML = `
+                <div class="activity-item">
+                    <div class="activity-content">
+                        <div class="activity-text">
+                            Belum ada data rekomendasi
+                        </div>
+                    </div>
+                </div>
+            `;
+                    return;
+                }
+
+                data.forEach((row, index) => {
+
+                    let icon = 'fa-cube';
+                    if (index === 0) icon = 'fa-trophy';
+                    else if (index === 1) icon = 'fa-medal';
+                    else if (index === 2) icon = 'fa-award';
+
+                    container.innerHTML += `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fa-solid ${icon}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">
+                            <strong>#${index + 1}</strong>
+                            ${row.product}
+                            <span style="float:right; font-weight:600;">
+                                ${parseFloat(row.score).toFixed(2)}
+                            </span>
+                        </div>
+                        <div class="activity-time">
+                            Skor Weighted Scoring
+                        </div>
+                    </div>
+                </div>
+            `;
+                });
+
             });
     </script>
 

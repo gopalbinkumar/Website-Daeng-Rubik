@@ -14,11 +14,13 @@ class CompetitionCategory extends Model
     protected $fillable = [
         'code',
         'name',
+        'main_category',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'main_category' => 'boolean',
     ];
 
     /**

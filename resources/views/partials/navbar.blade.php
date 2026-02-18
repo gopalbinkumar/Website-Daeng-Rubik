@@ -100,14 +100,6 @@
                     @endif
                 </a>
 
-
-                {{-- <button class="icon-btn" type="button" aria-label="Cari">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 21l-4.3-4.3" />
-                        <circle cx="11" cy="11" r="7" />
-                    </svg>
-                </button> --}}
-
                 <div class="user-dropdown">
                     <button class="icon-btn" id="userDropdownBtn" aria-label="User menu">
                         <i class="fa-solid fa-user"></i>
@@ -123,11 +115,11 @@
 
                             <div class="dropdown-divider"></div>
 
-                            <a href="">
+                            <a href="{{ route('profile') }}">
                                 <i class="fa-regular fa-user-circle"></i> Profil Saya
                             </a>
 
-                            <a href="{{ route('user.events.index') }}">
+                            <a href="{{ route('user.competitions') }}">
                                 <i class="fa-regular fa-calendar-check"></i> Event Saya
                             </a>
 
@@ -137,9 +129,9 @@
 
                             <div class="dropdown-divider"></div>
 
-                            <form action="{{ route('auth.logout') }}" method="POST">
+                            <form id="userLogoutForm" action="{{ route('auth.logout') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="dropdown-danger">
+                                <button type="button" class="dropdown-danger" onclick="confirmUserLogout()">
                                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                                 </button>
                             </form>
@@ -168,6 +160,7 @@
 
 <div id="drawerBackdrop" class="drawer-backdrop" aria-hidden="true"></div>
 <aside id="mobileDrawer" class="drawer" aria-label="Menu mobile">
+
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
         <a class="brand" href="{{ url('/') }}">
             <img src="{{ asset('assets/logo-daeng-rubik.png') }}" alt="Daeng Rubik Logo" class="brand-logo" />
@@ -180,43 +173,139 @@
         </button>
     </div>
 
-    <nav class="drawer-links" aria-label="Navigasi mobile">
-        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Beranda</a>
-        <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}">Produk</a>
-        <a class="nav-link {{ $active('event') }}" href="{{ route('events') }}">Event</a>
-        <a class="nav-link {{ $active('belajar') }}" href="{{ route('learn.index') }}">Belajar</a>
-        <a class="nav-link {{ $active('tentang') }}" href="{{ route('about') }}">Tentang</a>
-        <a class="nav-link {{ $active('kontak') }}" href="{{ route('contact') }}">Kontak</a>
-    </nav>
+    {{-- ===== USER INFO ===== --}}
+    @auth
+        <div style="margin:20px 0;padding:14px;border-radius:12px;background:rgba(17,24,39,.04);">
+            <strong style="display:block;font-size:14px;">
+                {{ auth()->user()->name }}
+            </strong>
+            <small style="color:var(--muted);font-size:12px;">
+                {{ auth()->user()->email }}
+            </small>
+        </div>
+        @endif
 
-    <div class="drawer-footer">
-        @auth
-            <form action="{{ route('auth.logout') }}" method="POST" style="flex:1;">
-                @csrf
-                <button type="submit" class="btn btn-outline" style="width:100%;justify-content:center;">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </button>
-            </form>
-        @else
-            <a class="btn btn-primary" href="{{ route('auth.login') }}" style="flex:1;justify-content:center;">
-                <i class="fa-solid fa-right-to-bracket"></i> Login
+        {{-- ===== NAV LINKS ===== --}}
+        <nav class="drawer-links" aria-label="Navigasi mobile">
+
+            <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
+                Beranda
             </a>
-        @endauth
-    </div>
 
-</aside>
+            <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}">
+                Produk
+            </a>
 
-<script>
-    const userBtn = document.getElementById('userDropdownBtn');
-    const userMenu = document.getElementById('userDropdownMenu');
+            <a class="nav-link {{ $active('event') }}" href="{{ route('events') }}">
+                Event
+            </a>
 
-    userBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        userMenu.style.display =
-            userMenu.style.display === 'block' ? 'none' : 'block';
-    });
+            <a class="nav-link {{ request()->routeIs('learn.*') ? 'active' : '' }}" href="{{ route('learn.index') }}">
+                Belajar
+            </a>
 
-    document.addEventListener('click', () => {
-        userMenu.style.display = 'none';
-    });
-</script>
+            <a class="nav-link {{ $active('tentang') }}" href="{{ route('about') }}">
+                Tentang
+            </a>
+
+            <a class="nav-link {{ $active('kontak') }}" href="{{ route('contact') }}">
+                Kontak
+            </a>
+
+            {{-- ===== MENU USER (MOBILE) ===== --}}
+            @auth
+                <div class="dropdown-divider" style="margin:14px 0;"></div>
+
+                <a class="nav-link" href="{{ route('profile') }}">
+                    <i class="fa-regular fa-user-circle"></i> Profil Saya
+                </a>
+
+                <a class="nav-link" href="{{ route('user.competitions') }}">
+                    <i class="fa-regular fa-calendar-check"></i> Event Saya
+                </a>
+
+                <a class="nav-link" href="{{ route('transactions') }}">
+                    <i class="fa-solid fa-wallet"></i> Transaksi Saya
+                </a>
+            @endauth
+
+        </nav>
+
+        {{-- ===== FOOTER BUTTON ===== --}}
+        <div class="drawer-footer">
+
+            @auth
+                <form id="mobileLogoutForm" action="{{ route('auth.logout') }}" method="POST" style="width:100%;">
+                    @csrf
+                    <button type="button" onclick="confirmMobileLogout()" class="btn btn-outline"
+                        style="width:100%;justify-content:center;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </form>
+            @else
+                <a class="btn btn-primary" href="{{ route('auth.login') }}" style="width:100%;justify-content:center;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </a>
+            @endauth
+
+        </div>
+
+    </aside>
+
+
+    <script>
+        const userBtn = document.getElementById('userDropdownBtn');
+        const userMenu = document.getElementById('userDropdownMenu');
+
+        userBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenu.style.display =
+                userMenu.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', () => {
+            userMenu.style.display = 'none';
+        });
+    </script>
+    <script>
+        function confirmUserLogout() {
+            Swal.fire({
+                title: 'Yakin ingin logout?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Logout',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#E53935',
+                cancelButtonColor: '#fff',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                    cancelButton: 'btn btn-secondary'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('userLogoutForm').submit();
+                }
+            });
+        }
+    </script>
+
+    <script>
+        function confirmMobileLogout() {
+            Swal.fire({
+                title: 'Yakin ingin logout?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Logout',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#E53935',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                    cancelButton: 'btn btn-secondary'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('mobileLogoutForm').submit();
+                }
+            });
+        }
+    </script>

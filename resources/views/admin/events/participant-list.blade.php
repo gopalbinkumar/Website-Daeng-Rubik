@@ -8,6 +8,24 @@
 @endpush
 
 @section('content')
+
+    @php
+        $registrationStatusMap = [
+            'pending' => [
+                'label' => 'Menunggu',
+                'class' => 'badge-warning',
+            ],
+            'accepted' => [
+                'label' => 'Dikonfirmasi',
+                'class' => 'badge-success',
+            ],
+            'rejected' => [
+                'label' => 'Ditolak',
+                'class' => 'badge-danger',
+            ],
+        ];
+    @endphp
+
     <div class="page-header">
         <h2 class="page-title">Daftar Peserta Kompetisi</h2>
     </div>
@@ -71,14 +89,19 @@
                             </td>
                             <td>{{ $row->created_at->format('d M Y') }}</td>
                             <td>
-                                @if ($row->status === 'accepted')
-                                    <span class="badge badge-success">Accepted</span>
-                                @elseif ($row->status === 'rejected')
-                                    <span class="badge badge-danger">Rejected</span>
-                                @else
-                                    <span class="badge badge-warning">Pending</span>
-                                @endif
+                                @php
+                                    $status = strtolower($row->status);
+                                    $currentStatus = $registrationStatusMap[$status] ?? [
+                                        'label' => ucfirst($status),
+                                        'class' => 'badge-secondary',
+                                    ];
+                                @endphp
+
+                                <span class="badge {{ $currentStatus['class'] }}">
+                                    {{ $currentStatus['label'] }}
+                                </span>
                             </td>
+
                             <td>
                                 <div class="table-actions">
                                     <button type="button" class="btn btn-icon btn-secondary"
@@ -108,42 +131,8 @@
             $label = $summaryMode ? 'kompetisi' : 'peserta';
         @endphp
 
-        <div class="pagination">
-            <div class="pagination-info">
-                Menampilkan
-                {{ $pager->firstItem() ?? 0 }}–{{ $pager->lastItem() ?? 0 }}
-                dari {{ $pager->total() }} {{ $label }}
-            </div>
+        <x-admin-pagination :paginator="$pager" />
 
-            <div class="pagination-controls">
-                {{-- PREV --}}
-                @if ($pager->onFirstPage())
-                    <button class="page-btn" disabled>‹</button>
-                @else
-                    <a href="{{ $pager->previousPageUrl() }}">
-                        <button class="page-btn">‹</button>
-                    </a>
-                @endif
-
-                {{-- PAGE NUMBERS --}}
-                @for ($i = 1; $i <= $pager->lastPage(); $i++)
-                    <a href="{{ $pager->url($i) }}">
-                        <button class="page-btn {{ $pager->currentPage() == $i ? 'active' : '' }}">
-                            {{ $i }}
-                        </button>
-                    </a>
-                @endfor
-
-                {{-- NEXT --}}
-                @if ($pager->hasMorePages())
-                    <a href="{{ $pager->nextPageUrl() }}">
-                        <button class="page-btn">›</button>
-                    </a>
-                @else
-                    <button class="page-btn" disabled>›</button>
-                @endif
-            </div>
-        </div>
 
     </div>
 
@@ -176,13 +165,25 @@
             </div>
 
             <div class="modal-footer">
-                <form id="acceptForm" method="POST">@csrf
-                    <button type="submit" class="btn btn-primary">Accept</button>
+
+                <form id="rejectForm" method="POST" class="form-confirm" data-title="Tolak Pendaftaran?"
+                    data-text="Yakin ingin menolak pendaftaran ini?" data-confirm="Ya, Tolak">
+                    @csrf
+                    <button type="submit" class="btn btn-secondary">
+                        Tolak
+                    </button>
                 </form>
-                <form id="rejectForm" method="POST">@csrf
-                    <button type="submit" class="btn btn-secondary">Reject</button>
+
+                <form id="acceptForm" method="POST" class="form-confirm" data-title="Konfirmasi Pendaftaran?"
+                    data-text="Yakin ingin menerima pendaftaran ini?" data-confirm="Ya, Konfirmasi">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">
+                        Konfirmasi
+                    </button>
                 </form>
+
             </div>
+
         </div>
     </div>
 
@@ -227,9 +228,9 @@
 
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalEditParticipant')">
+                    {{-- <button type="button" class="btn btn-secondary" onclick="closeModal('modalEditParticipant')">
                         Batal
-                    </button>
+                    </button> --}}
                     <button type="submit" class="btn btn-primary">
                         Simpan
                     </button>

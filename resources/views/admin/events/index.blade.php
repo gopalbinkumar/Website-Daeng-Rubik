@@ -132,14 +132,15 @@
                                 </button>
 
                                 <form method="POST" action="{{ route('admin.events.destroy', $event->id) }}"
-                                    style="display:inline;">
+                                    class="form-delete" data-name="{{ $event->title }}" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-icon btn-danger"
-                                        onclick="return confirm('Hapus event {{ $event->title }}?')" title="Hapus">
+
+                                    <button type="submit" class="btn btn-icon btn-danger" title="Hapus">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
+
                             </div>
                         </td>
                     </tr>
@@ -153,42 +154,7 @@
             </tbody>
         </table>
 
-        <div class="pagination">
-            <div class="pagination-info">
-                Menampilkan
-                {{ $events->firstItem() }}–{{ $events->lastItem() }}
-                dari {{ $events->total() }} event
-            </div>
-
-            <div class="pagination-controls">
-                {{-- PREV --}}
-                @if ($events->onFirstPage())
-                    <button class="page-btn" disabled>‹</button>
-                @else
-                    <a href="{{ $events->previousPageUrl() }}">
-                        <button class="page-btn">‹</button>
-                    </a>
-                @endif
-
-                {{-- PAGE NUMBERS --}}
-                @for ($i = 1; $i <= $events->lastPage(); $i++)
-                    <a href="{{ $events->url($i) }}">
-                        <button class="page-btn {{ $events->currentPage() == $i ? 'active' : '' }}">
-                            {{ $i }}
-                        </button>
-                    </a>
-                @endfor
-
-                {{-- NEXT --}}
-                @if ($events->hasMorePages())
-                    <a href="{{ $events->nextPageUrl() }}">
-                        <button class="page-btn">›</button>
-                    </a>
-                @else
-                    <button class="page-btn" disabled>›</button>
-                @endif
-            </div>
-        </div>
+        <x-admin-pagination :paginator="$events"/>
     </div>
 
     <!-- Modal Add Event -->

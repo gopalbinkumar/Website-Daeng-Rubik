@@ -74,4 +74,15 @@ class LearningMaterial extends Model
             ? "https://img.youtube.com/vi/{$matches[1]}/hqdefault.jpg"
             : null;
     }
+
+    public function bookmarks()
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function isBookmarkedBy($userId)
+    {
+        return $this->bookmarks()->where('user_id', $userId)->exists();
+    }
+
 }

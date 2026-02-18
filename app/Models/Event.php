@@ -36,13 +36,19 @@ class Event extends Model
     ];
 
     protected static function booted()
-{
-    static::creating(function ($event) {
-        if (empty($event->slug)) {
-            $event->slug = Str::slug($event->title);
-        }
-    });
-}
+    {
+        static::creating(function ($event) {
+            if (empty($event->slug)) {
+                $event->slug = Str::slug($event->title);
+            }
+        });
+    }
+
+    // public function getRouteKeyName()
+    // {
+    //     return 'slug';
+    // }
+
 
     /**
      * Relasi ke kategori lomba (WCA)
@@ -67,6 +73,14 @@ class Event extends Model
             ->withPivot('status')
             ->withTimestamps();
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot('status')
+            ->withTimestamps();
+    }
+
 
     public function competitionResults()
     {

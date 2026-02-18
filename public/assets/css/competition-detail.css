@@ -40,33 +40,65 @@
     background: #fff;
 }
 
-/* Table styling */
-.competition-detail-page .table-responsive {
-    width: 100%;
-    overflow-x: auto;
-}
+/* ==============================
+   TABLE RED ROW STRIPED + RADIUS
+================================= */
 
 .competition-detail-page table.table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate; /* 🔥 penting */
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden; /* supaya radius terlihat */
+
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+
 }
 
+/* HEADER */
 .competition-detail-page table.table thead tr {
-    background: rgba(17, 24, 39, 0.04);
+    background: var(--red);
 }
 
+.competition-detail-page table.table thead th {
+    color: #fff;
+}
+
+/* 🔴 BARIS GANJIL */
+.competition-detail-page table.table tbody tr:nth-child(odd) {
+    background: #fff;
+    color: #000;
+}
+
+/* 🔴 BARIS GENAP */
+.competition-detail-page table.table tbody tr:nth-child(even) {
+    background: rgba(229, 57, 53, 0.15);
+    color: #000;
+}
+
+/* Padding */
 .competition-detail-page table.table th,
 .competition-detail-page table.table td {
     padding: 8px 10px;
     vertical-align: middle;
 }
 
-.competition-detail-page table.table tbody tr.table-row-hover {
-    transition: background-color 0.12s ease;
+/* 🔥 Tambahkan radius di sudut atas */
+.competition-detail-page table.table thead tr th:first-child {
+    border-top-left-radius: 12px;
 }
 
-.competition-detail-page table.table tbody tr.table-row-hover:hover {
-    background: rgba(17, 24, 39, 0.02);
+.competition-detail-page table.table thead tr th:last-child {
+    border-top-right-radius: 12px;
+}
+
+/* 🔥 Tambahkan radius di sudut bawah */
+.competition-detail-page table.table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 12px;
+}
+
+.competition-detail-page table.table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 12px;
 }
 
 .competition-detail-page table.table td.text-end {
@@ -74,9 +106,14 @@
     font-variant-numeric: tabular-nums;
 }
 
-.competition-detail-page table.table td.best-cell,
-.competition-detail-page table.table td.average-cell {
-    font-weight: 800;
+.text-start {
+    text-align: left;
+}
+.text-center {
+    text-align: center;
+}
+.text-end {
+    text-align: right;
 }
 
 /* Empty state dalam tabel */
@@ -84,6 +121,12 @@
     text-align: center;
     color: var(--muted);
     padding: 14px 0;
+}
+
+/* Default: SEMBUNYIKAN DI DESKTOP */
+.attempt-modal,
+#attemptModalBackdrop {
+    display: none;
 }
 
 /* Responsive */
@@ -97,3 +140,94 @@
     }
 }
 
+/* ==============================
+   MOBILE RESULT TABLE
+================================= */
+@media (max-width: 768px) {
+    
+    /* Aktifkan hanya di mobile */
+    .attempt-modal,
+    #attemptModalBackdrop {
+        display: block;
+    }
+
+    /* 🔥 Sembunyikan kolom attempt */
+    .competition-detail-page .attempt-col {
+        display: none;
+    }
+
+    /* Font lebih kecil */
+    .competition-detail-page table.table th,
+    .competition-detail-page table.table td {
+        font-size: 13px;
+        padding: 6px 8px;
+    }
+
+    /* Hapus min-width */
+    .competition-detail-page table.table {
+        min-width: unset;
+    }
+
+    /* ==============================
+       CLICKABLE AVG & BEST
+    ================================= */
+    .clickable-mobile {
+        cursor: pointer;
+    }
+
+    /* ==============================
+       ATTEMPT MODAL (BOTTOM SHEET)
+    ================================= */
+    .attempt-modal {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-radius: 20px 20px 0 0;
+        padding: 20px;
+        z-index: 999;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .attempt-modal.open {
+        transform: translateY(0);
+    }
+
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    #attemptList {
+        margin: 12px 0 0;
+        padding-left: 18px;
+    }
+
+    #attemptList li {
+        margin-bottom: 6px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .result-row {
+        cursor: pointer;
+    }
+
+    .result-row:active {
+        background: rgba(229,57,53,0.15);
+    }
+}

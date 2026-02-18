@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -49,4 +51,10 @@ class Product extends Model
     {
         return $this->belongsTo(CubeCategory::class);
     }
+
+    public function transactionItems()
+    {
+        return $this->hasMany(TransactionItem::class);
+    }
+
 }

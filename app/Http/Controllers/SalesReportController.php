@@ -26,6 +26,11 @@ class SalesReportController extends Controller
             $baseQuery->where('status', $request->status);
         }
 
+        // FILTER: SEARCH (KODE TRANSAKSI)
+        if ($request->filled('search')) {
+            $baseQuery->where('code', 'like', '%' . $request->search . '%');
+        }
+
         // FILTER: PRODUK
         if ($request->filled('product')) {
             $baseQuery->whereHas('items', function ($q) use ($request) {
@@ -92,9 +97,22 @@ class SalesReportController extends Controller
         */
         $transactions = (clone $baseQuery)
             ->with('items')
-            ->latest()
+            ->orderByRaw("
+            FIELD(status, 'pending', 'paid', 'failed')
+            ")
+            ->orderByRaw("
+            CASE 
+                WHEN status = 'pending' THEN created_at
+            END ASC
+            ")
+            ->orderByRaw("
+            CASE 
+                WHEN status IN ('paid','failed') THEN created_at
+            END DESC
+            ")
             ->paginate(10)
             ->withQueryString();
+
 
         /*
         |------------------------------------------------------------------
@@ -123,18 +141,77 @@ class SalesReportController extends Controller
     |--------------------------------------------------------------------------
     */
     public function verify(Transaction $transaction)
-    {
-        if ($transaction->status !== 'pending') {
-            return back();
-        }
+{
+    if ($transaction->status === 'paid') {
+        return back()->with('error', 'Transaksi sudah diverifikasi.');
+    }
 
-        $transaction->update([
-            'status' => 'paid',
-            'paid_at' => now(),
-        ]);
+    try {
+
+        DB::transaction(function () use ($transaction) {
+
+            $transaction->load('items.product');
+
+            foreach ($transaction->items as $item) {
+
+                $product = $item->product()->lockForUpdate()->first();
+
+                if ($product->stock < $item->quantity) {
+                    throw new \Exception(
+                        'Stok tidak mencukupi untuk ' . $product->name
+                    );
+                }
+
+                $product->decrement('stock', $item->quantity);
+            }
+
+            $transaction->update([
+                'status' => 'paid',
+                'paid_at' => now(),
+            ]);
+        });
 
         return back()->with('success', 'Pembayaran berhasil diverifikasi');
+
+    } catch (\Exception $e) {
+
+        return back()->with('error', $e->getMessage());
     }
+}
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MENOLAK PEMBAYARAN
+    |--------------------------------------------------------------------------
+    */
+    public function reject(Transaction $transaction)
+    {
+        DB::transaction(function () use ($transaction) {
+
+            $transaction->load('items.product');
+
+            // 🔁 Jika sebelumnya paid → kembalikan stok
+            if ($transaction->status === 'paid') {
+
+                foreach ($transaction->items as $item) {
+
+                    $product = $item->product()->lockForUpdate()->first();
+
+                    $product->increment('stock', $item->quantity);
+                }
+            }
+
+            $transaction->update([
+                'status' => 'failed',
+            ]);
+        });
+
+        return back()->with('success', 'Pembayaran berhasil ditolak');
+    }
+
+
+
 
     public function monthlyRevenueChart()
     {

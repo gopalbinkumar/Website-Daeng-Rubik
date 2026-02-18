@@ -15,10 +15,10 @@
 
                 if (input.type === "password") {
                     input.type = "text";
-                    btn.textContent = "👁";
+                    btn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
                 } else {
                     input.type = "password";
-                    btn.textContent = "👁";
+                    btn.innerHTML = '<i class="fa-regular fa-eye"></i>';
                 }
             });
         });

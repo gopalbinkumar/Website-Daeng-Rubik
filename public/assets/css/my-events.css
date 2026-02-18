@@ -76,7 +76,9 @@
 }
 
 .my-events-page table.table tbody tr {
-    transition: background-color 0.12s ease, box-shadow 0.12s ease;
+    transition:
+        background-color 0.12s ease,
+        box-shadow 0.12s ease;
 }
 
 .my-events-page table.table tbody tr:hover {
@@ -101,9 +103,21 @@
     height: 120px;
     border-radius: 32px;
     background:
-        radial-gradient(80px 80px at 30% 30%, rgba(25, 118, 210, 0.20), transparent 60%),
-        radial-gradient(80px 80px at 70% 70%, rgba(253, 216, 53, 0.26), transparent 60%),
-        linear-gradient(135deg, rgba(229, 57, 53, 0.18), rgba(255, 255, 255, 0.10));
+        radial-gradient(
+            80px 80px at 30% 30%,
+            rgba(25, 118, 210, 0.2),
+            transparent 60%
+        ),
+        radial-gradient(
+            80px 80px at 70% 70%,
+            rgba(253, 216, 53, 0.26),
+            transparent 60%
+        ),
+        linear-gradient(
+            135deg,
+            rgba(229, 57, 53, 0.18),
+            rgba(255, 255, 255, 0.1)
+        );
     display: flex;
     align-items: center;
     justify-content: center;
@@ -141,4 +155,3 @@
         width: 100%;
     }
 }
-

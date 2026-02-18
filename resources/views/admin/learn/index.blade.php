@@ -113,15 +113,15 @@
                                 </button>
 
                                 <form method="POST" action="{{ route('admin.learn.destroy', $materi) }}"
-                                    style="display:inline;">
+                                    class="form-delete" data-name="{{ $materi->title }}" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
 
-                                    <button type="submit" class="btn btn-icon btn-danger"
-                                        onclick="return confirm('Hapus materi {{ $materi->title }}?')" title="Hapus">
+                                    <button type="submit" class="btn btn-icon btn-danger" title="Hapus">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
+
                             </div>
                         </td>
                     </tr>
@@ -135,42 +135,7 @@
             </tbody>
         </table>
 
-        <div class="pagination">
-            <div class="pagination-info">
-                Menampilkan
-                {{ $materials->firstItem() }}–{{ $materials->lastItem() }}
-                dari {{ $materials->total() }} materi
-            </div>
-
-            <div class="pagination-controls">
-                {{-- PREV --}}
-                @if ($materials->onFirstPage())
-                    <button class="page-btn" disabled>‹</button>
-                @else
-                    <a href="{{ $materials->previousPageUrl() }}">
-                        <button class="page-btn">‹</button>
-                    </a>
-                @endif
-
-                {{-- PAGE --}}
-                @for ($i = 1; $i <= $materials->lastPage(); $i++)
-                    <a href="{{ $materials->url($i) }}">
-                        <button class="page-btn {{ $materials->currentPage() == $i ? 'active' : '' }}">
-                            {{ $i }}
-                        </button>
-                    </a>
-                @endfor
-
-                {{-- NEXT --}}
-                @if ($materials->hasMorePages())
-                    <a href="{{ $materials->nextPageUrl() }}">
-                        <button class="page-btn">›</button>
-                    </a>
-                @else
-                    <button class="page-btn" disabled>›</button>
-                @endif
-            </div>
-        </div>
+        <x-admin-pagination :paginator="$materials" />
 
     </div>
 
@@ -396,23 +361,23 @@
         }
     </script>
     <script>
-    const form = document.getElementById('filterForm');
+        const form = document.getElementById('filterForm');
 
-    // auto submit saat select berubah
-    form.querySelectorAll('select').forEach(select => {
-        select.addEventListener('change', () => {
-            form.submit();
+        // auto submit saat select berubah
+        form.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', () => {
+                form.submit();
+            });
         });
-    });
 
-    // submit saat tekan Enter di search
-    form.querySelector('input[name="search"]').addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            form.submit();
-        }
-    });
-</script>
+        // submit saat tekan Enter di search
+        form.querySelector('input[name="search"]').addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                form.submit();
+            }
+        });
+    </script>
 
 
 

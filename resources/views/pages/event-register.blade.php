@@ -79,14 +79,14 @@
                     <div class="event-register-form-card">
                         <h3 style="font-size:18px;margin:0 0 20px;">Form Registrasi</h3>
 
-                        <form id="eventRegisterForm" class="event-register-form">
+                        <form method="POST" action="{{ route('events.register.store') }}" class="event-register-form">
                             @csrf
                             <input type="hidden" name="event_id" value="{{ $event->id }}">
 
                             <div class="form-group">
                                 <label class="form-label">Nama Lengkap Peserta <span class="required">*</span></label>
                                 <input type="text" class="form-input" name="participant_name"
-                                    value="{{ $user->name }}" required>
+                                    value="{{ $user->name }}" readonly>
                             </div>
 
                             <div class="form-group">
@@ -97,7 +97,7 @@
 
                             <div class="form-group">
                                 <label class="form-label">Nomor WhatsApp <span class="required">*</span></label>
-                                <input type="tel" class="form-input" name="participant_whatsapp"
+                                <input type="number" class="form-input" name="participant_whatsapp"
                                     value="{{ $user->whatsapp }}" required>
                                 <small class="form-helper">Contoh: +62 812-3456-7890</small>
                             </div>
@@ -133,7 +133,7 @@
                             di halaman <strong>Event Saya</strong>.
                         </p>
 
-                        <a href="/user/events" class="btn btn-primary">
+                        <a href="/my-competitions" class="btn btn-primary">
                             Lihat Event Saya
                         </a>
                     </div>
@@ -141,19 +141,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Success Toast -->
-    <div id="successToast" class="success-toast" role="alert" aria-live="polite">
-        <div class="toast-content">
-            <span class="toast-icon">✓</span>
-            <div>
-                <strong>Pendaftaran terkirim!</strong>
-                <p style="margin:4px 0 0;font-size:13px;">
-                    Kami akan menghubungi Anda via WhatsApp untuk konfirmasi.
-                </p>
-            </div>
-        </div>
-    </div>
 
     <script>
         document.getElementById('eventRegisterForm').addEventListener('submit', async (e) => {
@@ -173,24 +160,39 @@
                     body: new FormData(form)
                 });
 
+                const data = await res.json();
+
                 if (!res.ok) {
-                    alert('Validasi gagal. Pastikan semua data terisi.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: data.message ?? 'Validasi gagal. Pastikan semua data terisi.'
+                    });
+
                     btn.disabled = false;
                     btn.textContent = 'Daftar Event';
                     return;
                 }
 
-                // tampilkan toast sukses
-                const toast = document.getElementById('successToast');
-                toast.classList.add('show');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Pendaftaran berhasil! Silakan cek Event Saya.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
 
-                // redirect ke halaman event user
                 setTimeout(() => {
-                    window.location.href = '/user/events';
+                    window.location.href = '/my-competitions';
                 }, 1500);
 
             } catch {
-                alert('Terjadi kesalahan jaringan.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan jaringan.'
+                });
+
                 btn.disabled = false;
                 btn.textContent = 'Daftar Event';
             }

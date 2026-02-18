@@ -4,6 +4,24 @@
 @section('page-title', 'Laporan Penjualan')
 
 @section('content')
+    @php
+        $statusMap = [
+            'pending' => [
+                'label' => 'Menunggu',
+                'class' => 'badge-warning',
+            ],
+            'paid' => [
+                'label' => 'Diverifikasi',
+                'class' => 'badge-success',
+            ],
+            'failed' => [
+                'label' => 'Ditolak',
+                'class' => 'badge-danger',
+            ],
+        ];
+    @endphp
+
+
     <div class="page-header">
         <h2 class="page-title">Laporan Penjualan</h2>
     </div>
@@ -48,25 +66,26 @@
                             <input type="date" name="end_date" class="search-input" value="{{ request('end_date') }}"
                                 style="max-width:180px;">
                         </div>
-                        <select name="product" class="filter-select">
-                            <option value="">Produk: Semua</option>
-                            @foreach ($products as $product)
-                                <option value="{{ $product }}" {{ request('product') == $product ? 'selected' : '' }}>
-                                    {{ $product }}
-                                </option>
-                            @endforeach
-                        </select>
-
                         <select name="status" class="filter-select">
                             <option value="">Status: Semua</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu
                             </option>
                             <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Terverifikasi
                             </option>
-                            <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Gagal</option>
-                            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan
+                            <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Ditolak</option>
                             </option>
                         </select>
+                        <select name="product" class="filter-select">
+                            <option value="">Produk: Semua</option>
+                            @foreach ($products as $product)
+                                <option value="{{ $product }}"
+                                    {{ request('product') == $product ? 'selected' : '' }}>
+                                    {{ $product }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <input type="text" name="search" class="search-input filter-search"
+                            placeholder="Search kode transaksi..." value="{{ request('search') }}">
                     </div>
                 </div>
 
@@ -74,9 +93,9 @@
                     <a href="{{ route('admin.reports.sales') }}" class="btn btn-secondary"><i
                             class="fa-solid fa-rotate-left"></i> Reset</a>
                     <button class="btn btn-primary" type="submit"><i class="fa-solid fa-filter"></i> Filter</button>
-                    <button class="btn btn-secondary" type="button" onclick="openModal('modalManualTransaction')">
+                    {{-- <button class="btn btn-secondary" type="button" onclick="openModal('modalManualTransaction')">
                         <i class="fa-solid fa-plus"></i> Tambah Transaksi
-                    </button>
+                    </button> --}}
                     <button type="button" class="btn btn-secondary" onclick="openPdfPreview()">
                         <i class="fa-solid fa-file-pdf"></i> Export PDF
                     </button>
@@ -97,11 +116,11 @@
                     <span class="summary-caption">Berdasarkan filter saat ini</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Jumlah Transaksi</span>
+                    <span class="summary-label">Transaksi Berhasil</span>
                     <span class="summary-value">{{ $totalTransaction }}</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Rata-rata Transaksi</span>
+                    <span class="summary-label">Rata-rata Pendapatan</span>
                     <span class="summary-value">
                         Rp {{ number_format($avgTransaction, 0, ',', '.') }}
                     </span>
@@ -123,14 +142,6 @@
                 </thead>
                 <tbody>
                     @foreach ($transactions as $trx)
-                        @php
-                            $badge = [
-                                'paid' => 'badge-success',
-                                'pending' => 'badge-warning',
-                                'failed' => 'badge-danger',
-                                'cancelled' => 'badge-secondary',
-                            ][$trx->status];
-                        @endphp
                         <tr>
                             <td><strong>{{ $trx->code }}</strong></td>
                             <td>{{ $trx->receiver_name }}</td>
@@ -138,8 +149,16 @@
                             <td><strong>Rp {{ number_format($trx->total_amount, 0, ',', '.') }}</strong></td>
                             <td>Rp {{ number_format($trx->shipping_cost, 0, ',', '.') }}</td>
                             <td>
-                                <span class="badge {{ $badge }}">
-                                    {{ strtoupper($trx->status) }}
+                                @php
+                                    $status = strtolower($trx->status);
+                                    $currentStatus = $statusMap[$status] ?? [
+                                        'label' => ucfirst($status),
+                                        'class' => 'badge-secondary',
+                                    ];
+                                @endphp
+
+                                <span class="badge {{ $currentStatus['class'] }}">
+                                    {{ $currentStatus['label'] }}
                                 </span>
                             </td>
                             <td>
@@ -232,16 +251,79 @@
                             </div>
 
                             <div class="modal-footer">
-                                <button class="btn btn-secondary"
-                                    onclick="closeModal('modalViewTransfer-{{ $trx->id }}')">Tutup</button>
 
+                                {{-- Jika PENDING → tampilkan kedua button --}}
                                 @if ($trx->status === 'pending')
-                                    <form method="POST" action="{{ route('admin.transactions.verify', $trx->id) }}">
+                                    {{-- Tolak --}}
+                                    <form method="POST" action="{{ route('admin.transactions.reject', $trx->id) }}"
+                                        class="form-confirm" data-title="Tolak Pembayaran?"
+                                        data-text="Yakin ingin menolak pembayaran ini?" data-confirm="Ya, Tolak"
+                                        style="display:inline;">
                                         @csrf
-                                        <button class="btn btn-primary">Tandai Terverifikasi</button>
+                                        <button type="submit" class="btn btn-danger">
+                                            Tolak
+                                        </button>
+                                    </form>
+
+                                    {{-- Verifikasi --}}
+                                    <form method="POST" action="{{ route('admin.transactions.verify', $trx->id) }}"
+                                        class="form-confirm" data-title="Verifikasi Pembayaran?"
+                                        data-text="Pastikan bukti transfer sudah valid." data-confirm="Ya, Verifikasi">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary">
+                                            Verifikasi
+                                        </button>
+                                    </form>
+
+                                    {{-- Jika PAID → hanya Tolak --}}
+                                @elseif ($trx->status === 'paid')
+                                    <form method="POST" action="{{ route('admin.transactions.reject', $trx->id) }}"
+                                        class="form-confirm" data-title="Batalkan Pembayaran?"
+                                        data-text="Pembayaran sudah diverifikasi. Yakin ingin membatalkan?"
+                                        data-confirm="Ya, Tolak" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-danger">
+                                            Tolak
+                                        </button>
+                                    </form>
+
+                                    {{-- Jika FAILED → hanya Verifikasi --}}
+                                @elseif ($trx->status === 'failed')
+                                    <form method="POST" action="{{ route('admin.transactions.verify', $trx->id) }}"
+                                        class="form-confirm" data-title="Verifikasi Ulang Pembayaran?"
+                                        data-text="Yakin ingin memverifikasi ulang pembayaran ini?"
+                                        data-confirm="Ya, Verifikasi">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary">
+                                            Verifikasi
+                                        </button>
                                     </form>
                                 @endif
                             </div>
+                            {{-- <div class="modal-footer">
+                                @if ($trx->status === 'pending')
+                                    <form method="POST" action="{{ route('admin.transactions.reject', $trx->id) }}"
+                                        class="form-confirm" data-title="Tolak Pembayaran?"
+                                        data-text="Yakin ingin menolak pembayaran ini?" data-confirm="Ya, Tolak"
+                                        style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-danger">
+                                            Tolak
+                                        </button>
+                                    </form>
+                                @endif
+
+                                @if ($trx->status === 'pending')
+                                    <form method="POST" action="{{ route('admin.transactions.verify', $trx->id) }}"
+                                        class="form-confirm" data-title="Verifikasi Pembayaran?"
+                                        data-text="Pastikan bukti transfer sudah valid." data-confirm="Ya, Verifikasi">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary">
+                                            Verifikasi
+                                        </button>
+                                    </form>
+                                @endif
+                            </div> --}}
                         </div>
 
                         <div id="modalTransactionDetail-{{ $trx->id }}" class="modal">
@@ -312,17 +394,18 @@
                                             text-align:right;
                                         ">
                                             <div>
-                                                <span
-                                                    class="badge
-                                            {{ $trx->status === 'paid'
-                                                ? 'badge-success'
-                                                : ($trx->status === 'pending'
-                                                    ? 'badge-warning'
-                                                    : ($trx->status === 'failed'
-                                                        ? 'badge-danger'
-                                                        : 'badge-secondary')) }}">
-                                                    {{ strtoupper($trx->status) }}
+                                                @php
+                                                    $status = strtolower($trx->status);
+                                                    $currentStatus = $statusMap[$status] ?? [
+                                                        'label' => ucfirst($status),
+                                                        'class' => 'badge-secondary',
+                                                    ];
+                                                @endphp
+
+                                                <span class="badge {{ $currentStatus['class'] }}">
+                                                    {{ $currentStatus['label'] }}
                                                 </span>
+
                                             </div>
                                         </div>
                                     </div>
@@ -342,42 +425,7 @@
             </table>
 
             {{-- PAGINATION (UI TETAP) --}}
-            <div class="pagination">
-                <div class="pagination-info">
-                    Menampilkan
-                    {{ $transactions->firstItem() }}–{{ $transactions->lastItem() }}
-                    dari {{ $transactions->total() }} transaksi
-                </div>
-
-                <div class="pagination-controls">
-                    {{-- PREV --}}
-                    @if ($transactions->onFirstPage())
-                        <button class="page-btn" disabled>‹</button>
-                    @else
-                        <a href="{{ $transactions->previousPageUrl() }}">
-                            <button class="page-btn">‹</button>
-                        </a>
-                    @endif
-
-                    {{-- PAGE NUMBERS --}}
-                    @for ($i = 1; $i <= $transactions->lastPage(); $i++)
-                        <a href="{{ $transactions->url($i) }}">
-                            <button class="page-btn {{ $transactions->currentPage() == $i ? 'active' : '' }}">
-                                {{ $i }}
-                            </button>
-                        </a>
-                    @endfor
-
-                    {{-- NEXT --}}
-                    @if ($transactions->hasMorePages())
-                        <a href="{{ $transactions->nextPageUrl() }}">
-                            <button class="page-btn">›</button>
-                        </a>
-                    @else
-                        <button class="page-btn" disabled>›</button>
-                    @endif
-                </div>
-            </div>
+            <x-admin-pagination :paginator="$transactions" />
         </div>
 
         <div id="modalManualTransaction" class="modal">

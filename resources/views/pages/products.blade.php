@@ -22,13 +22,25 @@
             <div class="two-col">
                 <div>
                     <form method="GET">
+                        {{-- Bawa semua filter lama --}}
+                        @foreach (request()->except(['search']) as $key => $value)
+                            @if (is_array($value))
+                                @foreach ($value as $v)
+                                    <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                                @endforeach
+                            @else
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endif
+                        @endforeach
                         <div class="sortbar">
-                            {{-- <div class="muted" style="font-weight:700;">
-                            Menampilkan <b style="color:var(--text)">{{ $products->count() }}</b> dari <b
-                                style="color:var(--text)">{{ $products->total() }}</b> produk
-                        </div> --}}
-                            <input type="text" name="search" class="search-input" placeholder="Cari produk"
-                                value="{{ request('search') }}">
+                            <div class="search-wrapper">
+                                <input type="text" name="search" class="search-input" placeholder="Cari produk"
+                                    value="{{ request('search') }}">
+                                <button type="submit" class="search-btn">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+
                             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
                                 <button id="openFilter" class="btn btn-secondary mobile-filter-btn"
                                     type="button">Filter</button>
@@ -126,6 +138,8 @@
 
                 <aside class="card filter desktop-only" aria-label="Filter produk">
                     <form method="GET" action="{{ route('products') }}">
+                        <input type="hidden" name="search" value="{{ request('search') }}">
+                        <input type="hidden" name="sort" value="{{ request('sort') }}">
                         <h3><i class="fa-solid fa-filter"></i>
                             Filter</h3>
                         <div class="divider"></div>
@@ -165,13 +179,15 @@
 
                         {{-- BRAND --}}
                         <h3>Brand</h3>
-                        @foreach (['MoYu', 'GAN', 'QiYi', 'YJ'] as $brand)
-                            <label class="field">
-                                <input type="checkbox" name="brand[]" value="{{ $brand }}"
-                                    {{ in_array($brand, request('brand', [])) ? 'checked' : '' }}>
-                                {{ $brand }}
-                            </label>
-                        @endforeach
+                        <div class="brand-grid">
+                            @foreach (['MoYu', 'GAN', 'QiYi', 'YJ', 'Lainnya'] as $brand)
+                                <label class="field">
+                                    <input type="checkbox" name="brand[]" value="{{ $brand }}"
+                                        {{ in_array($brand, request('brand', [])) ? 'checked' : '' }}>
+                                    {{ $brand }}
+                                </label>
+                            @endforeach
+                        </div>
 
                         <div class="divider"></div>
 
@@ -198,15 +214,19 @@
 
             <form method="GET" action="{{ route('products') }}">
                 <input type="hidden" name="search" value="{{ request('search') }}">
+                <input type="hidden" name="sort" value="{{ request('sort') }}">
+
                 {{-- ================= KATEGORI ================= --}}
                 <h3>Kategori</h3>
-                @foreach ($cubeCategories as $cat)
-                    <label class="field">
-                        <input type="checkbox" name="category[]" value="{{ $cat->id }}"
-                            {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
-                        {{ $cat->name }}
-                    </label>
-                @endforeach
+                <div class="category-grid">
+                    @foreach ($cubeCategories as $cat)
+                        <label class="field">
+                            <input type="checkbox" name="category[]" value="{{ $cat->id }}"
+                                {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
+                            {{ $cat->name }}
+                        </label>
+                    @endforeach
+                </div>
 
                 <div class="divider"></div>
 
@@ -227,13 +247,15 @@
 
                 {{-- ================= BRAND ================= --}}
                 <h3>Brand</h3>
-                @foreach (['MoYu', 'GAN', 'QiYi', 'YJ'] as $brand)
-                    <label class="field">
-                        <input type="checkbox" name="brand[]" value="{{ $brand }}"
-                            {{ in_array($brand, request('brand', [])) ? 'checked' : '' }}>
-                        {{ $brand }}
-                    </label>
-                @endforeach
+                <div class="brand-grid">
+                    @foreach (['MoYu', 'GAN', 'QiYi', 'YJ', 'Lainnya'] as $brand)
+                        <label class="field">
+                            <input type="checkbox" name="brand[]" value="{{ $brand }}"
+                                {{ in_array($brand, request('brand', [])) ? 'checked' : '' }}>
+                            {{ $brand }}
+                        </label>
+                    @endforeach
+                </div>
 
                 <div class="divider"></div>
 
@@ -262,8 +284,8 @@
 
     <script>
         /* =========================
-                                       GLOBAL STATE
-                                    ========================= */
+                                            GLOBAL STATE
+                                           ========================= */
         let activeProduct = null;
         let currentImageIndex = 0;
 
@@ -338,8 +360,8 @@
             content.innerHTML = `
             <div class="product-modal-image">
                 <div id="imageSlider"
-                    style="width:100%;max-width:400px;aspect-ratio:1/1;margin:0 auto;
-                        position:relative;overflow:hidden;border-radius:18px;
+                    style="width:100%;max-width:400px;;margin:0 auto;
+                        position:relative;overflow:hidden;
                         border:6px solid var(--line);">
 
                     <img id="modalProductImage"
@@ -347,20 +369,20 @@
                         style="width:100%;height:100%;object-fit:cover;">
 
                     ${activeProduct.images.length > 1 ? `
-                                                            <button onclick="prevImage()"
-                                                                style="position:absolute;left:10px;top:50%;
-                                                                transform:translateY(-50%);
-                                                                width:36px;height:36px;border-radius:50%;
-                                                                border:none;background:rgba(0,0,0,.45);
-                                                                color:#fff;font-size:22px;cursor:pointer;">‹</button>
+                                                        <button onclick="prevImage()"
+                                                            style="position:absolute;left:10px;top:50%;
+                                                            transform:translateY(-50%);
+                                                            width:36px;height:36px;border-radius:50%;
+                                                            border:none;background:rgba(0,0,0,.45);
+                                                            color:#fff;font-size:22px;cursor:pointer;">‹</button>
 
-                                                            <button onclick="nextImage()"
-                                                                style="position:absolute;right:10px;top:50%;
-                                                                transform:translateY(-50%);
-                                                                width:36px;height:36px;border-radius:50%;
-                                                                border:none;background:rgba(0,0,0,.45);
-                                                                color:#fff;font-size:22px;cursor:pointer;">›</button>
-                                                        ` : ''}
+                                                        <button onclick="nextImage()"
+                                                            style="position:absolute;right:10px;top:50%;
+                                                            transform:translateY(-50%);
+                                                            width:36px;height:36px;border-radius:50%;
+                                                            border:none;background:rgba(0,0,0,.45);
+                                                            color:#fff;font-size:22px;cursor:pointer;">›</button>
+                                                    ` : ''}
                 </div>
             </div>
 
@@ -386,25 +408,35 @@
                         <div><b>Level</b> ${capitalizeFirst(activeProduct.difficulty_level)}</div>
                     </div>
                 </div>
+                
 
-        <div class="product-modal-actions">
-        <button class="checkout-btn" onclick="goToCheckout(${activeProduct.id})">
-            <i class="fa-solid fa-bag-shopping"></i> Beli Sekarang
-        </button>
+                <div class="product-modal-actions">
+                    <button style= "display: none;" class="cart-btn" onclick="goToCheckout(${activeProduct.id})">
+                        <i class="fa-solid fa-bag-shopping"></i> Beli Sekarang
+                    </button>
 
-        <form action="{{ route('cart.add') }}" method="POST" style="width:100%;">
-    @csrf
-    <input type="hidden" name="product_id" value="${activeProduct.id}">
-    <button type="submit" class="add-cart-btn" style="width:100%;">
-        <i class="fa-solid fa-cart-arrow-down"></i> Tambah ke Keranjang
-    </button>
-</form>
+                    @auth
+                        <form action="{{ route('cart.add') }}" method="POST" style="width:100%;">
+                            @csrf
+                            <input type="hidden" name="product_id" value="${activeProduct.id}">
+                            <button type="submit" class="checkout-btn" style="width:100%;">
+                                <i class="fa-solid fa-cart-arrow-down"></i> Tambah ke Keranjang
+                            </button>
+                        </form>
+                    @else
+                        <button type="button" 
+                                class="checkout-btn"
+                                style="width:100%;"
+                                onclick="showLoginAlert()">
+                            <i class="fa-solid fa-cart-arrow-down"></i> Tambah ke Keranjang
+                        </button>
+                    @endauth
 
 
-        ${marketplaceButtons ? `<div class="marketplace-row">${marketplaceButtons}</div>` : ''}
+                    ${marketplaceButtons ? `<div class="marketplace-row">${marketplaceButtons}</div>` : ''}
 
-        <p class="cart-feedback"></p>
-        </div>
+                    <p class="cart-feedback"></p>
+                </div>
             </div>
             `;
 
@@ -483,8 +515,6 @@
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeProductModal();
         });
-
-
 
         /* =========================
            PRICE RANGE DESKTOP

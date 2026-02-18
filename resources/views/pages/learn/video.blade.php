@@ -24,7 +24,7 @@
             <div class="card card-pad"
                 style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
                 <div>
-                    <span class="badge">🎥 Learning Videos</span>
+                    <span class="badge"><i class="fa-solid fa-video"></i> Video Learning</span>
                     <h2 style="margin:10px 0 0;font-size:22px;letter-spacing:-.02em">
                         Video Pembelajaran Rubik
                     </h2>
@@ -46,7 +46,7 @@
             <div style="height:16px"></div>
 
             {{-- KATEGORI --}}
-            @if ($categories->where('videos_count', '>', 0)->count())
+            {{-- @if ($categories->where('videos_count', '>', 0)->count())
                 <div class="card card-pad">
                     <div class="section-title" style="margin-bottom:10px;">
                         <div>
@@ -64,7 +64,7 @@
                         @endforeach
                     </div>
                 </div>
-            @endif
+            @endif --}}
 
 
             <div style="height:16px"></div>
@@ -81,22 +81,43 @@
                 <div class="grid-3">
                     @forelse ($videos['beginner'] ?? [] as $video)
                         <article class="card prod">
-                            <div class="prod-img" style="aspect-ratio:16/10;">
-                                <span class="badge ok">Beginner</span>
-                                <img src="{{ $video->youtube_thumbnail }}" alt="{{ $video->title }}"
+                            <div class="prod-img" style="aspect-ratio:16/10; position:relative;">
+
+                                @php
+                                    $isBookmarked = $video->bookmarks->count() > 0;
+                                @endphp
+
+                                {{-- Badge Bookmark --}}
+                                <span class="badge btn-bookmark" data-id="{{ $video->id }}"
+                                    style="
+                                    position:absolute;
+                                    top:10px;
+                                    left:10px;
+                                    cursor:pointer;
+                                    background: {{ $isBookmarked ? '#facc15' : 'rgba(255,255,255,.85)' }};
+                                    color: {{ $isBookmarked ? '#000' : '#374151' }};
+                                    backdrop-filter: blur(6px);
+                                    z-index:10;
+                                ">
+                                    <i class="{{ $isBookmarked ? 'fa-solid' : 'fa-regular' }} fa-bookmark"></i>
+                                </span>
+
+                                {{-- Image HARUS di luar span --}}
+                                <img src="{{ $video->youtube_thumbnail }}"
                                     style="width:100%;height:100%;object-fit:cover;border-radius:18px;">
+
                             </div>
+
                             <div class="prod-body">
                                 <p class="prod-name">{{ $video->title }}</p>
                                 <p class="muted" style="margin:0 0 10px;line-height:1.6">
                                     {{ Str::limit($video->description, 120) }}
                                 </p>
                                 <div style="display:flex;gap:10px;">
-                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener" class="btn btn-primary"
-                                        style="flex:1">
+                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener"
+                                        class="btn btn-primary" style="flex:1">
                                         <i class="fa-solid fa-circle-play"></i> Mulai
                                     </a>
-                                    <button class="btn btn-secondary" style="flex:1">Simpan</button>
                                 </div>
                             </div>
                         </article>
@@ -118,21 +139,42 @@
                 <div class="grid-3">
                     @forelse ($videos['intermediate'] ?? [] as $video)
                         <article class="card prod">
-                            <div class="prod-img" style="aspect-ratio:16/10;">
-                                <span class="badge warn">Intermediate</span>
+                            <div class="prod-img" style="aspect-ratio:16/10; position:relative;">
+
+                                @php
+                                    $isBookmarked = $video->bookmarks->count() > 0;
+                                @endphp
+
+                                {{-- Badge Bookmark --}}
+                                <span class="badge btn-bookmark" data-id="{{ $video->id }}"
+                                    style="
+            position:absolute;
+            top:10px;
+            left:10px;
+            cursor:pointer;
+            background: {{ $isBookmarked ? '#facc15' : 'rgba(255,255,255,.85)' }};
+            color: {{ $isBookmarked ? '#000' : '#374151' }};
+            backdrop-filter: blur(6px);
+            z-index:10;
+        ">
+                                    <i class="{{ $isBookmarked ? 'fa-solid' : 'fa-regular' }} fa-bookmark"></i>
+                                </span>
+
+                                {{-- Image HARUS di luar span --}}
                                 <img src="{{ $video->youtube_thumbnail }}"
                                     style="width:100%;height:100%;object-fit:cover;border-radius:18px;">
+
                             </div>
+
                             <div class="prod-body">
                                 <p class="prod-name">{{ $video->title }}</p>
                                 <p class="muted" style="margin:0 0 10px;line-height:1.6">
                                     {{ Str::limit($video->description, 120) }}
                                 </p>
                                 <div style="display:flex;gap:10px;">
-                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener" class="btn btn-primary"
-                                        style="flex:1"><i class="fa-solid fa-circle-play"></i>
+                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener"
+                                        class="btn btn-primary" style="flex:1"><i class="fa-solid fa-circle-play"></i>
                                         Mulai</a>
-                                    <button class="btn btn-secondary" style="flex:1">Simpan</button>
                                 </div>
                             </div>
                         </article>
@@ -154,21 +196,42 @@
                 <div class="grid-3">
                     @forelse ($videos['advanced'] ?? [] as $video)
                         <article class="card prod">
-                            <div class="prod-img" style="aspect-ratio:16/10;">
-                                <span class="badge hot">Advanced</span>
+                            <div class="prod-img" style="aspect-ratio:16/10; position:relative;">
+
+                                @php
+                                    $isBookmarked = $video->bookmarks->count() > 0;
+                                @endphp
+
+                                {{-- Badge Bookmark --}}
+                                <span class="badge btn-bookmark" data-id="{{ $video->id }}"
+                                    style="
+            position:absolute;
+            top:10px;
+            left:10px;
+            cursor:pointer;
+            background: {{ $isBookmarked ? '#facc15' : 'rgba(255,255,255,.85)' }};
+            color: {{ $isBookmarked ? '#000' : '#374151' }};
+            backdrop-filter: blur(6px);
+            z-index:10;
+        ">
+                                    <i class="{{ $isBookmarked ? 'fa-solid' : 'fa-regular' }} fa-bookmark"></i>
+                                </span>
+
+                                {{-- Image HARUS di luar span --}}
                                 <img src="{{ $video->youtube_thumbnail }}"
                                     style="width:100%;height:100%;object-fit:cover;border-radius:18px;">
+
                             </div>
+
                             <div class="prod-body">
                                 <p class="prod-name">{{ $video->title }}</p>
                                 <p class="muted" style="margin:0 0 10px;line-height:1.6">
                                     {{ Str::limit($video->description, 120) }}
                                 </p>
                                 <div style="display:flex;gap:10px;">
-                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener" class="btn btn-primary"
-                                        style="flex:1"><i class="fa-solid fa-circle-play"></i>
+                                    <a href="{{ $video->video_url }}" target="_blank" rel="noopener"
+                                        class="btn btn-primary" style="flex:1"><i class="fa-solid fa-circle-play"></i>
                                         Mulai</a>
-                                    <button class="btn btn-secondary" style="flex:1">Simpan</button>
                                 </div>
                             </div>
                         </article>
@@ -181,5 +244,50 @@
             <div style="height:18px"></div>
         </div>
     </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            document.querySelectorAll('.btn-bookmark').forEach(button => {
+                button.addEventListener('click', function() {
+
+                    let materialId = this.dataset.id;
+                    let icon = this.querySelector('i');
+
+                    fetch(`/learn/${materialId}/bookmark`, {
+                            method: "POST",
+                            headers: {
+                                "X-CSRF-TOKEN": document.querySelector(
+                                    'meta[name="csrf-token"]').content,
+                                "Accept": "application/json",
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+
+                            if (data.status === "added") {
+                                icon.classList.remove('fa-regular');
+                                icon.classList.add('fa-solid');
+                                this.style.background = '#facc15';
+                                this.style.color = '#000';
+                            }
+
+                            if (data.status === "removed") {
+                                icon.classList.remove('fa-solid');
+                                icon.classList.add('fa-regular');
+                                this.style.background = 'rgba(255,255,255,.85)';
+                                this.style.color = '#374151';
+                            }
+
+                        })
+                        .catch(() => {
+                            alert("Silakan login terlebih dahulu.");
+                        });
+
+                });
+            });
+
+        });
+    </script>
 
 @endsection

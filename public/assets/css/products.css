@@ -33,13 +33,21 @@
     font-size: 14px;
     letter-spacing: -0.01em;
 }
+.brand-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 12px;
+}
+
 .field {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 0;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 14px;
     color: rgba(17, 24, 39, 0.8);
 }
+
 .field input {
     width: 16px;
     height: 16px;
@@ -98,8 +106,19 @@
     color: var(--blue);
 }
 
+/* GRID supaya semua card sama tinggi */
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: stretch; /* penting */
+}
+
 /* Product card */
 .prod {
+    display: flex;
+    flex-direction: column;
+    height: 400px; /* atur sesuai kebutuhan */
     overflow: hidden;
     transition:
         transform 0.15s ease,
@@ -135,27 +154,35 @@
 }
 .prod-body {
     padding: 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
 }
 .prod-name {
-    font-weight: 800;
-    letter-spacing: -0.01em;
+    font-weight: 700;
     margin: 0 0 6px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* max 2 baris */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+
+    line-height: 1.3em; /* atur tinggi baris */
+    min-height: 2.6em;
 }
 .prod-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    margin-bottom: 8px;
 }
 .price {
-    font-weight: 750;
+    font-weight: 600;
 }
 .stars {
     color: #f59e0b;
     font-weight: 900;
 }
 .prod-actions {
-    margin-top: 10px;
+    margin-top: auto; /* ini kuncinya */
     display: flex;
     gap: 10px;
 }
@@ -267,41 +294,55 @@
 }
 
 .product-modal-body {
-    padding: 32px;
+    padding: 24px 28px; /* sedikit diperkecil */
     display: flex;
     flex-direction: column;
+    gap: 10px; /* 🔥 ini bikin spacing konsisten */
     overflow-y: auto;
 }
 
 .product-modal-title {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     letter-spacing: -0.02em;
-    margin: 0 0 12px;
+    line-height: 1.25; /* 🔥 supaya judul tidak renggang */
+    margin: 0; /* hapus margin bawah */
     color: var(--text);
 }
 
 .product-modal-price {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 900;
     color: var(--red);
-    margin: 8px 0 16px;
+    margin-bottom: 10px; 
 }
 
 .product-modal-description {
-    margin-top: 16px;
+    margin: 0; /* hapus margin-top 16px */
+}
+
+/* 🔥 HAPUS MARGIN DEFAULT HEADING & PARAGRAF */
+.product-modal-description h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+}
+
+.product-modal-description p {
+    margin: 0;
+    line-height: 1.5;
 }
 
 .product-modal-specs {
-    margin-top: 16px;
+    margin: 4px 0 0;
 }
 
 .specs-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 8px;
+    gap: 8px; /* lebih compact */
+    margin-top: 4px;
 }
+
 
 .spec-item {
     background: rgba(17, 24, 39, 0.04);
@@ -502,14 +543,67 @@ input[type="checkbox"],
     accent-color: var(--red);
 }
 
-.search-input {
-    flex: 1;
-    min-width: 200px;
-    padding: 10px 16px;
+
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    /* max-width: 420px; */
     border: 1px solid rgba(17, 24, 39, 0.12);
-    border-radius: 8px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.search-wrapper .search-input {
+    border: none;
+    outline: none;
+    flex: 1;
+    padding: 10px 14px;
     font-size: 14px;
 }
+
+.search-wrapper .search-btn {
+    width: 46px;
+    height: 42px;
+    border: none;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.search-wrapper .search-btn i {
+    font-size: 14px;
+    color: var(--text);
+}
+
+.search-wrapper .search-btn:hover {
+    background: rgba(17, 24, 39, 0.05);
+}
+
+#closeFilter {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#closeFilter:hover {
+    background: rgba(229,57,53,0.1);
+    color: var(--red);
+}
+
 
 /* Responsive Products */
 @media (max-width: 980px) {
@@ -623,6 +717,10 @@ input[type="checkbox"],
         margin-bottom: 10px;
     }
 
+    .prod {
+        height: 300px; /* lebih proporsional untuk 2 kolom */
+    }
+
     .prod-body {
         font-size: 15px;
         font-weight: 700 !important;
@@ -633,6 +731,7 @@ input[type="checkbox"],
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
+        align-items: stretch;
     }
 
     /* Mobile Modal */

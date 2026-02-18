@@ -10,9 +10,6 @@
 @section('content')
     <div class="page-header">
         <h2 class="page-title">Hasil Event Kompetisi Rubik</h2>
-        {{-- <a href="{{ route('admin.events.competition.create') }}" class="btn btn-primary">
-            + Input Hasil Baru
-        </a> --}}
     </div>
 
     <div class="table-wrapper">
@@ -77,42 +74,7 @@
             </tbody>
         </table>
 
-        {{-- PAGINATION (STYLE SAMA DENGAN YANG KAMU PAKAI) --}}
-        <div class="pagination">
-            <div class="pagination-info">
-                Menampilkan
-                {{ $results->firstItem() ?? 0 }}–{{ $results->lastItem() ?? 0 }}
-                dari {{ $results->total() }} event
-            </div>
+        <x-admin-pagination :paginator="$results" />
 
-            <div class="pagination-controls">
-                {{-- PREV --}}
-                @if ($results->onFirstPage())
-                    <button class="page-btn" disabled>‹</button>
-                @else
-                    <a href="{{ $results->previousPageUrl() }}">
-                        <button class="page-btn">‹</button>
-                    </a>
-                @endif
-
-                {{-- PAGE --}}
-                @for ($i = 1; $i <= $results->lastPage(); $i++)
-                    <a href="{{ $results->url($i) }}">
-                        <button class="page-btn {{ $results->currentPage() == $i ? 'active' : '' }}">
-                            {{ $i }}
-                        </button>
-                    </a>
-                @endfor
-
-                {{-- NEXT --}}
-                @if ($results->hasMorePages())
-                    <a href="{{ $results->nextPageUrl() }}">
-                        <button class="page-btn">›</button>
-                    </a>
-                @else
-                    <button class="page-btn" disabled>›</button>
-                @endif
-            </div>
-        </div>
     </div>
 @endsection

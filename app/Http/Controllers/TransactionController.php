@@ -22,9 +22,22 @@ class TransactionController extends Controller
             ->where('user_id', Auth::id()) // 🔒 FILTER USER LOGIN
             ->latest();
 
-        // search kode transaksi
+        // 🔍 SEARCH kode transaksi ATAU nama produk
         if ($request->filled('search')) {
-            $query->where('code', 'like', '%' . $request->search . '%');
+
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+
+                // Cari berdasarkan kode transaksi
+                $q->where('code', 'like', '%' . $search . '%')
+
+                    // ATAU berdasarkan nama produk di transaction_items
+                    ->orWhereHas('items', function ($itemQuery) use ($search) {
+                        $itemQuery->where('product_name', 'like', '%' . $search . '%');
+                    });
+
+            });
         }
 
         // filter status
@@ -32,7 +45,7 @@ class TransactionController extends Controller
             $query->where('status', $request->status);
         }
 
-        $transactions = $query->paginate(9);
+        $transactions = $query->paginate(12);
 
         return view('pages.transactions', compact('transactions'));
     }

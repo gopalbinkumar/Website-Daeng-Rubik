@@ -14,7 +14,7 @@ class EventController extends Controller
 
     public function publicIndex()
     {
-        // 🔥 Featured = event kompetisi terdekat (upcoming)
+        // Featured tetap upcoming terdekat
         $featured = Event::where('category', 'kompetisi')
             ->where('status', 'upcoming')
             ->where('start_datetime', '>=', now())
@@ -22,16 +22,14 @@ class EventController extends Controller
             ->with('competitionCategories')
             ->first();
 
-        // 🔹 SEMUA event upcoming (TERMASUK featured)
-        $events = Event::where('status', 'upcoming')
-            ->where('start_datetime', '>=', now())
-            ->orderBy('start_datetime', 'asc')
+        // 🔥 Ambil SEMUA event
+        $events = Event::orderBy('start_datetime', 'asc')
             ->with('competitionCategories')
             ->get();
 
         return view('pages.events', compact('featured', 'events'));
-
     }
+    
     /**
      * List event
      */
@@ -113,7 +111,7 @@ class EventController extends Controller
             'max_participants' => 'nullable|required_if:category,kompetisi|integer|min:1',
             'total_prize' => 'nullable|required_if:category,kompetisi|integer|min:0',
 
-            'status' => 'required|in:upcoming,ongoing,finished',
+            'status' => 'nullable|in:upcoming,ongoing,finished',
 
             'competition_categories' => 'nullable|required_if:category,kompetisi|array',
             'competition_categories.*' => 'exists:competition_categories,id',
@@ -147,7 +145,7 @@ class EventController extends Controller
                 'max_participants' => $request->category === 'kompetisi' ? $request->max_participants : null,
                 'total_prize' => $request->category === 'kompetisi' ? $request->total_prize : null,
 
-                'status' => $request->status,
+                'status' => $request->status ?? 'upcoming',
             ]);
 
             // Sync kategori lomba (kompetisi saja)

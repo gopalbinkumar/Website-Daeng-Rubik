@@ -14,7 +14,7 @@
     <div class="table-wrapper">
         <form method="GET" action="{{ route('admin.products.index') }}">
             <div class="table-toolbar">
-                <input type="text" name="search" class="search-input" placeholder=" Search produk..."
+                <input type="text" name="search" class="search-input" placeholder="Search produk..."
                     value="{{ request('search') }}">
 
                 <select class="filter-select" name="category" onchange="this.form.submit()">
@@ -90,11 +90,15 @@
                                 </button>
 
                                 <form method="POST" action="{{ route('admin.products.destroy', $product->id) }}"
-                                    style="display:inline">
+                                    class="form-delete" style="display:inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-icon btn-danger"><i class="fa-solid fa-trash"></i></button>
+
+                                    <button type="submit" class="btn btn-icon btn-danger">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 </form>
+
                             </div>
                         </td>
                     </tr>
@@ -103,42 +107,7 @@
 
         </table>
 
-        <div class="pagination">
-            <div class="pagination-info">
-                Menampilkan
-                {{ $products->firstItem() }}–{{ $products->lastItem() }}
-                dari {{ $products->total() }} produk
-            </div>
-
-            <div class="pagination-controls">
-                {{-- PREV --}}
-                @if ($products->onFirstPage())
-                    <button class="page-btn" disabled>‹</button>
-                @else
-                    <a href="{{ $products->previousPageUrl() }}">
-                        <button class="page-btn">‹</button>
-                    </a>
-                @endif
-
-                {{-- PAGE NUMBERS --}}
-                @for ($i = 1; $i <= $products->lastPage(); $i++)
-                    <a href="{{ $products->url($i) }}">
-                        <button class="page-btn {{ $products->currentPage() == $i ? 'active' : '' }}">
-                            {{ $i }}
-                        </button>
-                    </a>
-                @endfor
-
-                {{-- NEXT --}}
-                @if ($products->hasMorePages())
-                    <a href="{{ $products->nextPageUrl() }}">
-                        <button class="page-btn">›</button>
-                    </a>
-                @else
-                    <button class="page-btn" disabled>›</button>
-                @endif
-            </div>
-        </div>
+        <x-admin-pagination :paginator="$products" />
 
     </div>
 
@@ -233,6 +202,7 @@
                             <option value="beginner">Beginner</option>
                             <option value="intermediate">Intermediate</option>
                             <option value="advanced">Advanced</option>
+                            <option value="none">Tidak ada</option>
                         </select>
                     </div>
 
@@ -243,6 +213,7 @@
                             <option value="MoYu">MoYu</option>
                             <option value="GAN">GAN</option>
                             <option value="QiYi">QiYi</option>
+                            <option value="Lainnya">Lainnya</option>
                         </select>
                     </div>
 
@@ -263,7 +234,7 @@
                         <div class="form-group">
                             <label class="form-label" style="font-weight:500;font-size:13px;">Tokopedia</label>
                             <input type="url" name="marketplace_links[tokopedia]" class="form-input"
-                                placeholder="https://tokopedia.com/daengrubik/...">
+                                placeholder="https://tokopedia.com/...">
                         </div>
 
                         <div class="form-group">
@@ -276,7 +247,7 @@
                     <div class="form-group" style="margin-top:8px;">
                         <label class="form-label" style="font-weight:500;font-size:13px;">TikTok Shop</label>
                         <input type="url" name="marketplace_links[tiktok_shop]" class="form-input"
-                            placeholder="https://www.tiktok.com/@akunmu/shop/...">
+                            placeholder="https://www.tiktok.com/shop/...">
                         <small class="form-helper">
                             Jika link diisi, ikon marketplace terkait akan muncul di detail produk sisi user.
                             Jika kosong, ikon tidak ditampilkan.
@@ -367,6 +338,7 @@
                             <option value="beginner">Beginner</option>
                             <option value="intermediate">Intermediate</option>
                             <option value="advanced">Advanced</option>
+                            <option value="none">Tidak ada</option>
                         </select>
                     </div>
 
@@ -377,6 +349,7 @@
                             <option value="MoYu">MoYu</option>
                             <option value="GAN">GAN</option>
                             <option value="QiYi">QiYi</option>
+                            <option value="Lainnya">Lainnya</option>
                         </select>
                     </div>
 

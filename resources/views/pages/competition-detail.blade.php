@@ -1,100 +1,4 @@
 @extends('layouts.app')
-@php
-    use Carbon\Carbon;
-
-    /* =========================
-     | DUMMY EVENT
-     ========================= */
-    $event = (object) [
-        'id' => request()->route('event'),
-        'title' => 'Daeng Rubik Open 2025',
-        'location' => 'Makassar',
-        'start_datetime' => Carbon::parse('2025-06-15 09:00'),
-        'end_datetime' => Carbon::parse('2025-06-16 17:00'),
-    ];
-
-    /* =========================
-     | DUMMY KATEGORI KOMPETISI
-     ========================= */
-    $competitionCategories = collect([
-        (object) ['id' => 1, 'name' => '3x3x3 Cube'],
-        (object) ['id' => 2, 'name' => '2x2x2 Cube'],
-        (object) ['id' => 3, 'name' => 'Pyraminx'],
-    ]);
-
-    /* =========================
-     | DUMMY HASIL KOMPETISI
-     ========================= */
-    $resultsRaw = collect([
-        (object) [
-            'rank' => 1,
-            'participant_name' => 'Andi Pratama',
-            'category_id' => 1,
-            'attempt1' => 8.21,
-            'attempt2' => 7.98,
-            'attempt3' => 8.05,
-            'attempt4' => 7.89,
-            'attempt5' => 8.11,
-        ],
-        (object) [
-            'rank' => 2,
-            'participant_name' => 'Muh. Rizal',
-            'category_id' => 1,
-            'attempt1' => 8.55,
-            'attempt2' => 8.40,
-            'attempt3' => null, // DNF
-            'attempt4' => 8.33,
-            'attempt5' => 8.47,
-        ],
-        (object) [
-            'rank' => 1,
-            'participant_name' => 'Siti Aisyah',
-            'category_id' => 2,
-            'attempt1' => 3.12,
-            'attempt2' => 3.05,
-            'attempt3' => 3.22,
-            'attempt4' => 3.10,
-            'attempt5' => 3.18,
-        ],
-        (object) [
-            'rank' => 1,
-            'participant_name' => 'Fajar Nugraha',
-            'category_id' => 3,
-            'attempt1' => 2.45,
-            'attempt2' => 2.38,
-            'attempt3' => 2.41,
-            'attempt4' => 2.36,
-            'attempt5' => 2.40,
-        ],
-    ]);
-
-    /* =========================
-     | PROSES + FILTER KATEGORI
-     ========================= */
-    $results = $resultsRaw
-        ->filter(function ($row) {
-            return !request('category') || $row->category_id == request('category');
-        })
-        ->map(function ($row) use ($competitionCategories) {
-            $attempts = collect([
-                $row->attempt1,
-                $row->attempt2,
-                $row->attempt3,
-                $row->attempt4,
-                $row->attempt5,
-            ])->filter();
-
-            $row->best = $attempts->min();
-            $row->average = $attempts->count() >= 3
-                ? round($attempts->avg(), 2)
-                : null;
-
-            $row->category = $competitionCategories->firstWhere('id', $row->category_id);
-
-            return $row;
-        })
-        ->values();
-@endphp
 
 @section('title', $event->title . ' — Hasil Kompetisi')
 
@@ -104,136 +8,253 @@
 @endpush
 
 @section('content')
+    <div class="competition-detail-page">
 
-    {{-- HEADER EVENT --}}
-    <section class="page-head">
-        <div class="container">
-            <div class="breadcrumb">
-                Beranda &gt; Event &gt; Event Saya &gt; Detail Kompetisi
+        {{-- HEADER EVENT --}}
+        <section class="page-head">
+            <div class="container">
+                <div class="breadcrumb">
+                    Beranda &gt; Event &gt; Event Saya &gt; Detail Kompetisi
+                </div>
+
+                <h1 class="page-title" style="margin-bottom:4px;">
+                    {{ $event->title }}
+                </h1>
+
+                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px;">
+                    <p class="muted" style="margin:0;">
+                        <i class="fa-regular fa-calendar"></i>
+                        {{ $event->start_datetime->format('d M Y') }} –
+                        {{ $event->end_datetime->format('d M Y') }}
+                        • {{ $event->start_datetime->format('H:i') }} WIB
+                        <br>
+                        <i class="fa-solid fa-location-dot"></i>
+                        {{ $event->location }}
+                    </p>
+
+                </div>
             </div>
+        </section>
 
-            <h1 class="page-title" style="margin-bottom:4px;">
-                {{ $event->title }}
-            </h1>
+        <section style="border-bottom:1px solid rgba(17,24,39,.06);"></section>
 
-            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px;">
-                <p class="muted" style="margin:0;">
-                    📅 {{ $event->start_datetime->format('d M Y') }} –
-                    {{ $event->end_datetime->format('d M Y') }}
-                    • {{ $event->start_datetime->format('H:i') }} WIB
-                    <br>
-                    📍 {{ $event->location }}
-                </p>
+        <section class="section">
+            <div class="container">
 
-                <span class="badge" style="
-                    background:rgba(229,57,53,.08);
-                    color:var(--red);
-                    font-size:12px;
-                    font-weight:750;
-                    border-radius:999px;
-                    padding:6px 12px;
-                ">
-                    🏆 Kompetisi Rubik
-                </span>
-            </div>
-        </div>
-    </section>
+                {{-- ========================= --}}
+                {{-- FILTER CARD --}}
+                {{-- ========================= --}}
+                <div class="card card-pad" style="padding:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
 
-    {{-- DIVIDER TIPIS --}}
-    <section style="border-bottom:1px solid rgba(17,24,39,.06);margin-bottom:10px;"></section>
+                        <div>
+                            @php
+                                $selectedCategory = $competitionCategories->firstWhere('id', request('category'));
+                                $selectedRound = $rounds->firstWhere('round_number', request('round'));
+                            @endphp
+                        </div>
 
-    {{-- TABEL HASIL KOMPETISI --}}
-    <section class="section" style="padding-top:18px;">
-        <div class="container">
+                        <form method="GET" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;width:100%;">
+                            {{-- KATEGORI --}}
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <label class="muted" style="font-size:13px;margin:0;">
+                                    Kategori
+                                </label>
+                                <select name="category" id="categorySelect" class="select">
+                                    <option value="">Semua</option>
+                                    @foreach ($competitionCategories as $cat)
+                                        <option value="{{ $cat->id }}"
+                                            {{ request('category') == $cat->id ? 'selected' : '' }}>
+                                            {{ $cat->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-            <div class="card card-pad" style="padding:20px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-                    <div>
-                        <h2 style="font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;">
-                            Hasil Kompetisi
-                        </h2>
-                        <p class="muted" style="margin:0;">
-                            Hasil per kategori rubik, terinspirasi dari WCA Live.
-                        </p>
+                            {{-- ROUND --}}
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <label class="muted" style="font-size:13px;margin:0;">
+                                    Round
+                                </label>
+                                <select name="round" id="roundSelect" class="select"
+                                    {{ request('category') ? '' : 'disabled' }}>
+                                    <option value="">Semua</option>
+                                    @foreach ($rounds as $round)
+                                        <option value="{{ $round->round_number }}"
+                                            {{ request('round') == $round->round_number ? 'selected' : '' }}>
+                                            {{ $round->name ?? 'Round ' . $round->round_number }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                        </form>
                     </div>
-
-                    {{-- Filter kategori rubik --}}
-                    <form method="GET" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                        <label for="category" class="muted" style="font-size:13px;margin:0;">
-                            Kategori Rubik
-                        </label>
-                        <select name="category" id="category" class="select" onchange="this.form.submit()">
-                            <option value="">Semua</option>
-                            @foreach ($competitionCategories as $cat)
-                                <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>
-                                    {{ $cat->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </form>
                 </div>
 
-                <div style="height:14px;"></div>
+                <div style="height:22px;"></div>
 
-                {{-- TABLE RESPONSIVE --}}
-                <div class="table-responsive" style="overflow-x:auto;">
-                    <table class="table table-sm" style="min-width:980px;">
-                        <thead>
-                            <tr style="background:rgba(17,24,39,.04);">
-                                <th style="border-bottom-color:rgba(17,24,39,.08);">Peringkat</th>
-                                <th style="border-bottom-color:rgba(17,24,39,.08);">Nama Peserta</th>
-                                <th style="border-bottom-color:rgba(17,24,39,.08);">Kategori</th>
-                                <th class="text-end" style="border-bottom-color:rgba(17,24,39,.08);">Attempt 1</th>
-                                <th class="text-end" style="border-bottom-color:rgba(17,24,39,.08);">Attempt 2</th>
-                                <th class="text-end" style="border-bottom-color:rgba(17,24,39,.08);">Attempt 3</th>
-                                <th class="text-end" style="border-bottom-color:rgba(17,24,39,.08);">Attempt 4</th>
-                                <th class="text-end" style="border-bottom-color:rgba(17,24,39,.08);">Attempt 5</th>
-                                <th class="text-end" style="border-bottom-color:rgba(17,24,39,.08);">Best</th>
-                                <th class="text-end" style="border-bottom-color:rgba(17,24,39,.08);">Average</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($results as $row)
-                                <tr class="table-row-hover">
-                                    <td style="font-weight:700;">
-                                        #{{ $row->rank }}
-                                    </td>
-                                    <td>
-                                        {{ $row->participant_name }}
-                                    </td>
-                                    <td>
-                                        {{ $row->category->name ?? '-' }}
-                                    </td>
-                                    <td class="text-end">{{ $row->attempt1 ?? 'DNF' }}</td>
-                                    <td class="text-end">{{ $row->attempt2 ?? 'DNF' }}</td>
-                                    <td class="text-end">{{ $row->attempt3 ?? 'DNF' }}</td>
-                                    <td class="text-end">{{ $row->attempt4 ?? 'DNF' }}</td>
-                                    <td class="text-end">{{ $row->attempt5 ?? 'DNF' }}</td>
-                                    <td class="text-end" style="font-weight:800;">
-                                        {{ $row->best ?? '-' }}
-                                    </td>
-                                    <td class="text-end" style="font-weight:800;">
-                                        {{ $row->average ?? '-' }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="10" style="text-align:center;" class="muted">
-                                        Belum ada data hasil untuk kategori ini.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                {{-- MODE FILTER AKTIF (Kategori + Round dipilih) --}}
 
-                {{-- INFORMASI TAMBAHAN --}}
-                <p class="muted" style="margin-top:14px;font-size:12px;line-height:1.7;">
-                    Data hasil kompetisi diinput oleh admin. Format waktu dan perhitungan mengikuti standar kompetisi rubik
-                    (mirip WCA): nilai <b>Best</b> adalah waktu tercepat peserta, sedangkan <b>Average</b> dihitung dari
-                    rata-rata tertentu sesuai ketentuan kategori.
-                </p>
+                @forelse ($groupedResults as $categoryId => $roundGroups)
+                    @php
+                        $categoryName = $competitionCategories->firstWhere('id', $categoryId)->name ?? '';
+                    @endphp
+
+                    <div class="card card-pad" style="padding:20px;margin-bottom:22px;">
+
+                        {{-- Judul Kategori --}}
+                        @if ($categoryName)
+                            <h2 style="margin-bottom:12px;">
+                                {{ $categoryName }}
+                            </h2>
+                        @endif
+
+                        @forelse ($roundGroups as $roundNumber => $rows)
+                            {{-- Judul Round --}}
+                            <h4 style="font-weight:650;margin:12px 0 6px;">
+                                {{ $rounds->firstWhere('round_number', $roundNumber)->name ?? 'Round ' . $roundNumber }}
+                            </h4>
+
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-end">#</th>
+                                            <th class="text-start">Nama</th>
+
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <th class="text-end attempt-col">{{ $i }}</th>
+                                            @endfor
+
+                                            <th class="text-end">Average</th>
+                                            <th class="text-end">Best</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        @foreach ($rows as $index => $row)
+                                            <tr class="result-row" data-a1="{{ $row->attempt1 ?? 'DNF' }}"
+                                                data-a2="{{ $row->attempt2 ?? 'DNF' }}"
+                                                data-a3="{{ $row->attempt3 ?? 'DNF' }}"
+                                                data-a4="{{ $row->attempt4 ?? 'DNF' }}"
+                                                data-a5="{{ $row->attempt5 ?? 'DNF' }}">
+
+                                                <td class="text-end rank-cell">
+                                                    {{ $row->rank ?? $index + 1 }}
+                                                </td>
+
+                                                <td class="text-start name-cell">
+                                                    {{ $row->user->name }}
+                                                </td>
+
+                                                <td class="text-end attempt-col">{{ $row->attempt1 ?? 'DNF' }}</td>
+                                                <td class="text-end attempt-col">{{ $row->attempt2 ?? 'DNF' }}</td>
+                                                <td class="text-end attempt-col">{{ $row->attempt3 ?? 'DNF' }}</td>
+                                                <td class="text-end attempt-col">{{ $row->attempt4 ?? 'DNF' }}</td>
+                                                <td class="text-end attempt-col">{{ $row->attempt5 ?? 'DNF' }}</td>
+
+                                                <td class="text-end">
+                                                    <strong>{{ $row->average ?? '-' }}</strong>
+                                                </td>
+
+                                                <td class="text-end">
+                                                    {{ $row->best ?? '-' }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        @empty
+                            <p class="muted">Belum ada hasil.</p>
+                        @endforelse
+                    </div>
+                @empty
+                    <div class="card card-pad" style="padding:20px;">
+                        <p class="muted">Belum ada hasil kompetisi.</p>
+                    </div>
+                @endforelse
+
             </div>
+        </section>
+    </div>
+    <div id="attemptModalBackdrop" class="modal-backdrop"></div>
+
+    <div id="attemptModal" class="attempt-modal">
+        <div class="attempt-modal-content">
+            <h3>Detail Waktu</h3>
+            <ul id="attemptList"></ul>
+            <button onclick="closeAttemptModal()" class="btn btn-primary" style="width:100%;margin-top:12px;">
+                Tutup
+            </button>
         </div>
-    </section>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const categorySelect = document.getElementById("categorySelect");
+            const roundSelect = document.getElementById("roundSelect");
+
+            function toggleRound() {
+                if (categorySelect.value === "") {
+                    roundSelect.disabled = true;
+                    roundSelect.value = "";
+                } else {
+                    roundSelect.disabled = false;
+                }
+            }
+
+            toggleRound();
+
+            categorySelect.addEventListener("change", function() {
+                toggleRound();
+                this.form.submit();
+            });
+
+            roundSelect.addEventListener("change", function() {
+                this.form.submit();
+            });
+
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            document.querySelectorAll('.result-row').forEach(row => {
+
+                row.addEventListener('click', function() {
+
+                    if (window.innerWidth > 768) return;
+
+                    const list = document.getElementById('attemptList');
+                    list.innerHTML = '';
+
+                    for (let i = 1; i <= 5; i++) {
+                        const val = row.dataset['a' + i] || 'DNF';
+                        const li = document.createElement('li');
+                        li.textContent = 'Attempt ' + i + ': ' + val;
+                        list.appendChild(li);
+                    }
+
+                    document.getElementById('attemptModal').classList.add('open');
+                    document.getElementById('attemptModalBackdrop').classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                });
+
+            });
+
+        });
+
+        function closeAttemptModal() {
+            document.getElementById('attemptModal').classList.remove('open');
+            document.getElementById('attemptModalBackdrop').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+    </script>
+
+
 @endsection

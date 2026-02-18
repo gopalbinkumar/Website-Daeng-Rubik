@@ -25,7 +25,7 @@
                 <button class="tab active" type="button" data-tab="all">Semua</button>
                 <button class="tab" type="button" data-tab="upcoming">Upcoming</button>
                 <button class="tab" type="button" data-tab="ongoing">Berlangsung</button>
-                <button class="tab" type="button" data-tab="done">Selesai</button>
+                <button class="tab" type="button" data-tab="finished">Selesai</button>
             </div>
 
             <div style="height:16px"></div>
@@ -38,8 +38,6 @@
                         <img src="{{ $featured->cover_image ? asset('storage/' . $featured->cover_image) : asset('assets/img/event-default.jpg') }}"
                             alt="{{ $featured->title }}">
                     </div>
-
-
 
                     <div class="featured-body">
                         <span class="badge hot">Featured</span>
@@ -57,9 +55,13 @@
                                 style="flex:1">
                                 Daftar sekarang
                             </a>
-                            <button class="btn btn-secondary" onclick="openEventModal({{ $featured->id }})" style="flex:1">
+                            {{-- <button class="btn btn-secondary" onclick="openEventModal({{ $featured->id }})" style="flex:1">
                                 Lihat detail
-                            </button>
+                            </button> --}}
+                            <a href="{{ route('events.competition.show', [$featured->id, $featured->slug]) }}"
+                                class="btn btn-secondary" style="flex:1">
+                                Hasil
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -102,11 +104,17 @@
                                         style="flex:1">
                                         Daftar
                                     </a>
+
+                                    <a href="{{ route('events.competition.show', [$ev->id, $ev->slug]) }}"
+                                        class="btn btn-secondary" style="flex:1">
+                                        Hasil
+                                    </a>
+                                @else
+                                    <button class="btn btn-secondary" style="flex:1"
+                                        onclick="openEventModal({{ $ev->id }})">
+                                        Detail
+                                    </button>
                                 @endif
-                                <button class="btn btn-secondary" style="flex:1"
-                                    onclick="openEventModal({{ $ev->id }})">
-                                    Detail
-                                </button>
                             </div>
                         </div>
                     </article>
@@ -276,21 +284,14 @@
                     const status = card.dataset.status;
                     const isFeatured = card.dataset.featured === '1';
 
-                    // TAB SEMUA
                     if (target === 'all') {
                         card.style.display = isFeatured ? 'none' : '';
                         return;
                     }
 
-                    // TAB SELESAI
-                    if (target === 'done') {
-                        card.style.display = status === 'finished' ? '' : 'none';
-                        return;
-                    }
-
-                    // TAB LAIN
                     card.style.display = status === target ? '' : 'none';
                 });
+
             }
 
             // CLICK TAB

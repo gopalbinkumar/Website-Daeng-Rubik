@@ -4,12 +4,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login - Daeng Rubik</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,600,700,800,900&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.1/css/all.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
@@ -30,10 +33,10 @@
 
                 <div class="auth-features">
                     <div class="feature-item">
-                        <div class="feature-icon"><i class="fa-solid fa-cart-shopping   "></i></div>
+                        <div class="feature-icon"><i class="fa-solid fa-cart-shopping"></i></div>
                         <div>
                             <strong>Katalog Lengkap</strong><br>
-                            <small>100+ produk rubik berkualitas</small>
+                            <small>Berbagai produk rubik berkualitas</small>
                         </div>
                     </div>
 
@@ -87,18 +90,12 @@
 
                     <div class="form-group">
                         <label class="form-label">
-                            Email / Username <span class="required">*</span>
+                            Email <span class="required">*</span>
                         </label>
                         <div class="input-wrapper">
-                            <input
-                                type="email"
-                                name="email"
-                                class="form-input"
-                                placeholder="email@example.com"
-                                value="{{ old('email') }}"
-                                required
-                            >
-                            <span class="input-icon"><i class="fa-regular fa-user"></i></span>
+                            <input type="email" name="email" class="form-input" placeholder="email@example.com"
+                                value="{{ old('email') }}" required>
+                            <span class="input-icon"><i class="fa-regular fa-envelope"></i></span>
                         </div>
                     </div>
 
@@ -107,27 +104,19 @@
                             Password <span class="required">*</span>
                         </label>
                         <div class="input-wrapper">
-                            <input
-                                type="password"
-                                name="password"
-                                class="form-input"
-                                placeholder="••••••••"
-                                required
-                                data-password
-                            >
+                            <input type="password" name="password" class="form-input" placeholder="••••••••" required
+                                data-password>
 
                             <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
-                            <button type="button" class="toggle-password">👁</button>
+                            <button type="button" class="toggle-password">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+
                         </div>
                     </div>
 
                     <div class="checkbox-group">
-                        <input
-                            type="checkbox"
-                            name="remember"
-                            id="remember"
-                            class="checkbox-input"
-                        >
+                        <input type="checkbox" name="remember" id="remember" class="checkbox-input">
                         <label for="remember" class="checkbox-label">
                             Ingat saya
                         </label>
@@ -160,27 +149,51 @@
     </div>
 
     <!-- JS FIX (WAJIB ADA) -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            document.querySelectorAll(".toggle-password").forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    const wrapper = btn.closest(".input-wrapper");
-                    if (!wrapper) return;
+    <script src="{{ asset('assets/auth.js') }}" defer></script>
 
-                    const input = wrapper.querySelector("input[data-password]");
-                    if (!input) return;
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: "{{ session('success') }}",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+            });
+        </script>
+    @endif
 
-                    if (input.type === "password") {
-                        input.type = "text";
-                        btn.textContent = "👁";
-                    } else {
-                        input.type = "password";
-                        btn.textContent = "👁";
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Oops...',
+                    text: "{{ session('error') }}",
+                    confirmButtonColor: '#E53935',
+                    customClass: {
+                        confirmButton: 'auth-btn'
                     }
                 });
             });
-        });
-    </script>
+        </script>
+    @endif
+
+    @if ($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: "{{ $errors->first() }}",
+                });
+            });
+        </script>
+    @endif
+
 
 </body>
+
 </html>

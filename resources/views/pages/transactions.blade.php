@@ -26,8 +26,14 @@
             {{-- SORT / SEARCH BAR --}}
             <form method="GET">
                 <div class="sortbar">
-                    <input type="text" name="search" class="search-input" placeholder="Cari kode transaksi..."
-                        value="{{ request('search') }}">
+                    <div class="search-wrapper">
+                        <input type="text" name="search" class="search-input" placeholder="Cari kode transaksi atau nama produk"
+                            value="{{ request('search') }}">
+
+                        <button type="submit" class="search-btn">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
 
                     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
                         <select class="select" name="status" onchange="this.form.submit()">
@@ -51,11 +57,26 @@
                                 {{ $trx->code }}
                             </p>
 
-                            <div class="prod-meta">
-                                <span class="badge badge-secondary">
-                                    {{ ucfirst($trx->status) }}
-                                </span>
-                            </div>
+                            @php
+                                $statusText = match ($trx->status) {
+                                    'paid' => 'Diverifikasi',
+                                    'failed' => 'Ditolak',
+                                    'pending' => 'Menunggu',
+                                    default => ucfirst($trx->status),
+                                };
+
+                                $statusClass = match ($trx->status) {
+                                    'paid' => 'badge-success',
+                                    'failed' => 'badge-danger',
+                                    'pending' => 'badge-warning',
+                                    default => 'badge-secondary',
+                                };
+                            @endphp
+
+                            <span class="badge {{ $statusClass }}">
+                                {{ $statusText }}
+                            </span>
+
 
                             <div class="prod-actions">
                                 <button class="btn btn-primary" type="button" style="flex:1"
@@ -163,6 +184,21 @@
                 itemsHtml += `<li>${item.name} (x${item.qty})</li>`;
             });
 
+            let badgeClass = 'badge-secondary';
+            let badgeText = trx.status;
+
+            if (trx.status.toLowerCase() === 'paid') {
+                badgeClass = 'badge-success';
+                badgeText = 'Diverifikasi';
+            } else if (trx.status.toLowerCase() === 'failed') {
+                badgeClass = 'badge-danger';
+                badgeText = 'Ditolak';
+            } else if (trx.status.toLowerCase() === 'pending') {
+                badgeClass = 'badge-warning';
+                badgeText = 'Menunggu';
+            }
+
+
             content.innerHTML = `
         <div class="product-modal-image">
             <img src="${trx.proof_image}"
@@ -173,11 +209,10 @@
                 display:block;">
         </div>
 
-
         <div class="product-modal-body">
             <h2 class="product-modal-title">${trx.code}</h2>
 
-            <span class="badge badge-secondary">${trx.status}</span>
+            <span class="badge ${badgeClass}">${badgeText}</span>
 
             <div class="product-modal-description">
                 <h3>Detail Pengiriman</h3>

@@ -23,12 +23,22 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
+        // 🔥 1️⃣ Cari kompetisi upcoming terdekat
         $featuredEvent = Event::where('category', 'kompetisi')
             ->where('status', 'upcoming')
             ->where('start_datetime', '>=', now())
             ->orderBy('start_datetime', 'asc')
             ->with('competitionCategories')
             ->first();
+
+        // 2️⃣ Kalau tidak ada, ambil upcoming terdekat apapun
+        if (!$featuredEvent) {
+            $featuredEvent = Event::where('status', 'upcoming')
+                ->where('start_datetime', '>=', now())
+                ->orderBy('start_datetime', 'asc')
+                ->with('competitionCategories')
+                ->first();
+        }
 
         return view('pages.home', compact('featuredProducts', 'featuredEvent'));
     }
@@ -41,10 +51,10 @@ class HomeController extends Controller
     public function dashboardadmin()
     {
         // 🔢 STAT
-        $totalProducts   = Product::count();
-        $totalEvents     = Event::count();
-        $totalMaterials  = LearningMaterial::count();
-        $totalAdmins     = User::where('role', 'admin')->count();
+        $totalProducts = Product::count();
+        $totalEvents = Event::count();
+        $totalMaterials = LearningMaterial::count();
+        $totalUsers = User::where('role', 'user')->count();
 
         // 🆕 PRODUK TERBARU (limit 3)
         $latestProducts = Product::latest()
@@ -68,13 +78,13 @@ class HomeController extends Controller
                 'text' => 'Materi baru diupload',
                 'time' => LearningMaterial::latest()->first()?->created_at,
             ],
-        ])->filter(fn ($a) => $a['time']);
+        ])->filter(fn($a) => $a['time']);
 
         return view('admin.dashboard', compact(
             'totalProducts',
             'totalEvents',
             'totalMaterials',
-            'totalAdmins',
+            'totalUsers',
             'latestProducts',
             'activities'
         ));

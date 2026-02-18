@@ -105,6 +105,17 @@ class EventRegistrationController extends Controller
             'participant_name' => 'required|string|max:255',
             'participant_email' => 'required|email|max:255',
             'participant_whatsapp' => 'required|string|max:25',
+
+        ], [
+            // 🔥 CUSTOM MESSAGE
+            'categories.required' => 'Silakan pilih minimal satu kategori lomba.',
+            'categories.min' => 'Anda harus memilih minimal satu kategori lomba.',
+
+            'participant_email.required' => 'Email wajib diisi.',
+            'participant_email.email' => 'Format email tidak valid.',
+
+            'participant_whatsapp.required' => 'Nomor WhatsApp wajib diisi.',
+
         ]);
 
         // simpan / ambil registrasi
@@ -124,7 +135,10 @@ class EventRegistrationController extends Controller
         // 🔥 SIMPAN KATEGORI LOMBA PER PESERTA
         $registration->competitionCategories()->sync($request->categories);
 
-        return response()->json(['success' => true]);
+        return redirect()
+            ->route('user.competitions') // atau '/my-competitions'
+            ->with('success', 'Pendaftaran berhasil! Silakan cek Event Saya.');
+
     }
 
     public function update(Request $request, EventRegistration $registration)
