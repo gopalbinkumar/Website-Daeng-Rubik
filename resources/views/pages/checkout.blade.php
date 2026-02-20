@@ -289,7 +289,7 @@
 
             // ⏱️ tampilkan modal sebentar lalu redirect
             setTimeout(() => {
-                window.location.href = '/mytransactions';
+                window.location.href = '/my-transactions';
             }, 1500); // 1.5 detik
         }
 

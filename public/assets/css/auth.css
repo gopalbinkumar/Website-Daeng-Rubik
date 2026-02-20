@@ -276,6 +276,7 @@ input[type="number"]::-webkit-inner-spin-button {
 /* Hilangkan spinner di Firefox */
 input[type="number"] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .toggle-password:hover {

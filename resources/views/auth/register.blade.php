@@ -23,7 +23,7 @@
         <!-- Left Visual Section -->
         <div class="auth-visual">
             <div class="auth-visual-content">
-                <div class="auth-cube"></div>
+                <div class="auth-cube" style="display: none"></div>
 
                 <h2 class="auth-slogan">Join the Community</h2>
                 <p class="auth-desc">Bergabung dengan komunitas pencinta rubik di Makassar</p>
@@ -151,50 +151,34 @@
     </div>
 
     <script src="{{ asset('assets/auth.js') }}" defer></script>
-    <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: "{{ session('success') }}",
+                confirmButtonText: 'Login Sekarang',
+                confirmButtonColor: '#E53935',
+                customClass: {
+                    confirmButton: 'auth-btn'
+                }
+            });
+        </script>
+    @endif
 
-            let form = this;
-            let formData = new FormData(form);
-
-            fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            text: data.message,
-                            confirmButtonText: 'Login Sekarang',
-                            confirmButtonColor: '#E53935',
-                            customClass: {
-                                confirmButton: 'auth-btn'
-                            }
-                        }).then(() => {
-                            window.location.href = "{{ route('auth.login') }}";
-                        });
-                    }
-                })
-                .catch(err => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Terjadi kesalahan, coba lagi.',
-                        confirmButtonColor: '#E53935',
-                        customClass: {
-                            confirmButton: 'auth-btn'
-                        }
-                    });
-                });
-        });
-    </script>
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: "{{ session('error') }}",
+                confirmButtonColor: '#E53935',
+                customClass: {
+                    confirmButton: 'auth-btn'
+                }
+            });
+        </script>
+    @endif
 
 
 </body>

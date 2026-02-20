@@ -19,8 +19,8 @@
         <!-- Left Visual Section -->
         <div class="auth-visual">
             <div class="auth-visual-content">
-                <div class="auth-cube"></div>
-
+                <div class="auth-cube" style="display: none"></div>
+                
                 <h2 class="auth-slogan">Reset Your Password</h2>
                 <p class="auth-desc">Kami akan mengirimkan link untuk reset password ke email Anda.</p>
 
@@ -68,7 +68,7 @@
                 </div>
 
                 <h1 class="auth-title">Lupa Password?</h1>
-                <p class="auth-subtitle">Masukkan email Anda dan kami akan mengirimkan link reset password</p>
+                <p class="auth-subtitle">Masukkan email Anda dan kami akan mengirimkan kode reset password</p>
 
                 @php
                     $step = session('step');

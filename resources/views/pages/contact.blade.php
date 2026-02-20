@@ -21,17 +21,50 @@
         <div class="container">
             <div class="grid-2">
                 <div class="card card-pad">
-                    <h2 style="margin:0 0 10px;font-size:18px;letter-spacing:-.02em">📞 Informasi Kontak</h2>
+                    <h2 style="margin:0 0 10px;font-size:18px;letter-spacing:-.02em"> <i class="fa-solid fa-phone"></i>
+                        Informasi Kontak</h2>
                     <div class="kv" style="margin-top:10px">
-                        <div><span class="k" aria-hidden="true">📍</span><span><b>Alamat</b><br><span
-                                    class="muted">Jakarta, Indonesia</span></span></div>
-                        <div><span class="k" aria-hidden="true">📞</span><span><b>Telepon</b><br><span
-                                    class="muted">+62 812-3456-7890</span></span></div>
-                        <div><span class="k" aria-hidden="true">✉️</span><span><b>Email</b><br><span
-                                    class="muted">info@daengrubik.com</span></span></div>
-                        <div><span class="k" aria-hidden="true">💬</span><span><b>WhatsApp</b><br><span
-                                    class="muted">Chat cepat untuk tanya stok & event</span></span></div>
+                        <div>
+                            <span class="k" aria-hidden="true">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </span>
+                            <span>
+                                <b>Alamat</b><br>
+                                <span class="muted">Jakarta, Indonesia</span>
+                            </span>
+                        </div>
+
+                        <div>
+                            <span class="k" aria-hidden="true">
+                                <i class="fa-solid fa-phone"></i>
+                            </span>
+                            <span>
+                                <b>Telepon</b><br>
+                                <span class="muted">+62 812-3456-7890</span>
+                            </span>
+                        </div>
+
+                        <div>
+                            <span class="k" aria-hidden="true">
+                                <i class="fa-solid fa-envelope"></i>
+                            </span>
+                            <span>
+                                <b>Email</b><br>
+                                <span class="muted">info@daengrubik.com</span>
+                            </span>
+                        </div>
+
+                        <div>
+                            <span class="k" aria-hidden="true">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </span>
+                            <span>
+                                <b>WhatsApp</b><br>
+                                <span class="muted">Chat cepat untuk tanya stok & event</span>
+                            </span>
+                        </div>
                     </div>
+
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
                         <a class="btn btn-primary" href="#" style="flex:1;justify-content:center;">Chat WhatsApp</a>
                         <a class="btn btn-secondary" href="{{ route('products') }}"
@@ -41,18 +74,35 @@
                     <div class="divider"></div>
                     <h3 style="margin:0 0 10px;font-size:14px;letter-spacing:-.01em">Media Sosial</h3>
                     <div class="social">
-                        <a href="#" aria-label="Instagram">IG</a>
-                        <a href="#" aria-label="Facebook">FB</a>
-                        <a href="#" aria-label="YouTube">YT</a>
-                        <a href="#" aria-label="TikTok">TT</a>
-                        <a href="#" aria-label="WhatsApp">WA</a>
+                        <a href="#" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+
+                        <a href="#" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+
+                        <a href="#" aria-label="YouTube">
+                            <i class="fa-brands fa-youtube"></i>
+                        </a>
+
+                        <a href="#" aria-label="TikTok">
+                            <i class="fa-brands fa-tiktok"></i>
+                        </a>
+
+                        <a href="#" aria-label="WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
                     </div>
                 </div>
                 <div class="card card-pad">
-                    <h2 style="margin:0 0 10px;font-size:18px;letter-spacing:-.02em">🗺️ Lokasi</h2>
+                    <h2 style="margin:0 0 10px;font-size:18px;letter-spacing:-.02em"><i
+                            class="fa-solid fa-map-location-dot"></i>
+                        Lokasi
+                    </h2>
                     <div
                         style="border:1px solid rgba(17,24,39,.10);border-radius:18px;overflow:hidden;background:linear-gradient(135deg,rgba(25,118,210,.10),rgba(253,216,53,.14),rgba(229,57,53,.10));min-height:260px;display:flex;align-items:center;justify-content:center">
-                        <span class="muted" style="font-weight:800">Map placeholder (UI)</span>
+                        <span class="muted" style="font-weight:800"></span>
                     </div>
                 </div>
             </div>

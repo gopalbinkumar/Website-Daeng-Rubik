@@ -74,7 +74,7 @@
         </a>
 
         <a href="{{ route('admin.settings') }}"
-            class="menu-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+            class="menu-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}" style="display: none">
             <i class="fa-solid fa-gear"></i>
             <span>Pengaturan Website</span>
         </a>

@@ -59,13 +59,13 @@
                         </td>
                         <td>
                             <div class="table-actions">
-                                <button class="btn btn-icon btn-secondary" onclick="openModal('modalEditAdmin')"
+                                {{-- <button class="btn btn-icon btn-secondary" onclick="openModal('modalEditAdmin')"
                                     title="Edit">
                                     <i class="fa-solid fa-edit"></i>
-                                </button>
+                                </button> --}}
 
                                 @if ($user->role === 'admin')
-                                    <button class="btn btn-icon btn-danger" disabled title="Tidak dapat dihapus">
+                                    <button class="btn btn-icon btn-danger" disabled title="Tidak dapat dihapus" style="cursor: not-allowed">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 @else

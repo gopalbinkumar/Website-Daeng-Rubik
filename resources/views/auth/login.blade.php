@@ -24,7 +24,7 @@
         <!-- Left Visual Section -->
         <div class="auth-visual">
             <div class="auth-visual-content">
-                <div class="auth-cube"></div>
+                <div class="auth-cube" style="display: none"></div>
 
                 <h2 class="auth-slogan">Solve, Learn, Compete</h2>
                 <p class="auth-desc">

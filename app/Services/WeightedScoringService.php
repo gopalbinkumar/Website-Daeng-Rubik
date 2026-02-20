@@ -17,7 +17,7 @@ class WeightedScoringService
     public function calculate()
     {
         // ambil kategori utama (3x3, 4x4, dll)
-        $categories = CubeCategory::all();
+        $categories = CubeCategory::where('name', '!=', 'Lainnya')->get();
 
         /*
         =========================
@@ -25,10 +25,12 @@ class WeightedScoringService
         =========================
         */
         $salesData = TransactionItem::join('products', 'products.id', '=', 'transaction_items.product_id')
+            ->join('cube_categories', 'cube_categories.id', '=', 'products.cube_category_id')
             ->select(
                 'products.cube_category_id',
                 DB::raw('SUM(transaction_items.quantity) as total')
             )
+            ->where('cube_categories.name', '!=', 'Lainnya')
             ->whereHas('transaction', function ($q) {
                 $q->whereMonth('created_at', now()->month)
                     ->where('status', 'paid');
@@ -36,18 +38,22 @@ class WeightedScoringService
             ->groupBy('products.cube_category_id')
             ->pluck('total', 'products.cube_category_id');
 
+
         /*
         =========================
         2️⃣ KERANJANG PER KATEGORI
         =========================
         */
         $cartData = CartItem::join('products', 'products.id', '=', 'cart_items.product_id')
+            ->join('cube_categories', 'cube_categories.id', '=', 'products.cube_category_id')
             ->select(
                 'products.cube_category_id',
                 DB::raw('COUNT(cart_items.id) as total')
             )
+            ->where('cube_categories.name', '!=', 'Lainnya')
             ->groupBy('products.cube_category_id')
             ->pluck('total', 'products.cube_category_id');
+
 
         /*
         =========================
@@ -131,7 +137,7 @@ class WeightedScoringService
         return collect($results)
             ->sortByDesc('score')
             ->values()
-            ->take(5)
+            ->take(4)
         ;
     }
 }

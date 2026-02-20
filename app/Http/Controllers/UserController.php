@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ResetCodeMail;
 use Carbon\Carbon;
@@ -20,14 +21,30 @@ class UserController extends Controller
     }
 
     // proses register
+
     public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email',
             'whatsapp' => 'required|string|max:20',
             'password' => 'required|min:8|confirmed',
         ]);
+
+        $existingUser = User::where('email', $request->email)
+            ->orWhere('whatsapp', $request->whatsapp)
+            ->first();
+
+        if ($existingUser) {
+
+            if ($existingUser->email === $request->email) {
+                return back()->withInput()->with('error', 'Email sudah terdaftar');
+            }
+
+            if ($existingUser->whatsapp === $request->whatsapp) {
+                return back()->withInput()->with('error', 'Nomor WhatsApp sudah terdaftar');
+            }
+        }
 
         User::create([
             'name' => $request->name,
@@ -36,11 +53,11 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Registrasi berhasil, silakan login'
-        ]);
+        return redirect()
+            ->route('auth.login')
+            ->with('success', 'Registrasi berhasil, silakan login');
     }
+
 
     //login
     public function showLogin()
