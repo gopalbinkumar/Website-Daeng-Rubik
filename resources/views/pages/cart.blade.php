@@ -79,17 +79,23 @@
                                                 </td>
 
                                                 <td>
-                                                    <div class="qty-control" data-id="{{ $item->id }}">
+                                                    <div class="qty-control">
 
-                                                        <button type="button" class="qty-btn" data-action="dec">
-                                                            −
-                                                        </button>
+                                                        <form action="{{ route('cart.updateQty', $item->id) }}"
+                                                            method="POST" style="display:inline;">
+                                                            @csrf
+                                                            <input type="hidden" name="action" value="dec">
+                                                            <button type="submit" class="qty-btn">−</button>
+                                                        </form>
 
                                                         <span class="qty-value">{{ $item->quantity }}</span>
 
-                                                        <button type="button" class="qty-btn" data-action="inc">
-                                                            +
-                                                        </button>
+                                                        <form action="{{ route('cart.updateQty', $item->id) }}"
+                                                            method="POST" style="display:inline;">
+                                                            @csrf
+                                                            <input type="hidden" name="action" value="inc">
+                                                            <button type="submit" class="qty-btn">+</button>
+                                                        </form>
 
                                                     </div>
                                                 </td>
@@ -193,87 +199,4 @@
             window.location.href = `{{ route('checkout') }}?items=${selected.join(',')}`;
         }
     </script>
-
-    <script>
-        document.querySelectorAll('.qty-btn').forEach(btn => {
-
-            btn.addEventListener('click', async function() {
-
-                const wrapper = this.closest('.qty-control');
-                const itemId = wrapper.dataset.id;
-                const action = this.dataset.action;
-                const qtySpan = wrapper.querySelector('.qty-value');
-
-                try {
-
-                    const res = await fetch(
-                        `{{ url('keranjang/item') }}/${itemId}/qty`, {
-                            method: 'PATCH',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                action
-                            })
-                        }
-                    );
-
-                    const data = await res.json();
-
-                    // ❌ Jika error dari backend
-                    if (!res.ok) {
-
-                        Swal.fire({
-                            icon: 'warning',
-                            // title: 'Perhatian',
-                            text: data.message || 'Tidak dapat mengupdate jumlah.',
-                            confirmButtonColor: '#E53935',
-                            cancelButtonColor: '#fff',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                                cancelButton: 'btn btn-secondary'
-                            }
-                        });
-
-                        return;
-                    }
-
-                    // ✅ Update quantity UI
-                    qtySpan.textContent = data.quantity;
-
-                    // Update summary checkbox dataset
-                    const checkbox = document.querySelector(`.cart-check[data-id="${itemId}"]`);
-                    if (checkbox) {
-                        checkbox.dataset.qty = data.quantity;
-                    }
-
-                    updateSummary();
-
-                } catch (err) {
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Terjadi Kesalahan',
-                        text: 'Gagal mengupdate jumlah produk.',
-                        confirmButtonColor: '#E53935',
-                        cancelButtonColor: '#fff',
-                        customClass: {
-                            confirmButton: 'btn btn-primary',
-                            cancelButton: 'btn btn-secondary'
-                        }
-                    });
-
-                }
-
-            });
-
-        });
-    </script>
-
-
-
-
-
 @endsection

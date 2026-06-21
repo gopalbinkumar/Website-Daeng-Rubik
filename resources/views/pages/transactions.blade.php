@@ -39,7 +39,7 @@
                         <select class="select" name="status" onchange="this.form.submit()">
                             <option value="">Status: Semua</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
-                            <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Terverifikasi
+                            <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Terverifikasi
                             </option>
                             <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Gagal</option>
                         </select>

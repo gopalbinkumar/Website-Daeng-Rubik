@@ -73,66 +73,85 @@
         </div>
 
 
-        {{-- PRODUK TERBARU --}}
+        {{-- PRODUK TERLARIS BULAN INI --}}
         <div class="card">
             <div class="card-header">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Produk Terbaru</h3>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">
+                    Produk Terlaris Bulan Ini
+                </h3>
             </div>
             <div class="card-body">
 
-                @forelse ($latestProducts as $product)
+                @forelse ($topProducts as $item)
+                    @php $product = $item->product; @endphp
+
                     <div
                         style="display: flex; gap: 12px; padding: 12px 0;
-                        {{ !$loop->last ? 'border-bottom: 1px solid var(--admin-border);' : '' }}">
+                {{ !$loop->last ? 'border-bottom: 1px solid var(--admin-border);' : '' }}">
 
                         <img src="{{ $product->primaryImage
                             ? asset('storage/' . $product->primaryImage->image_path)
                             : 'https://via.placeholder.com/60' }}"
                             alt="Product" class="table-img">
 
-
                         <div style="flex: 1;">
                             <div style="font-weight: 600; margin-bottom: 4px;">
                                 {{ $product->name }}
                             </div>
                             <div style="font-size: 14px; color: var(--admin-text-muted);">
-                                Rp {{ number_format($product->price) }} • Stok: {{ $product->stock }}
+                                Terjual: {{ $item->total_sold }} pcs
                             </div>
                         </div>
                     </div>
                 @empty
                     <div style="padding: 12px 0; color: var(--admin-text-muted);">
-                        Belum ada produk
+                        Belum ada penjualan bulan ini
                     </div>
                 @endforelse
 
             </div>
         </div>
 
-        {{-- AKTIVITAS TERKINI --}}
+        {{-- EVENT TERDEKAT --}}
         <div class="card">
             <div class="card-header">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Aktivitas Terkini</h3>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">
+                    Event Terdekat
+                </h3>
             </div>
             <div class="card-body">
 
-                @forelse ($activities as $act)
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fa-solid {{ $act['icon'] }}"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-text">{{ $act['text'] }}</div>
-                            <div class="activity-time">
-                                {{ $act['time']->diffForHumans() }}
+                @forelse ($nearestEvents as $event)
+                    <div
+                        style="display:flex; gap:12px; padding:12px 0;
+                {{ !$loop->last ? 'border-bottom:1px solid var(--admin-border);' : '' }}">
+
+                        {{-- Cover Image --}}
+                        <img src="{{ $event->cover_image ? asset('storage/' . $event->cover_image) : asset('assets/img/placeholder-event.png') }}"
+                            alt="{{ $event->title }}"
+                            style="width:65px; height:65px; object-fit:cover; border-radius:10px;">
+
+                        <div style="flex:1;">
+                            <div style="font-weight:600; margin-bottom:4px;">
+                                {{ $event->title }}
+                            </div>
+
+                            <div style="font-size:13px; color:var(--admin-text-muted); margin-bottom:4px;">
+                                @if ($event->category === 'lainnya')
+                                    {{ $event->custom_category }}
+                                @else
+                                    {{ ucfirst($event->category) }}
+                                @endif
+                            </div>
+
+                            <div style="font-size:12px; color:var(--admin-text-muted);">
+                                {{ $event->start_datetime->format('d M Y H:i') }}
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="activity-item">
-                        <div class="activity-content">
-                            <div class="activity-text">Belum ada aktivitas</div>
-                        </div>
+                    <div style="padding:12px 0; color:var(--admin-text-muted);">
+                        Belum ada event mendatang
                     </div>
                 @endforelse
 

@@ -93,18 +93,13 @@
 
                         {{-- Status --}}
                         <td>
-                            @php
-                                $badgeClass = match ($event->status) {
-                                    'upcoming' => 'badge-warning',
-                                    'ongoing' => 'badge-success',
-                                    'finished' => 'badge-secondary',
-                                    default => 'badge-warning',
-                                };
-                            @endphp
-
-                            <span class="badge {{ $badgeClass }}">
-                                {{ ucfirst($event->status) }}
-                            </span>
+                            @if ($event->status === 'finished')
+                                <span class="badge badge-success">Selesai</span>
+                            @elseif ($event->status === 'ongoing')
+                                <span class="badge badge-warning">Berlangsung</span>
+                            @else
+                                <span class="badge badge-gray">Upcoming</span>
+                            @endif
                         </td>
 
                         {{-- Aksi --}}
@@ -154,7 +149,7 @@
             </tbody>
         </table>
 
-        <x-admin-pagination :paginator="$events"/>
+        <x-admin-pagination :paginator="$events" />
     </div>
 
     <!-- Modal Add Event -->
@@ -272,6 +267,8 @@
                                 + Tambah
                             </button>
                         </div>
+                        <!-- FIX: hidden input untuk kirim array kategori -->
+                        <div id="competitionHiddenInputs"></div>
 
                         <small class="form-helper">
                             Ubah, tambah, atau hapus kategori lomba sesuai kebutuhan event.
@@ -460,6 +457,45 @@
                     form.submit();
                 });
             });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            let selectedCategories = [];
+
+            const select = document.getElementById('competitionCategorySelect');
+            const addBtn = document.getElementById('addCategoryBtn');
+            const hiddenWrapper = document.getElementById('competitionHiddenInputs');
+
+            if (addBtn) {
+                addBtn.addEventListener('click', function() {
+
+                    const value = select.value;
+                    if (!value) return;
+
+                    if (!selectedCategories.includes(value)) {
+                        selectedCategories.push(value);
+
+                        renderHiddenInputs();
+                    }
+                });
+            }
+
+            function renderHiddenInputs() {
+                hiddenWrapper.innerHTML = '';
+
+                selectedCategories.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'competition_categories[]';
+                    input.value = id;
+
+                    hiddenWrapper.appendChild(input);
+                });
+            }
+
         });
     </script>
 

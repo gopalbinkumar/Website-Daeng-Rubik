@@ -343,10 +343,46 @@ class ProductController extends Controller
         }
 
         /* =========================
-   SEARCH PRODUK (NAMA)
-========================= */
+        SEARCH PRODUK (NAMA)
+        ========================= */
         if ($request->filled('search')) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%');
+
+            $result = $this->normalizeSearch($request->search);
+
+            $keyword = $result['keyword'];
+            $difficulty = $result['difficulty'];
+            $category = $result['category'];
+            $brand = $result['brand'];
+
+            // 🔵 FILTER KATEGORI
+            if ($category) {
+                $query->whereHas('cubeCategory', function ($q) use ($category) {
+                    $q->whereRaw('LOWER(name) = ?', [$category]);
+                });
+            }
+
+            // 🟢 FILTER DIFFICULTY
+            if ($difficulty) {
+                $query->whereRaw('LOWER(difficulty_level) = ?', [$difficulty]);
+            }
+
+            // 🟡 FILTER BRAND
+            if ($brand) {
+                $query->whereRaw('LOWER(brand) = ?', [$brand]);
+            }
+
+            // 🔎 SISA KEYWORD
+            if (!empty($keyword)) {
+                $words = explode(' ', $keyword);
+
+                $query->where(function ($q) use ($words) {
+                    foreach ($words as $word) {
+                        if (!empty($word)) {
+                            $q->where('name', 'LIKE', "%{$word}%");
+                        }
+                    }
+                });
+            }
         }
 
         /* =========================
@@ -366,5 +402,90 @@ class ProductController extends Controller
         return view('pages.products', compact('products', 'cubeCategories'));
     }
 
+
+    private function normalizeSearch($search)
+    {
+        $search = strtolower(trim($search));
+
+        $detectedDifficulty = null;
+        $detectedCategory = null;
+        $detectedBrand = null;
+
+        /* =========================
+           DIFFICULTY
+        ========================= */
+        $difficultyMapping = [
+            'pemula' => 'beginner',
+            'gampang' => 'beginner',
+            'mudah' => 'beginner',
+            'beginner' => 'beginner',
+
+            'menengah' => 'intermediate',
+            'intermediate' => 'intermediate',
+
+            'mahir' => 'advanced',
+            'advanced' => 'advanced',
+            'susah' => 'advanced',
+            'sulit' => 'advanced',
+        ];
+
+        foreach ($difficultyMapping as $word => $mapped) {
+            if (preg_match('/\b' . $word . '\b/', $search)) {
+                $detectedDifficulty = $mapped;
+                $search = preg_replace('/\b' . $word . '\b/', '', $search);
+            }
+        }
+
+        /* =========================
+           ANGKA
+        ========================= */
+        $numberMapping = [
+            'satu' => '1',
+            'dua' => '2',
+            'tiga' => '3',
+            'empat' => '4',
+            'lima' => '5',
+            'enam' => '6',
+            'tujuh' => '7',
+            'delapan' => '8',
+            'sembilan' => '9',
+        ];
+
+        foreach ($numberMapping as $word => $number) {
+            $search = preg_replace('/\b' . $word . '\b/', $number, $search);
+        }
+
+        // 3 x 3 / 3 kali 3 → 3x3
+        $search = preg_replace('/(\d)\s*(x|kali)\s*(\d)/', '$1x$3', $search);
+
+        /* =========================
+           KATEGORI
+        ========================= */
+        if (preg_match('/\b(\d)x(\d)\b/', $search, $match)) {
+            $detectedCategory = $match[0];
+            $search = str_replace($match[0], '', $search);
+        }
+
+        /* =========================
+           BRAND
+        ========================= */
+        $brandList = ['gan', 'moyu', 'qiyi', 'yj'];
+
+        foreach ($brandList as $brand) {
+            if (preg_match('/\b' . $brand . '\b/', $search)) {
+                $detectedBrand = $brand;
+                $search = preg_replace('/\b' . $brand . '\b/', '', $search);
+            }
+        }
+
+        $search = preg_replace('/\s+/', ' ', $search);
+
+        return [
+            'keyword' => trim($search),
+            'difficulty' => $detectedDifficulty,
+            'category' => $detectedCategory,
+            'brand' => $detectedBrand
+        ];
+    }
 }
 

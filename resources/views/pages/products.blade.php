@@ -61,28 +61,25 @@
                         </div>
                     </form>
                     <div class="grid-3">
-                        @foreach ($products as $p)
+
+                        @forelse ($products as $p)
                             <article class="card prod">
                                 <div class="prod-img">
-
-                                    {{-- BADGE (opsional, kalau mau nanti) --}}
-                                    {{-- <span class="badge badge-success">Aktif</span> --}}
-
                                     <div style="width:74%;max-width:240px;">
-                                        {{-- GAMBAR PRODUK (ganti cube) --}}
                                         <img src="{{ $p->primaryImage
                                             ? asset('storage/' . $p->primaryImage->image_path)
                                             : asset('assets/img/placeholder-product.png') }}"
                                             alt="{{ $p->name }}"
                                             style="
-                                            width:100%;
-                                            aspect-ratio: 1 / 1;
-                                            object-fit: cover;
-                                            border-radius:18px;
-                                            border:6px solid var(--line);
-                                            ">
+                                                width:100%;
+                                                aspect-ratio: 1 / 1;
+                                                object-fit: cover;
+                                                border-radius:18px;
+                                                border:6px solid var(--line);
+                                                ">
                                     </div>
                                 </div>
+
                                 <div class="prod-body">
                                     <p class="prod-name">{{ $p->name }}</p>
 
@@ -100,7 +97,28 @@
                                     </div>
                                 </div>
                             </article>
-                        @endforeach
+
+                        @empty
+                            <div
+                                style="
+                                        grid-column: 1 / -1;
+                                        text-align:center;
+                                        padding:60px 20px;
+                                    ">
+                                <i class="fa-solid fa-box-open" style="font-size:48px;color:#bbb;margin-bottom:16px;"></i>
+
+                                <h3 style="margin-bottom:8px;">Produk Tidak Ditemukan</h3>
+
+                                <p class="muted" style="max-width:400px;margin:0 auto;">
+                                    Maaf, tidak ada produk yang sesuai dengan pencarian atau filter Anda.
+                                    Silakan coba kata kunci lain.
+                                </p>
+
+                                <a href="{{ route('products') }}" class="btn btn-outline" style="margin-top:20px;">
+                                    Reset Filter
+                                </a>
+                            </div>
+                        @endforelse
 
                     </div>
 
@@ -115,8 +133,28 @@
                             @endif
 
                             {{-- Page Numbers --}}
-                            @for ($i = 1; $i <= $products->lastPage(); $i++)
-                                @if ($i == $products->currentPage())
+                            @php
+                                $current = $products->currentPage();
+                                $last = $products->lastPage();
+
+                                $start = max($current - 2, 1);
+                                $end = min($current + 2, $last);
+
+                                // Supaya tetap 5 angka kalau di awal
+                                if ($current <= 3) {
+                                    $start = 1;
+                                    $end = min(5, $last);
+                                }
+
+                                // Supaya tetap 5 angka kalau di akhir
+                                if ($current >= $last - 2) {
+                                    $start = max($last - 4, 1);
+                                    $end = $last;
+                                }
+                            @endphp
+
+                            @for ($i = $start; $i <= $end; $i++)
+                                @if ($i == $current)
                                     <span class="page-chip active">{{ $i }}</span>
                                 @else
                                     <a href="{{ $products->url($i) }}" class="page-chip">{{ $i }}</a>
@@ -284,8 +322,8 @@
 
     <script>
         /* =========================
-                                            GLOBAL STATE
-                                           ========================= */
+                                                    GLOBAL STATE
+                  ========================= */
         let activeProduct = null;
         let currentImageIndex = 0;
 
@@ -369,20 +407,20 @@
                         style="width:100%;height:100%;object-fit:cover;">
 
                     ${activeProduct.images.length > 1 ? `
-                                                        <button onclick="prevImage()"
-                                                            style="position:absolute;left:10px;top:50%;
-                                                            transform:translateY(-50%);
-                                                            width:36px;height:36px;border-radius:50%;
-                                                            border:none;background:rgba(0,0,0,.45);
-                                                            color:#fff;font-size:22px;cursor:pointer;">‹</button>
+                                                                <button onclick="prevImage()"
+                                                                    style="position:absolute;left:10px;top:50%;
+                                                                    transform:translateY(-50%);
+                                                                    width:36px;height:36px;border-radius:50%;
+                                                                    border:none;background:rgba(0,0,0,.45);
+                                                                    color:#fff;font-size:22px;cursor:pointer;">‹</button>
 
-                                                        <button onclick="nextImage()"
-                                                            style="position:absolute;right:10px;top:50%;
-                                                            transform:translateY(-50%);
-                                                            width:36px;height:36px;border-radius:50%;
-                                                            border:none;background:rgba(0,0,0,.45);
-                                                            color:#fff;font-size:22px;cursor:pointer;">›</button>
-                                                    ` : ''}
+                                                                <button onclick="nextImage()"
+                                                                    style="position:absolute;right:10px;top:50%;
+                                                                    transform:translateY(-50%);
+                                                                    width:36px;height:36px;border-radius:50%;
+                                                                    border:none;background:rgba(0,0,0,.45);
+                                                                    color:#fff;font-size:22px;cursor:pointer;">›</button>
+                                                            ` : ''}
                 </div>
             </div>
 

@@ -82,7 +82,7 @@
             <nav class="nav-links" aria-label="Navigasi utama">
                 <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}"
                     href="{{ route('home') }}">Beranda</a>
-                <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}">Produk</a>
+                <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}" style="display:none;">Produk</a>
                 <a class="nav-link {{ $active('event') }}" href="{{ route('events') }}">Event</a>
                 <a class="nav-link {{ request()->routeIs('learn.*') ? 'active' : '' }}"
                     href="{{ route('learn.index') }}">
@@ -93,12 +93,12 @@
             </nav>
 
             <div class="nav-actions">
-                <a href="{{ route('cart.index') }}" class="icon-btn cart-badge" aria-label="Keranjang">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    @if ($cartItemCount > 0)
-                        <span class="cart-count">{{ $cartItemCount }}</span>
-                    @endif
-                </a>
+                    <a href="{{ route('cart.index') }}" class="icon-btn cart-badge" aria-label="Keranjang" style="display:none;">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        @if ($cartItemCount > 0)
+                            <span class="cart-count">{{ $cartItemCount }}</span>
+                        @endif
+                    </a>
 
                 <div class="user-dropdown">
                     <button class="icon-btn" id="userDropdownBtn" aria-label="User menu">
@@ -123,7 +123,7 @@
                                 <i class="fa-regular fa-calendar-check"></i> Event Saya
                             </a>
 
-                            <a href="{{ route('transactions') }}">
+                            <a href="{{ route('transactions') }}" style="display:none;">
                                 <i class="fa-solid fa-wallet"></i> Transaksi
                             </a>
 
@@ -224,7 +224,7 @@
                     <i class="fa-regular fa-calendar-check"></i> Event Saya
                 </a>
 
-                <a class="nav-link" href="{{ route('transactions') }}">
+                <a class="nav-link" href="{{ route('transactions') }}" style="display:none;">
                     <i class="fa-solid fa-wallet"></i> Transaksi Saya
                 </a>
             @endauth

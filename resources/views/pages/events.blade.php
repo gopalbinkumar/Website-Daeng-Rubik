@@ -51,10 +51,12 @@
                         </div>
 
                         <div style="display:flex;gap:12px;">
-                            <a href="{{ route('events.register', $featured->slug) }}" class="btn btn-primary"
-                                style="flex:1">
-                                Daftar sekarang
-                            </a>
+                            @if ($featured->status !== 'finished')
+                                <a href="{{ route('events.register', $featured->slug) }}" class="btn btn-primary"
+                                    style="flex:1">
+                                    Daftar sekarang
+                                </a>
+                            @endif
                             {{-- <button class="btn btn-secondary" onclick="openEventModal({{ $featured->id }})" style="flex:1">
                                 Lihat detail
                             </button> --}}
@@ -100,10 +102,12 @@
 
                             <div style="display:flex;gap:10px;">
                                 @if ($ev->category === 'kompetisi')
-                                    <a href="{{ route('events.register', $ev->slug) }}" class="btn btn-primary"
-                                        style="flex:1">
-                                        Daftar
-                                    </a>
+                                    @if ($ev->status !== 'finished')
+                                        <a href="{{ route('events.register', $ev->slug) }}" class="btn btn-primary"
+                                            style="flex:1">
+                                            Daftar
+                                        </a>
+                                    @endif
 
                                     <a href="{{ route('events.competition.show', [$ev->id, $ev->slug]) }}"
                                         class="btn btn-secondary" style="flex:1">

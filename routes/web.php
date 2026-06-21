@@ -17,6 +17,7 @@ use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\UserCompetitionController;
 use App\Http\Controllers\WeightedScoringController;
 
+use App\Http\Controllers\TelegramController;
 use App\Mail\ResetCodeMail;
 use Illuminate\Support\Facades\Mail;
 
@@ -33,7 +34,7 @@ Route::get('/test-otp', function () {
 Route::get('/test-telegram', function () {
     Http::post("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage", [
         'chat_id' => env('TELEGRAM_CHAT_ID'),
-        'text' => '✅ Telegram bot berhasil terhubung!'
+        'text' => 'âœ… Telegram bot berhasil terhubung!'
     ]);
 
     return 'OK';
@@ -56,8 +57,8 @@ Route::prefix('keranjang')->name('cart.')->group(function () {
         ->name('add');
     Route::delete('/item/{item}', [CartController::class, 'remove'])
         ->name('remove');
-    Route::patch('/item/{item}/qty', [CartController::class, 'updateQuantity'])
-        ->name('updateQty');
+    Route::post('/item/{item}/qty', [CartController::class, 'updateQuantity'])
+    ->name('updateQty');
 });
 
 
@@ -208,7 +209,7 @@ Route::middleware(['auth', 'admin'])
 
 
         /* =====================
-         | EVENT — PESERTA KOMPETISI
+         | EVENT â€” PESERTA KOMPETISI
          ===================== */
         Route::prefix('events/participants')
             ->controller(EventRegistrationController::class)
@@ -223,7 +224,7 @@ Route::middleware(['auth', 'admin'])
 
 
         /* =====================
-         | EVENT — HASIL KOMPETISI
+         | EVENT â€” HASIL KOMPETISI
          ===================== */
         Route::prefix('events/competition')
             ->controller(CompetitionResultController::class)
@@ -244,7 +245,7 @@ Route::middleware(['auth', 'admin'])
             [CompetitionResultController::class, 'acceptedParticipants']
         )->name('events.accepted-participants');
 
-        // 🔥 CHECK EXISTING RESULT (CREATE = EDIT)
+        // ðŸ”¥ CHECK EXISTING RESULT (CREATE = EDIT)
         Route::get(
             '/events/{event}/competition/check',
             [CompetitionResultController::class, 'check']

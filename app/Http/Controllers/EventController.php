@@ -11,10 +11,62 @@ use Carbon\Carbon;
 
 class EventController extends Controller
 {
+    /**
+     * Hitung status event berdasarkan waktu sekarang
+     */
+    private function resolveEventStatus($startDateTime, $endDateTime)
+    {
+        $now = Carbon::now();
 
+        $startDateTime = Carbon::parse($startDateTime);
+        $endDateTime = Carbon::parse($endDateTime);
+
+        if ($now->lt($startDateTime)) {
+            return 'upcoming';
+        }
+
+        if ($now->gt($endDateTime)) {
+            return 'finished';
+        }
+
+        return 'ongoing';
+    }
+
+    /**
+     * Sinkronkan status semua event aktif ke database.
+     *
+     * Catatan:
+     * Karena model memakai SoftDeletes, query Event::where()
+     * otomatis hanya mengubah event yang belum soft delete.
+     */
+    private function syncAllEventStatuses()
+    {
+        $now = Carbon::now();
+
+        Event::where('start_datetime', '>', $now)
+            ->update([
+                'status' => 'upcoming',
+            ]);
+
+        Event::where('start_datetime', '<=', $now)
+            ->where('end_datetime', '>=', $now)
+            ->update([
+                'status' => 'ongoing',
+            ]);
+
+        Event::where('end_datetime', '<', $now)
+            ->update([
+                'status' => 'finished',
+            ]);
+    }
+
+    /**
+     * Halaman publik event
+     */
     public function publicIndex()
     {
-        // Featured tetap upcoming terdekat
+        $this->syncAllEventStatuses();
+
         $featured = Event::where('category', 'kompetisi')
             ->where('status', 'upcoming')
             ->where('start_datetime', '>=', now())
@@ -22,23 +74,24 @@ class EventController extends Controller
             ->with('competitionCategories')
             ->first();
 
-        // 🔥 Ambil SEMUA event
         $events = Event::orderBy('start_datetime', 'asc')
             ->with('competitionCategories')
             ->get();
 
         return view('pages.events', compact('featured', 'events'));
     }
-    
+
     /**
-     * List event
+     * List event admin
      */
     public function index(Request $request)
     {
-        $query = Event::query();
+        $this->syncAllEventStatuses();
+
+        $query = Event::query()->with('competitionCategories');
 
         /* =====================
-         |  SEARCH
+         | SEARCH
          ===================== */
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
@@ -48,14 +101,14 @@ class EventController extends Controller
         }
 
         /* =====================
-         |  FILTER STATUS
+         | FILTER STATUS
          ===================== */
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         /* =====================
-         |  SORT
+         | SORT
          ===================== */
         switch ($request->sort) {
             case 'oldest':
@@ -67,21 +120,17 @@ class EventController extends Controller
                 break;
 
             default:
-                // Terbaru
                 $query->latest('start_datetime');
                 break;
         }
 
         /* =====================
-         |  PAGINATION
+         | PAGINATION
          ===================== */
         $events = $query
             ->paginate(10)
             ->withQueryString();
 
-        /* =====================
-         |  DATA TAMBAHAN
-         ===================== */
         $competitionCategories = CompetitionCategory::orderBy('name')->get();
 
         return view('admin.events.index', compact(
@@ -89,6 +138,7 @@ class EventController extends Controller
             'competitionCategories'
         ));
     }
+
     /**
      * Store event
      */
@@ -111,51 +161,67 @@ class EventController extends Controller
             'max_participants' => 'nullable|required_if:category,kompetisi|integer|min:1',
             'total_prize' => 'nullable|required_if:category,kompetisi|integer|min:0',
 
-            'status' => 'nullable|in:upcoming,ongoing,finished',
-
             'competition_categories' => 'nullable|required_if:category,kompetisi|array',
             'competition_categories.*' => 'exists:competition_categories,id',
 
             'cover_image' => 'nullable|image|max:2048',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $startDateTime = Carbon::parse($request->start_date . ' ' . $request->start_time);
+        $endDateTime = Carbon::parse($request->end_date . ' ' . $request->end_time);
 
-            // Upload cover image
+        if ($endDateTime->lt($startDateTime)) {
+            return back()
+                ->withErrors([
+                    'end_time' => 'Tanggal dan jam akhir tidak boleh lebih awal dari tanggal dan jam mulai.',
+                ])
+                ->withInput();
+        }
+
+        DB::transaction(function () use ($request, $startDateTime, $endDateTime) {
             $coverPath = null;
+
             if ($request->hasFile('cover_image')) {
                 $coverPath = $request->file('cover_image')
                     ->store('events/covers', 'public');
             }
 
-            // Create event
             $event = Event::create([
                 'title' => $request->title,
                 'category' => $request->category,
-                'custom_category' => $request->custom_category,
+                'custom_category' => $request->category === 'lainnya'
+                    ? $request->custom_category
+                    : null,
                 'description' => $request->description,
 
-                'start_datetime' => $request->start_date . ' ' . $request->start_time,
-                'end_datetime' => $request->end_date . ' ' . $request->end_time,
+                'start_datetime' => $startDateTime,
+                'end_datetime' => $endDateTime,
 
                 'location' => $request->location,
                 'cover_image' => $coverPath,
 
-                'ticket_price' => $request->category === 'kompetisi' ? $request->ticket_price : null,
-                'max_participants' => $request->category === 'kompetisi' ? $request->max_participants : null,
-                'total_prize' => $request->category === 'kompetisi' ? $request->total_prize : null,
+                'ticket_price' => $request->category === 'kompetisi'
+                    ? $request->ticket_price
+                    : null,
+                'max_participants' => $request->category === 'kompetisi'
+                    ? $request->max_participants
+                    : null,
+                'total_prize' => $request->category === 'kompetisi'
+                    ? $request->total_prize
+                    : null,
 
-                'status' => $request->status ?? 'upcoming',
+                'status' => $this->resolveEventStatus($startDateTime, $endDateTime),
             ]);
 
-            // Sync kategori lomba (kompetisi saja)
             if ($request->category === 'kompetisi') {
                 $event->competitionCategories()
-                    ->sync($request->competition_categories);
+                    ->sync($request->competition_categories ?? []);
             }
         });
 
-        return redirect()->back()->with('success', 'Event berhasil ditambahkan');
+        return redirect()
+            ->back()
+            ->with('success', 'Event berhasil ditambahkan');
     }
 
     /**
@@ -180,30 +246,35 @@ class EventController extends Controller
             'max_participants' => 'nullable|integer|min:1',
             'total_prize' => 'nullable|integer|min:0',
 
-            'status' => 'required|in:upcoming,ongoing,finished',
-
             'competition_categories' => 'nullable|array',
             'competition_categories.*' => 'exists:competition_categories,id',
 
             'cover_image' => 'nullable|image|max:2048',
         ]);
 
-        DB::transaction(function () use ($request, $event) {
+        $startDateTime = Carbon::parse($request->start_date . ' ' . $request->start_time);
+        $endDateTime = Carbon::parse($request->end_date . ' ' . $request->end_time);
 
-            // 🔥 HANDLE COVER IMAGE
+        if ($endDateTime->lt($startDateTime)) {
+            return back()
+                ->withErrors([
+                    'end_time' => 'Tanggal dan jam akhir tidak boleh lebih awal dari tanggal dan jam mulai.',
+                ])
+                ->withInput();
+        }
+
+        DB::transaction(function () use ($request, $event, $startDateTime, $endDateTime) {
+            $coverPath = $event->cover_image;
+
             if ($request->hasFile('cover_image')) {
-
-                // hapus cover lama (jika ada)
                 if ($event->cover_image && Storage::disk('public')->exists($event->cover_image)) {
                     Storage::disk('public')->delete($event->cover_image);
                 }
 
-                // upload cover baru
-                $event->cover_image = $request->file('cover_image')
+                $coverPath = $request->file('cover_image')
                     ->store('events/covers', 'public');
             }
 
-            // UPDATE DATA UTAMA
             $event->update([
                 'title' => $request->title,
                 'category' => $request->category,
@@ -211,9 +282,13 @@ class EventController extends Controller
                     ? $request->custom_category
                     : null,
                 'description' => $request->description,
-                'start_datetime' => $request->start_date . ' ' . $request->start_time,
-                'end_datetime' => $request->end_date . ' ' . $request->end_time,
+
+                'start_datetime' => $startDateTime,
+                'end_datetime' => $endDateTime,
+
                 'location' => $request->location,
+                'cover_image' => $coverPath,
+
                 'ticket_price' => $request->category === 'kompetisi'
                     ? $request->ticket_price
                     : null,
@@ -223,10 +298,10 @@ class EventController extends Controller
                 'total_prize' => $request->category === 'kompetisi'
                     ? $request->total_prize
                     : null,
-                'status' => $request->status,
+
+                'status' => $this->resolveEventStatus($startDateTime, $endDateTime),
             ]);
 
-            // SYNC KATEGORI LOMBA
             if ($request->category === 'kompetisi') {
                 $event->competitionCategories()
                     ->sync($request->competition_categories ?? []);
@@ -235,21 +310,23 @@ class EventController extends Controller
             }
         });
 
-        return back()->with('success', 'Event berhasil diupdate');
+        return redirect()
+            ->back()
+            ->with('success', 'Event berhasil diupdate');
     }
 
-
     /**
-     * Delete event
+     * Soft delete event
+     *
+     * Cover image tidak dihapus supaya datanya masih aman
+     * jika nanti ingin direstore dari database.
      */
     public function destroy(Event $event)
     {
-        if ($event->cover_image) {
-            Storage::disk('public')->delete($event->cover_image);
-        }
-
         $event->delete();
 
-        return redirect()->back()->with('success', 'Event berhasil dihapus');
+        return redirect()
+            ->back()
+            ->with('success', 'Event berhasil dihapus');
     }
 }

@@ -4,16 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Event extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'events';
 
     protected $fillable = [
         'title',
+        'slug',
         'category',
         'custom_category',
         'description',
@@ -33,6 +35,7 @@ class Event extends Model
         'ticket_price' => 'integer',
         'max_participants' => 'integer',
         'total_prize' => 'integer',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function booted()
@@ -44,15 +47,8 @@ class Event extends Model
         });
     }
 
-    // public function getRouteKeyName()
-    // {
-    //     return 'slug';
-    // }
-
-
     /**
-     * Relasi ke kategori lomba (WCA)
-     * many-to-many
+     * Relasi ke kategori lomba
      */
     public function competitionCategories()
     {
@@ -80,7 +76,6 @@ class Event extends Model
             ->withPivot('status')
             ->withTimestamps();
     }
-
 
     public function competitionResults()
     {
@@ -123,5 +118,4 @@ class Event extends Model
     {
         return ucfirst($this->category);
     }
-
 }

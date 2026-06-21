@@ -64,7 +64,7 @@
                         belajar dari basic sampai advanced.
                     </p>
                     <div class="hero-cta">
-                        <a class="btn btn-primary" href="{{ route('products') }}">Jelajahi Produk</a>
+                        <a class="btn btn-primary" href="{{ route('products') }}" style="display: none">Jelajahi Produk</a>
                         <a class="btn btn-secondary" href="{{ route('events') }}">Lihat Event</a>
                         <a class="btn btn-outline" href="{{ route('learn.index') }}">Mulai Belajar</a>
                     </div>
@@ -78,7 +78,7 @@
             <div class="section-title">
                 <div>
                     <h2>Event rubik terdekat</h2>
-                    <p class="muted">Ikuti kompetisi, meetup, dan workshop.</p>
+                    <p class="muted">Ikuti kompetisi dan gathering.</p>
                 </div>
                 {{-- <a class="btn btn-secondary" href="{{ route('events') }}">Semua event</a> --}}
             </div>
@@ -117,13 +117,22 @@
                         </div>
                     </div>
                 </div>
+            @else
+                <div class="card featured">
+                    <div class="featured-body">
+                        <h3>Belum ada event terdekat</h3>
+                        <p class="muted">
+                            Saat ini belum ada event terdekat yang tersedia.
+                        </p>
+                    </div>
+                </div>
             @endif
         </div>
 
 
     </section>
 
-    <section class="section" style="padding-top:0;">
+    <section class="section" style="padding-top:0; display: none;">
         <div class="container">
             <div class="section-title">
                 <div>

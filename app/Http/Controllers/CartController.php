@@ -17,28 +17,23 @@ class CartController extends Controller
 
     public function index()
     {
+        // pastikan user sudah login
         $cart = Cart::with('items.product')
+            ->where('user_id', Auth::id())
             ->where('status', 'active')
-            ->when(Auth::check(), function ($q) {
-                $q->where('user_id', Auth::id());
-            }, function ($q) {
-                $q->where('session_token', session('cart_token'));
-            })
             ->first();
 
-        // 🔥 SINKRONISASI STOK DENGAN CART
+        // 🔥 Sinkronisasi stok
         if ($cart) {
             foreach ($cart->items as $item) {
 
                 $currentStock = $item->product->stock;
 
-                // Jika stok 0 → hapus item dari cart
                 if ($currentStock == 0) {
                     $item->delete();
                     continue;
                 }
 
-                // Jika qty lebih besar dari stok → sesuaikan
                 if ($item->quantity > $currentStock) {
                     $item->quantity = $currentStock;
                     $item->save();
@@ -46,9 +41,7 @@ class CartController extends Controller
             }
         }
 
-        return view('pages.cart', [
-            'cart' => $cart
-        ]);
+        return view('pages.cart', compact('cart'));
     }
 
 
@@ -73,15 +66,39 @@ class CartController extends Controller
          * - login  → user_id
          * - guest  → session_token
          */
-        $cart = Cart::firstOrCreate(
-            [
-                'user_id' => $userId,
-                'status' => 'active',
-            ],
-            [
-                'session_token' => $sessionToken,
-            ]
-        );
+        if ($userId) {
+
+            // Cari cart user yang aktif
+            $cart = Cart::where('user_id', $userId)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$cart) {
+                $cart = Cart::create([
+                    'user_id' => $userId,
+                    'session_token' => null,
+                    'status' => 'active',
+                ]);
+            } else {
+                // Pastikan cart login tidak punya session_token
+                $cart->update([
+                    'session_token' => null
+                ]);
+            }
+
+        } else {
+
+            // Guest
+            $cart = Cart::firstOrCreate(
+                [
+                    'session_token' => $sessionToken,
+                    'status' => 'active',
+                ],
+                [
+                    'user_id' => null
+                ]
+            );
+        }
 
         $product = Product::findOrFail($request->product_id);
 
@@ -134,75 +151,48 @@ class CartController extends Controller
         ]);
 
         $cart = Cart::where('status', 'active')
-            ->when(
-                Auth::check(),
-                fn($q) => $q->where('user_id', Auth::id()),
-                fn($q) => $q->where('session_token', session('cart_token'))
-            )
+            ->where('user_id', Auth::id())
             ->first();
 
-        if (!$cart || $item->cart_id !== $cart->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
+        if (!$cart || (int) $item->cart_id !== (int) $cart->id) {
+            abort(403);
         }
 
-        return DB::transaction(function () use ($request, $item) {
+        $product = $item->product;
+        $stock = $product->stock;
 
-            // 🔒 Lock product row
-            $product = $item->product()->lockForUpdate()->first();
-            $stock = $product->stock;
+        if ($request->action === 'inc') {
 
-            // 🔥 INC
-            if ($request->action === 'inc') {
-
-                if ($item->quantity >= $stock) {
-                    return response()->json([
-                        'message' => 'Stok tidak mencukupi untuk ' . $product->name
-                    ], 422);
-                }
-
-                $item->increment('quantity');
+            if ($item->quantity >= $stock) {
+                return redirect()->back()->with('error', 'Stok tidak mencukupi');
             }
 
-            // 🔥 DEC
-            if ($request->action === 'dec') {
+            $item->quantity += 1;
+        }
 
-                if ($item->quantity <= 1) {
-                    return response()->json([
-                        'message' => 'Minimal pembelian adalah 1'
-                    ], 422);
-                }
+        if ($request->action === 'dec') {
 
-                $item->decrement('quantity');
+            if ($item->quantity <= 1) {
+                return redirect()->back()->with('error', 'Minimal pembelian adalah 1');
             }
 
-            $item->refresh(); // ambil quantity terbaru
+            $item->quantity -= 1;
+        }
 
-            return response()->json([
-                'success' => true,
-                'quantity' => $item->quantity,
-                'stock' => $stock,
-                'unit_price' => $item->unit_price,
-                'subtotal' => $item->quantity * $item->unit_price
-            ]);
-        });
+        $item->save();
+
+        return redirect()->back()->with('success', 'Jumlah diperbarui');
     }
 
 
 
     public function remove(CartItem $item)
     {
-        // keamanan: pastikan item milik cart user / session ini
-        $cart = Cart::where('status', 'active')
-            ->when(Auth::check(), function ($q) {
-                $q->where('user_id', Auth::id());
-            }, function ($q) {
-                $q->where('session_token', session('cart_token'));
-            })
+        $cart = Cart::where('user_id', Auth::id())
+            ->where('status', 'active')
             ->first();
 
-        if (!$cart || $item->cart_id !== $cart->id) {
+        if (!$cart || (int) $item->cart_id !== (int) $cart->id) {
             abort(403);
         }
 

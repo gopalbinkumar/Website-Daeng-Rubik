@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Transaction extends Model
 {
@@ -80,5 +81,67 @@ class Transaction extends Model
         }
         return $query;
     }
+    
+    public function markAsPaid()
+{
+    if ($this->status === 'paid') {
+        return;
+    }
+
+    DB::transaction(function () {
+
+        $this->load('items.product');
+
+        foreach ($this->items as $item) {
+
+            $product = $item->product()
+                ->lockForUpdate()
+                ->first();
+
+            if (!$product) {
+                throw new \Exception('Produk tidak ditemukan');
+            }
+
+            if ($product->stock < $item->quantity) {
+                throw new \Exception(
+                    'Stok tidak mencukupi untuk ' . $product->name
+                );
+            }
+
+            $product->decrement('stock', $item->quantity);
+        }
+
+        $this->update([
+            'status' => 'paid',
+            'paid_at' => now(),
+        ]);
+    });
+}
+
+public function markAsFailed()
+{
+    DB::transaction(function () {
+
+        $this->load('items.product');
+
+        if ($this->status === 'paid') {
+
+            foreach ($this->items as $item) {
+
+                $product = $item->product()
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($product) {
+                    $product->increment('stock', $item->quantity);
+                }
+            }
+        }
+
+        $this->update([
+            'status' => 'failed',
+        ]);
+    });
+}
 }
 

@@ -25,20 +25,21 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('*', function ($view) {
+
             $count = 0;
 
-            $cart = Cart::where('status', 'active')
-                ->when(Auth::check(), function ($q) {
-                    $q->where('user_id', Auth::id());
-                }, function ($q) {
-                    $q->where('session_token', session('cart_token'));
-                })
-                ->with('items')
-                ->first();
+            if (Auth::check()) {
 
-            if ($cart) {
-                $count = $cart->items->sum('quantity');
+                $cart = Cart::where('user_id', Auth::id())
+                    ->where('status', 'active')
+                    ->with('items')
+                    ->first();
+
+                if ($cart) {
+                    $count = $cart->items->sum('quantity');
+                }
             }
+
             $view->with('cartItemCount', $count);
 
             $pendingTransactionCount = Transaction::where('status', 'pending')->count();
@@ -49,8 +50,6 @@ class AppServiceProvider extends ServiceProvider
                 'pendingParticipantCount' => $pendingParticipantCount,
             ]);
         });
-
-
     }
 
 }

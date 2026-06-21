@@ -135,49 +135,24 @@ class SalesReportController extends Controller
 
 
 
-    /*
+     /*
     |--------------------------------------------------------------------------
     | VERIFIKASI PEMBAYARAN
     |--------------------------------------------------------------------------
     */
     public function verify(Transaction $transaction)
-{
-    if ($transaction->status === 'paid') {
-        return back()->with('error', 'Transaksi sudah diverifikasi.');
+    {
+        try {
+
+            $transaction->markAsPaid();
+
+            return back()->with('success', 'Pembayaran berhasil diverifikasi');
+
+        } catch (\Exception $e) {
+
+            return back()->with('error', $e->getMessage());
+        }
     }
-
-    try {
-
-        DB::transaction(function () use ($transaction) {
-
-            $transaction->load('items.product');
-
-            foreach ($transaction->items as $item) {
-
-                $product = $item->product()->lockForUpdate()->first();
-
-                if ($product->stock < $item->quantity) {
-                    throw new \Exception(
-                        'Stok tidak mencukupi untuk ' . $product->name
-                    );
-                }
-
-                $product->decrement('stock', $item->quantity);
-            }
-
-            $transaction->update([
-                'status' => 'paid',
-                'paid_at' => now(),
-            ]);
-        });
-
-        return back()->with('success', 'Pembayaran berhasil diverifikasi');
-
-    } catch (\Exception $e) {
-
-        return back()->with('error', $e->getMessage());
-    }
-}
 
 
     /*
@@ -187,27 +162,16 @@ class SalesReportController extends Controller
     */
     public function reject(Transaction $transaction)
     {
-        DB::transaction(function () use ($transaction) {
+        try {
 
-            $transaction->load('items.product');
+            $transaction->markAsFailed();
 
-            // 🔁 Jika sebelumnya paid → kembalikan stok
-            if ($transaction->status === 'paid') {
+            return back()->with('success', 'Pembayaran berhasil ditolak');
 
-                foreach ($transaction->items as $item) {
+        } catch (\Exception $e) {
 
-                    $product = $item->product()->lockForUpdate()->first();
-
-                    $product->increment('stock', $item->quantity);
-                }
-            }
-
-            $transaction->update([
-                'status' => 'failed',
-            ]);
-        });
-
-        return back()->with('success', 'Pembayaran berhasil ditolak');
+            return back()->with('error', $e->getMessage());
+        }
     }
 
 
