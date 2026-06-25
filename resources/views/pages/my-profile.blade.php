@@ -102,6 +102,12 @@
                             </div>
 
                             <div class="form-group">
+                                <label class="form-label">Tanggal Lahir</label>
+                                <input type="date" name="birthdate" class="form-input"
+                                    value="{{ old('birthdate', auth()->user()->birthdate) }}" required>
+                            </div>
+
+                            <div class="form-group">
                                 <label class="form-label">Email</label>
                                 <input type="email" name="email" class="form-input"
                                     value="{{ old('email', auth()->user()->email) }}" required>

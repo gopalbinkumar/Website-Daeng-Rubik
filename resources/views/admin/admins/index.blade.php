@@ -33,6 +33,7 @@
                 <tr>
                     {{-- <th style="width: 80px;">Avatar</th> --}}
                     <th>Nama</th>
+                    <th>Tanggal Lahir</th>
                     <th>Email</th>
                     <th>Whatsapp</th>
                     <th>Role</th>
@@ -48,6 +49,9 @@
                             </div>
                         </td> --}}
                         <td><strong>{{ $user->name }}</strong></td>
+                        <td>
+                            {{ $user->birthdate ? \Carbon\Carbon::parse($user->birthdate)->format('d-m-Y') : '-' }}
+                        </td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->whatsapp }}</td>
                         <td>
@@ -65,7 +69,8 @@
                                 </button> --}}
 
                                 @if ($user->role === 'admin')
-                                    <button class="btn btn-icon btn-danger" disabled title="Tidak dapat dihapus" style="cursor: not-allowed">
+                                    <button class="btn btn-icon btn-danger" disabled title="Tidak dapat dihapus"
+                                        style="cursor: not-allowed">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 @else

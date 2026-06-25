@@ -15,6 +15,7 @@ class EventRegistration extends Model
         'user_id',
         'event_id',
         'participant_name',
+        'participant_birthdate',
         'participant_email',
         'participant_whatsapp',
         'status',

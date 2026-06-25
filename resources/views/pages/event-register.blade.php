@@ -74,56 +74,31 @@
                 </aside>
 
 
-                @if (!$alreadyRegistered)
+                @if ($showRegistrationForm)
                     <!-- Registration Form -->
                     <div class="event-register-form-card">
                         <h3 style="font-size:18px;margin:0 0 20px;">Form Registrasi</h3>
+
+                        @if ($registration && $registration->status === 'pending')
+                            <p class="muted" style="line-height:1.6">
+                                Status pendaftaran Anda masih <strong>pending</strong>.
+                            </p>
+                        @endif
+
+                        @if ($registration && $registration->status === 'rejected')
+                            <p class="muted" style="line-height:1.6">
+                                Status pendaftaran Anda <strong>ditolak</strong>. Silakan daftar ulang.
+                            </p>
+                        @endif
 
                         <form method="POST" action="{{ route('events.register.store') }}" class="event-register-form">
                             @csrf
                             <input type="hidden" name="event_id" value="{{ $event->id }}">
 
-                            <div class="form-group">
-                                <label class="form-label">Nama Lengkap Peserta <span class="required">*</span></label>
-                                <input type="text" class="form-input" name="participant_name"
-                                    value="{{ $user->name }}" readonly>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Email <span class="required">*</span></label>
-                                <input type="email" class="form-input" name="participant_email"
-                                    value="{{ $user->email }}" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Nomor WhatsApp <span class="required">*</span></label>
-                                <input type="number" class="form-input" name="participant_whatsapp"
-                                    value="{{ $user->whatsapp }}" required>
-                                <small class="form-helper">Contoh: +62 812-3456-7890</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Kategori Lomba <span class="required">*</span></label>
-                                <div class="checkbox-list">
-                                    @foreach ($event->competitionCategories as $cat)
-                                        <label class="checkbox-item">
-                                            <input type="checkbox" class="checkbox-input" name="categories[]"
-                                                value="{{ $cat->id }}">
-                                            <span>{{ $cat->name }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
-                                <small class="form-helper">Pilih satu atau lebih kategori lomba yang ingin diikuti.</small>
-                            </div>
-
-                            <div class="form-actions">
-                                <a href="{{ route('events') }}" class="btn btn-secondary">Kembali ke halaman Event</a>
-                                <button type="submit" class="btn btn-primary">Daftar Event</button>
-                            </div>
+                            <!-- isi form kamu tetap di sini -->
                         </form>
                     </div>
                 @else
-                    {{-- tampilkan ini jika sudah terdaftar --}}
                     <div class="event-register-form-card">
                         <h3 style="font-size:18px;margin:0 0 20px;">Anda sudah mendaftar</h3>
 

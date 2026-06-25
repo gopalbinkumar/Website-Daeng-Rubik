@@ -26,6 +26,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'birthdate' => 'required|date',
             'email' => 'required|email',
             'whatsapp' => 'required|string|max:20',
             'password' => 'required|min:8|confirmed',
@@ -48,6 +49,7 @@ class UserController extends Controller
 
         User::create([
             'name' => $request->name,
+            'birthdate' => $request->birthdate,
             'email' => $request->email,
             'whatsapp' => $request->whatsapp,
             'password' => Hash::make($request->password),
@@ -254,12 +256,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
             'whatsapp' => 'nullable|string|max:20',
+            'birthdate' => 'required|date',
         ]);
 
         Auth::user()->update([
             'name' => $request->name,
             'email' => $request->email,
             'whatsapp' => $request->whatsapp,
+            'birthdate' => $request->birthdate,
         ]);
 
         return back()->with('success', 'Profil berhasil diperbarui.');

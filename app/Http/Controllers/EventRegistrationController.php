@@ -82,14 +82,18 @@ class EventRegistrationController extends Controller
 
         $user = Auth::user();
 
-        $alreadyRegistered = EventRegistration::where('event_id', $event->id)
+        $registration = EventRegistration::where('event_id', $event->id)
             ->where('user_id', $user->id)
-            ->exists();
+            ->latest()
+            ->first();
+
+        $showRegistrationForm = !$registration || in_array($registration->status, ['pending', 'rejected']);
 
         return view('pages.event-register', [
             'event' => $event,
             'user' => $user,
-            'alreadyRegistered' => $alreadyRegistered,
+            'registration' => $registration,
+            'showRegistrationForm' => $showRegistrationForm,
         ]);
     }
 
@@ -103,6 +107,7 @@ class EventRegistrationController extends Controller
             'categories.*' => 'exists:competition_categories,id',
 
             'participant_name' => 'required|string|max:255',
+            'participant_birthdate' => 'required|date',
             'participant_email' => 'required|email|max:255',
             'participant_whatsapp' => 'required|string|max:25',
 
@@ -126,6 +131,7 @@ class EventRegistrationController extends Controller
             ],
             [
                 'participant_name' => $request->participant_name,
+                'participant_birthdate' => $request->participant_birthdate,
                 'participant_email' => $request->participant_email,
                 'participant_whatsapp' => $request->participant_whatsapp,
                 'status' => 'pending',

@@ -93,6 +93,14 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label">Tanggal Lahir <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <input type="date" name="birthdate" class="form-input" required>
+                            <span class="input-icon"><i class="fa-regular fa-calendar"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label">Nomor WhatsApp <span class="required">*</span></label>
                         <div class="input-wrapper">
                             <input type="number" name="whatsapp" class="form-input" placeholder="081234567890"

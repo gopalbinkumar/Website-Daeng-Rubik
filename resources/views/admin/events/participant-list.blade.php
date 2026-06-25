@@ -150,6 +150,11 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label">Tanggal Lahir</label>
+                <div id="modalParticipantBirthdate"></div>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">Email</label>
                 <div id="modalParticipantEmail"></div>
             </div>
@@ -257,6 +262,36 @@
 
             document.getElementById('modalParticipantEmail').innerText =
                 data.participant_email;
+
+            document.getElementById('modalParticipantBirthdate').innerText =
+                data.participant_birthdate ?
+                new Date(data.participant_birthdate).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }) :
+                '-';
+
+            const birthdate = data.participant_birthdate ? new Date(data.participant_birthdate) : null;
+
+            let age = '-';
+
+            if (birthdate) {
+                const today = new Date();
+                age = today.getFullYear() - birthdate.getFullYear();
+
+                const monthDiff = today.getMonth() - birthdate.getMonth();
+                const dayDiff = today.getDate() - birthdate.getDate();
+
+                if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+                    age--;
+                }
+            }
+
+            document.getElementById('modalParticipantName').innerText =
+                data.participant_name ?
+                `${data.participant_name} (${age} tahun)` :
+                '-';
 
             document.getElementById('modalParticipantWhatsapp').innerText =
                 data.participant_whatsapp;
