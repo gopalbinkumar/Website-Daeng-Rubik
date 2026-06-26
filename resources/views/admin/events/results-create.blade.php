@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('body-class', 'hide-admin-sidebar')
+@section('body-class', 'hide-admin-sidebar hide-admin-topbar')
 
 @section('title', 'Input Hasil Kompetisi')
 @section('page-title', 'Input Hasil Kompetisi')
@@ -10,11 +10,81 @@
 @endpush
 
 @section('content')
+    <style>
+        .category-icon-list {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .category-icon-choice {
+            width: 36px;
+            /* sebelumnya 42px */
+            height: 36px;
+            /* sebelumnya 42px */
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+            border-radius: 8px;
+            color: #bfc1c3;
+            opacity: 1;
+
+            transition: color .15s ease, transform .15s ease;
+        }
+
+        .category-icon-choice .cubing-category-icon {
+            width: 30px !important;
+            /* ukuran icon asli */
+            height: 30px !important;
+            display: block;
+            flex-shrink: 0;
+
+            background-color: currentColor;
+
+            mask-image: var(--icon-url);
+            mask-repeat: no-repeat;
+            mask-position: center;
+            mask-size: contain;
+
+            -webkit-mask-image: var(--icon-url);
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            -webkit-mask-size: contain;
+        }
+
+        /* Tidak terpilih = abu-abu muted */
+        .category-icon-choice {
+            color: #bfc1c3;
+        }
+
+        /* Terpilih = hitam */
+        .category-icon-choice.is-active {
+            color: #000;
+        }
+
+        /* Hover boleh sedikit lebih gelap */
+        .category-icon-choice:hover,
+        .category-icon-choice:focus {
+            color: #000;
+            transform: scale(1.06);
+            outline: none;
+        }
+    </style>
     <div class="page-header">
         <h2 class="page-title">{{ $event->title }}</h2>
-        <a href="{{ route('admin.events.competition.index') }}" class="btn btn-secondary">
+        {{-- <a href="{{ route('admin.events.competition.index') }}" class="btn btn-secondary">
             Kembali
-        </a>
+        </a> --}}
     </div>
 
     <div class="card admin-results-create">
@@ -25,18 +95,32 @@
                     @csrf
                     <input type="hidden" name="event_id" value="{{ $event->id }}">
 
-
                     <h3 class="form-section-title">Kategori</h3>
+
                     <div class="form-row">
-                        <div class="form-group">
-                            <select name="competition_category_id" class="form-select" required>
-                                <option value="">Pilih Kategori</option>
+                        <div class="form-group category-icon-select-list" data-category-icon-list>
+                            {{-- Select asli tetap dipakai untuk submit dan JS --}}
+                            <select name="competition_category_id" class="form-select category-native-select" required
+                                style="display: none;">
                                 @foreach ($categories as $cat)
-                                    <option value="{{ $cat->id }}" @selected($selectedCategory == $cat->id)>
+                                    <option value="{{ $cat->id }}" data-code="{{ $cat->code }}"
+                                        @selected(($selectedCategory && $selectedCategory == $cat->id) || (!$selectedCategory && $loop->first))>
                                         {{ $cat->name }}
                                     </option>
                                 @endforeach
                             </select>
+
+                            {{-- Semua kategori langsung tampil sebagai icon --}}
+                            <div class="category-icon-list">
+                                @foreach ($categories as $cat)
+                                    <button type="button"
+                                        class="category-icon-choice {{ ($selectedCategory && $selectedCategory == $cat->id) || (!$selectedCategory && $loop->first) ? 'is-active' : '' }}"
+                                        data-category-choice data-id="{{ $cat->id }}" data-name="{{ $cat->name }}"
+                                        title="{{ $cat->name }}" aria-label="{{ $cat->name }}">
+                                        <x-category-icon :code="$cat->code" :name="$cat->name" size="34" />
+                                    </button>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
 
@@ -45,8 +129,8 @@
                     <div class="form-row">
                         <div class="form-group">
                             <select name="round_number" class="form-select" required>
-                                <option value="">Pilih Round</option>
-                                @for ($i = 1; $i <= 3; $i++)
+                                <option value="1" @selected($selectedRound == 1)>Round 1</option>
+                                @for ($i = 2; $i <= 3; $i++)
                                     <option value="{{ $i }}" @selected($selectedRound == $i)>
                                         Round {{ $i }}
                                     </option>
@@ -112,7 +196,7 @@
 
 
                     <div class="modal-footer">
-                        <a href="{{ url()->previous() }}" class="btn btn-secondary">Batal</a>
+                        <a href="{{ url()->previous() }}" class="btn btn-danger">Batal</a>
                         <button class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
@@ -154,175 +238,74 @@
 
     <script>
         (function() {
-            const input = document.getElementById('participantInput');
-            const dropdown = document.getElementById('participantDropdown');
-            const hiddenUserId = document.getElementById('participantUserId');
+            const form = document.getElementById('resultForm');
 
-            let cache = []; // simpan semua peserta
-            let loaded = false; // penanda sudah fetch atau belum
+            const participantInput = document.getElementById('participantInput');
+            const participantDropdown = document.getElementById('participantDropdown');
+            const participantUserId = document.getElementById('participantUserId');
+            const participantGroup = participantInput?.closest('.form-group');
 
-            async function loadAllParticipants() {
-                if (loaded) return;
+            const categorySelect = document.querySelector('[name="competition_category_id"]');
+            const roundSelect = document.querySelector('[name="round_number"]');
 
-                const eventId = input.dataset.eventId;
+            const attempts = Array.from(document.querySelectorAll('.attempt-input'));
 
-                try {
-                    // 🔥 ambil SEMUA peserta (tanpa query)
-                    const res = await fetch(`/admin/events/${eventId}/accepted-participants`);
-                    cache = await res.json();
-                    loaded = true;
-                } catch (e) {
-                    console.error('Gagal load peserta', e);
-                }
-            }
-
-            function render(list) {
-                dropdown.innerHTML = '';
-
-                if (!list.length) {
-                    dropdown.style.display = 'none';
-                    return;
-                }
-
-                list.forEach(p => {
-                    const div = document.createElement('div');
-                    div.textContent = p.name;
-                    div.style.padding = '10px 12px';
-                    div.style.cursor = 'pointer';
-
-                    div.onmouseenter = () => div.style.background = '#f3f4f6';
-                    div.onmouseleave = () => div.style.background = '#fff';
-
-                    div.onclick = () => {
-                        input.value = p.name;
-                        hiddenUserId.value = p.user_id;
-                        dropdown.style.display = 'none';
-                    };
-
-                    dropdown.appendChild(div);
-                });
-
-                dropdown.style.display = 'block';
-            }
-
-            // 🔥 KLIK INPUT → TAMPILKAN SEMUA
-            input.addEventListener('focus', async () => {
-                hiddenUserId.value = '';
-                await loadAllParticipants();
-                render(cache);
-            });
-
-            // 🔥 KETIK → FILTER
-            input.addEventListener('input', () => {
-                const q = input.value.trim().toLowerCase();
-                hiddenUserId.value = '';
-
-                if (!loaded) return;
-
-                const filtered = q ?
-                    cache.filter(p => p.name.toLowerCase().includes(q)) :
-                    cache;
-
-                render(filtered);
-            });
-
-            // klik di luar → tutup
-            document.addEventListener('click', e => {
-                if (!e.target.closest('.form-group')) {
-                    dropdown.style.display = 'none';
-                }
-            });
-
-            // validasi submit
-            document.querySelector('form').addEventListener('submit', e => {
-                if (!hiddenUserId.value) {
-                    e.preventDefault();
-                    alert('Silakan pilih kompetitor dari daftar');
-                }
-            });
-        })();
-    </script>
-
-
-    <script>
-        document.querySelectorAll('.attempt-input').forEach(input => {
-            input.addEventListener('input', () => {
-                let v = input.value.toUpperCase();
-
-                // DNF / DNS
-                if (v === 'DNF' || v === 'DNS') {
-                    input.value = v;
-                    return;
-                }
-
-                // hanya angka
-                v = v.replace(/\D/g, '');
-
-                if (!v) {
-                    input.value = '';
-                    return;
-                }
-
-                // 1–2 digit → tampil apa adanya
-                if (v.length <= 2) {
-                    input.value = v;
-                    return;
-                }
-
-                // 3–4 digit → ss.xx
-                if (v.length <= 4) {
-                    const sec = v.slice(0, -2);
-                    const dec = v.slice(-2);
-                    input.value = `${sec}.${dec}`;
-                    return;
-                }
-
-                // ≥5 digit → m:ss.xx
-                const dec = v.slice(-2);
-                const sec = v.slice(-4, -2);
-                const min = v.slice(0, -4);
-
-                input.value = `${min}:${sec}.${dec}`;
-            });
-
-            // shortcut keyboard
-            input.addEventListener('keydown', e => {
-                const key = e.key.toLowerCase();
-
-                if (key === 'd') {
-                    e.preventDefault();
-                    input.value = 'DNF';
-                }
-
-                if (key === 's') {
-                    e.preventDefault();
-                    input.value = 'DNS';
-                }
-            });
-        });
-    </script>
-    <script>
-        (function() {
-            const attempts = document.querySelectorAll('.attempt-input');
             const bestEl = document.getElementById('bestValue');
             const avgEl = document.getElementById('avgValue');
             const bestInput = document.getElementById('bestInput');
             const avgInput = document.getElementById('avgInput');
 
+            const resultsTableBody = document.getElementById('resultsTableBody');
+            const resultsTitle = document.getElementById('resultsTitle');
+            const saveButton = form?.querySelector('button.btn-primary');
+
+            let participantCache = [];
+            let loadedParticipantCategoryId = null;
+            let lastRequestKey = null;
+            let isFirstLoad = true;
+
+            if (
+                !form ||
+                !participantInput ||
+                !participantDropdown ||
+                !participantUserId ||
+                !categorySelect ||
+                !roundSelect ||
+                !attempts.length
+            ) {
+                return;
+            }
+
+            // =====================================================
+            // UTIL RESULT
+            // =====================================================
+            function resetResultSummary() {
+                bestEl.textContent = '-';
+                avgEl.textContent = '-';
+                bestInput.value = '';
+                avgInput.value = '';
+            }
+
             function toCS(v) {
                 if (!v) return null;
-                v = v.toUpperCase();
+
+                v = String(v).toUpperCase();
+
                 if (v === 'DNF' || v === 'DNS') return Infinity;
 
                 if (v.includes(':')) {
                     const [m, r] = v.split(':');
                     const [s, d] = r.split('.');
+
                     return (+m * 60 + +s) * 100 + +d;
                 }
+
                 if (v.includes('.')) {
                     const [s, d] = v.split('.');
+
                     return (+s) * 100 + +d;
                 }
+
                 return null;
             }
 
@@ -330,64 +313,91 @@
                 const m = Math.floor(cs / 6000);
                 const s = Math.floor((cs % 6000) / 100);
                 const d = cs % 100;
+
                 return m > 0 ?
-                    `${m}:${String(s).padStart(2,'0')}.${String(d).padStart(2,'0')}` :
-                    `${s}.${String(d).padStart(2,'0')}`;
+                    `${m}:${String(s).padStart(2, '0')}.${String(d).padStart(2, '0')}` :
+                    `${s}.${String(d).padStart(2, '0')}`;
+            }
+
+            function timeToCS(v) {
+                if (!v) return Infinity;
+
+                v = String(v).toUpperCase();
+
+                if (v === 'DNF' || v === 'DNS') return Infinity;
+
+                if (v.includes(':')) {
+                    const [m, r] = v.split(':');
+                    const [s, d] = r.split('.');
+
+                    return (+m * 60 + +s) * 100 + +d;
+                }
+
+                if (v.includes('.')) {
+                    const [s, d] = v.split('.');
+
+                    return (+s) * 100 + +d;
+                }
+
+                return Infinity;
             }
 
             function calc() {
                 const vals = [];
-                attempts.forEach(i => {
-                    const v = toCS(i.value);
-                    if (v !== null) vals.push(v);
+
+                attempts.forEach(input => {
+                    const v = toCS(input.value);
+
+                    if (v !== null) {
+                        vals.push(v);
+                    }
                 });
 
                 if (!vals.length) {
-                    bestEl.textContent = avgEl.textContent = '-';
-                    bestInput.value = avgInput.value = '';
+                    resetResultSummary();
                     return;
                 }
 
                 vals.sort((a, b) => a - b);
+
                 bestEl.textContent = vals[0] === Infinity ? 'DNF' : fromCS(vals[0]);
                 bestInput.value = bestEl.textContent;
 
-                const dnf = vals.filter(v => v === Infinity).length;
-                if (vals.length < 5 || dnf >= 2) {
-                    avgEl.textContent = avgInput.value = 'DNF';
+                const dnfCount = vals.filter(v => v === Infinity).length;
+
+                if (vals.length < 5 || dnfCount >= 2) {
+                    avgEl.textContent = 'DNF';
+                    avgInput.value = 'DNF';
                     return;
                 }
 
                 const mid = vals.slice(1, 4);
+
                 if (mid.some(v => v === Infinity)) {
-                    avgEl.textContent = avgInput.value = 'DNF';
+                    avgEl.textContent = 'DNF';
+                    avgInput.value = 'DNF';
                     return;
                 }
 
                 const avg = Math.round(mid.reduce((a, b) => a + b, 0) / 3);
-                avgEl.textContent = avgInput.value = fromCS(avg);
+
+                avgEl.textContent = fromCS(avg);
+                avgInput.value = avgEl.textContent;
             }
 
-            attempts.forEach(i => {
-                i.addEventListener('keyup', calc);
-                i.addEventListener('blur', calc);
-            });
-        })();
-    </script>
-
-    <script>
-        (function() {
-            const categorySelect = document.querySelector('[name="competition_category_id"]');
-            const roundSelect = document.querySelector('[name="round_number"]');
-            const userIdInput = document.getElementById('participantUserId');
-            const participantInput = document.getElementById('participantInput');
-            const attempts = document.querySelectorAll('.attempt-input');
-
-            function setAttemptState() {
-                const ready =
+            // =====================================================
+            // LOCK / UNLOCK ATTEMPT
+            // =====================================================
+            function isReadyToInputAttempt() {
+                return Boolean(
                     categorySelect.value &&
                     roundSelect.value &&
-                    userIdInput.value;
+                    participantUserId.value
+                );
+            }
+
+            function setAttemptState() {
+                const ready = isReadyToInputAttempt();
 
                 attempts.forEach(input => {
                     input.readOnly = !ready;
@@ -397,46 +407,386 @@
                         input.value = '';
                     }
                 });
+
+                if (!ready) {
+                    resetResultSummary();
+                }
             }
 
-            // kondisi awal (LOCK)
-            setAttemptState();
+            function focusAttempt(index) {
+                if (!attempts.length) return;
 
-            // pantau perubahan
-            categorySelect.addEventListener('change', setAttemptState);
-            roundSelect.addEventListener('change', setAttemptState);
+                if (index < 0) {
+                    attempts[0].focus();
+                    attempts[0].select();
+                    return;
+                }
 
-            // peserta dipilih dari dropdown
-            const observer = new MutationObserver(setAttemptState);
-            observer.observe(userIdInput, {
-                attributes: true,
-                attributeFilter: ['value']
+                if (index >= attempts.length) {
+                    saveButton?.focus();
+                    return;
+                }
+
+                if (attempts[index].readOnly) return;
+
+                attempts[index].focus();
+                attempts[index].select();
+            }
+
+            function allAttemptsFilled() {
+                return attempts.every(input => input.value.trim() !== '');
+            }
+
+            function focusFirstEmptyAttempt() {
+                const firstEmptyIndex = attempts.findIndex(input => input.value.trim() === '');
+
+                if (firstEmptyIndex !== -1) {
+                    focusAttempt(firstEmptyIndex);
+                }
+            }
+
+            // =====================================================
+            // PARTICIPANT AUTOCOMPLETE
+            // =====================================================
+            let activeParticipantIndex = -1;
+
+            async function loadAllParticipants() {
+                const eventId = participantInput.dataset.eventId;
+                const categoryId = categorySelect.value;
+
+                if (!categoryId) return;
+
+                if (loadedParticipantCategoryId === String(categoryId)) {
+                    return;
+                }
+
+                try {
+                    const params = new URLSearchParams({
+                        competition_category_id: categoryId
+                    });
+
+                    const res = await fetch(`/admin/events/${eventId}/accepted-participants?${params.toString()}`);
+
+                    participantCache = await res.json();
+                    loadedParticipantCategoryId = String(categoryId);
+                } catch (e) {
+                    console.error('Gagal load peserta', e);
+                }
+            }
+
+            function getParticipantItems() {
+                return Array.from(participantDropdown.querySelectorAll('.participant-option'));
+            }
+
+            function updateActiveParticipant() {
+                const items = getParticipantItems();
+
+                items.forEach((item, index) => {
+                    const isActive = index === activeParticipantIndex;
+
+                    item.style.background = isActive ? '#f3f4f6' : '#fff';
+
+                    if (isActive) {
+                        item.scrollIntoView({
+                            block: 'nearest'
+                        });
+                    }
+                });
+            }
+
+            async function selectParticipant(p) {
+                participantInput.value = p.name;
+                participantUserId.value = p.user_id;
+                participantUserId.setAttribute('value', p.user_id);
+
+                participantDropdown.style.display = 'none';
+                participantDropdown.innerHTML = '';
+                activeParticipantIndex = -1;
+
+                setAttemptState();
+                lastRequestKey = null;
+
+                await checkAndPrefill();
+
+                if (isReadyToInputAttempt()) {
+                    focusAttempt(0);
+                }
+            }
+
+            function renderParticipantDropdown(list) {
+                participantDropdown.innerHTML = '';
+                activeParticipantIndex = -1;
+
+                if (!list.length) {
+                    participantDropdown.style.display = 'none';
+                    return;
+                }
+
+                list.forEach((p, index) => {
+                    const div = document.createElement('div');
+
+                    div.className = 'participant-option';
+                    div.textContent = p.name;
+                    div.style.padding = '10px 12px';
+                    div.style.cursor = 'pointer';
+                    div.style.background = '#fff';
+
+                    div.addEventListener('mouseenter', () => {
+                        activeParticipantIndex = index;
+                        updateActiveParticipant();
+                    });
+
+                    div.addEventListener('mouseleave', () => {
+                        activeParticipantIndex = -1;
+                        updateActiveParticipant();
+                    });
+
+                    div.addEventListener('click', () => {
+                        selectParticipant(p);
+                    });
+
+                    participantDropdown.appendChild(div);
+                });
+
+                participantDropdown.style.display = 'block';
+            }
+
+            participantInput.addEventListener('focus', async () => {
+                await loadAllParticipants();
+
+                // Jangan tampilkan dropdown saat input baru diklik
+                participantDropdown.style.display = 'none';
             });
 
-            // kalau user hapus nama peserta manual
-            participantInput.addEventListener('input', () => {
-                if (!participantInput.value.trim()) {
-                    userIdInput.value = '';
-                    setAttemptState();
+            participantInput.addEventListener('input', async () => {
+                const q = participantInput.value.trim().toLowerCase();
+
+                participantUserId.value = '';
+                participantUserId.removeAttribute('value');
+
+                lastRequestKey = null;
+                setAttemptState();
+
+                await loadAllParticipants();
+
+                // Minimal 2 karakter baru tampilkan dropdown
+                if (q.length < 2) {
+                    participantDropdown.innerHTML = '';
+                    participantDropdown.style.display = 'none';
+                    activeParticipantIndex = -1;
+                    return;
+                }
+
+                const filtered = participantCache.filter(p =>
+                    p.name.toLowerCase().includes(q)
+                );
+
+                renderParticipantDropdown(filtered);
+            });
+
+            function resetParticipantSelection() {
+                participantInput.value = '';
+                participantUserId.value = '';
+                participantUserId.removeAttribute('value');
+
+                participantDropdown.innerHTML = '';
+                participantDropdown.style.display = 'none';
+
+                participantCache = [];
+                loadedParticipantCategoryId = null;
+
+                attempts.forEach(input => {
+                    input.value = '';
+                });
+
+                resetResultSummary();
+                setAttemptState();
+            }
+
+            participantInput.addEventListener('keydown', async e => {
+                const q = participantInput.value.trim().toLowerCase();
+                const items = getParticipantItems();
+                const dropdownIsOpen = participantDropdown.style.display === 'block';
+
+                // ArrowDown → pilih nama berikutnya
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+
+                    if (q.length < 2) return;
+
+                    await loadAllParticipants();
+
+                    if (!dropdownIsOpen || !items.length) {
+                        const filtered = participantCache.filter(p =>
+                            p.name.toLowerCase().includes(q)
+                        );
+
+                        renderParticipantDropdown(filtered);
+                    }
+
+                    const updatedItems = getParticipantItems();
+
+                    if (!updatedItems.length) return;
+
+                    activeParticipantIndex =
+                        activeParticipantIndex < updatedItems.length - 1 ?
+                        activeParticipantIndex + 1 :
+                        0;
+
+                    updateActiveParticipant();
+                    return;
+                }
+
+                // ArrowUp → pilih nama sebelumnya
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+
+                    const updatedItems = getParticipantItems();
+
+                    if (!dropdownIsOpen || !updatedItems.length) return;
+
+                    activeParticipantIndex =
+                        activeParticipantIndex > 0 ?
+                        activeParticipantIndex - 1 :
+                        updatedItems.length - 1;
+
+                    updateActiveParticipant();
+                    return;
+                }
+
+                // Enter → pilih nama yang sedang disorot
+                if (e.key === 'Enter') {
+                    const updatedItems = getParticipantItems();
+
+                    if (dropdownIsOpen && updatedItems.length) {
+                        e.preventDefault();
+
+                        if (activeParticipantIndex < 0) {
+                            activeParticipantIndex = 0;
+                            updateActiveParticipant();
+                        }
+
+                        updatedItems[activeParticipantIndex].click();
+                        return;
+                    }
+
+                    // Cegah submit form saat masih di input nama kompetitor
+                    if (!participantUserId.value) {
+                        e.preventDefault();
+                    }
+                }
+
+                // Escape → tutup dropdown
+                if (e.key === 'Escape') {
+                    participantDropdown.style.display = 'none';
+                    activeParticipantIndex = -1;
                 }
             });
-        })();
-    </script>
-    <script>
-        (function() {
-            const attempts = document.querySelectorAll('.attempt-input');
 
-            attempts.forEach(input => {
-                // KEYDOWN – CAPTURE PHASE (PENTING)
+            document.addEventListener('click', e => {
+                if (participantGroup && !participantGroup.contains(e.target)) {
+                    participantDropdown.style.display = 'none';
+                    activeParticipantIndex = -1;
+                }
+            });
+
+            // =====================================================
+            // FORMAT ATTEMPT + KEYBOARD NAVIGATION
+            // =====================================================
+            function formatAttemptInput(input) {
+                let v = input.value.toUpperCase();
+
+                if (v === 'DNF' || v === 'DNS') {
+                    input.value = v;
+                    return;
+                }
+
+                v = v.replace(/\D/g, '');
+
+                if (!v) {
+                    input.value = '';
+                    return;
+                }
+
+                if (v.length <= 2) {
+                    input.value = v;
+                    return;
+                }
+
+                if (v.length <= 4) {
+                    const sec = v.slice(0, -2);
+                    const dec = v.slice(-2);
+
+                    input.value = `${sec}.${dec}`;
+                    return;
+                }
+
+                const dec = v.slice(-2);
+                const sec = v.slice(-4, -2);
+                const min = v.slice(0, -4);
+
+                input.value = `${min}:${sec}.${dec}`;
+            }
+
+            attempts.forEach((input, index) => {
                 input.addEventListener('keydown', function(e) {
                     if (input.readOnly) {
                         e.stopImmediatePropagation();
                         e.preventDefault();
                         return false;
                     }
-                }, true); // ← TRUE = CAPTURE PHASE
 
-                // INPUT – CAPTURE PHASE
+                    const key = e.key.toLowerCase();
+
+                    // ENTER → langsung simpan, tapi hanya kalau semua attempt terisi
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+
+                        formatAttemptInput(input);
+                        calc();
+
+                        if (!allAttemptsFilled()) {
+                            focusFirstEmptyAttempt();
+                            return;
+                        }
+
+                        form.requestSubmit();
+                        return;
+                    }
+
+                    // Arrow Down → pindah ke attempt berikutnya
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        focusAttempt(index + 1);
+                        return;
+                    }
+
+                    // Arrow Up → pindah ke attempt sebelumnya
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        focusAttempt(index - 1);
+                        return;
+                    }
+
+                    // D → DNF lalu lanjut ke attempt berikutnya
+                    if (key === 'd') {
+                        e.preventDefault();
+                        input.value = 'DNF';
+                        calc();
+                        focusAttempt(index + 1);
+                        return;
+                    }
+
+                    // S → DNS lalu lanjut ke attempt berikutnya
+                    if (key === 's') {
+                        e.preventDefault();
+                        input.value = 'DNS';
+                        calc();
+                        focusAttempt(index + 1);
+                        return;
+                    }
+                }, true);
+
                 input.addEventListener('input', function(e) {
                     if (input.readOnly) {
                         e.stopImmediatePropagation();
@@ -444,9 +794,11 @@
                         input.value = '';
                         return false;
                     }
+
+                    formatAttemptInput(input);
+                    calc();
                 }, true);
 
-                // PASTE – CAPTURE PHASE
                 input.addEventListener('paste', function(e) {
                     if (input.readOnly) {
                         e.stopImmediatePropagation();
@@ -454,55 +806,45 @@
                         return false;
                     }
                 }, true);
+
+                input.addEventListener('keyup', calc);
+                input.addEventListener('blur', calc);
             });
-        })();
-    </script>
 
-    <script>
-        (function() {
-            const categorySelect = document.querySelector('[name="competition_category_id"]');
-            const roundSelect = document.querySelector('[name="round_number"]');
-            const userIdInput = document.getElementById('participantUserId');
-
-            const attempts = document.querySelectorAll('.attempt-input');
-            const bestEl = document.getElementById('bestValue');
-            const avgEl = document.getElementById('avgValue');
-            const bestInput = document.getElementById('bestInput');
-            const avgInput = document.getElementById('avgInput');
-
-            let lastRequestKey = null;
-
+            // =====================================================
+            // CHECK EXISTING RESULT / PREFILL EDIT MODE
+            // =====================================================
             async function checkAndPrefill() {
-                if (!categorySelect.value || !roundSelect.value || !userIdInput.value) {
+                if (!categorySelect.value || !roundSelect.value || !participantUserId.value) {
                     return;
                 }
 
-                const key = `${categorySelect.value}-${roundSelect.value}-${userIdInput.value}`;
+                const key = `${categorySelect.value}-${roundSelect.value}-${participantUserId.value}`;
+
                 if (key === lastRequestKey) return;
+
                 lastRequestKey = key;
 
                 try {
+                    const params = new URLSearchParams({
+                        competition_category_id: categorySelect.value,
+                        round_number: roundSelect.value,
+                        user_id: participantUserId.value
+                    });
+
                     const res = await fetch(
-                        `{{ route('admin.events.competition.check', $event) }}` +
-                        `?competition_category_id=${categorySelect.value}` +
-                        `&round_number=${roundSelect.value}` +
-                        `&user_id=${userIdInput.value}`
+                        `{{ route('admin.events.competition.check', $event) }}?${params.toString()}`
                     );
 
                     const json = await res.json();
 
-                    // RESET dulu (default = CREATE)
-                    attempts.forEach(i => i.value = '');
-                    bestEl.textContent = '-';
-                    avgEl.textContent = '-';
-                    bestInput.value = '';
-                    avgInput.value = '';
+                    attempts.forEach(input => input.value = '');
+                    resetResultSummary();
 
                     if (!json.exists) {
-                        return; // CREATE MODE
+                        return;
                     }
 
-                    // EDIT MODE → PREFILL
                     attempts[0].value = json.data.attempt1 ?? '';
                     attempts[1].value = json.data.attempt2 ?? '';
                     attempts[2].value = json.data.attempt3 ?? '';
@@ -519,144 +861,112 @@
                 }
             }
 
-            categorySelect.addEventListener('change', checkAndPrefill);
-            roundSelect.addEventListener('change', checkAndPrefill);
+            // =====================================================
+            // LOAD TABLE RESULT
+            // =====================================================
+            async function loadTable() {
+                if (!categorySelect.value || !roundSelect.value) {
+                    if (isFirstLoad) {
+                        resultsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="9" style="text-align:center;color:#9ca3af">
+                                Pilih kategori dan round
+                            </td>
+                        </tr>
+                    `;
+                    }
 
-            // saat peserta dipilih dari autocomplete
-            new MutationObserver(checkAndPrefill)
-                .observe(userIdInput, {
-                    attributes: true,
-                    attributeFilter: ['value']
-                });
-        })();
-    </script>
-    <script>
-        let isFirstLoad = true;
-
-        function timeToCS(v) {
-            if (!v) return Infinity;
-            v = String(v).toUpperCase();
-            if (v === 'DNF' || v === 'DNS') return Infinity;
-
-            if (v.includes(':')) {
-                const [m, r] = v.split(':');
-                const [s, d] = r.split('.');
-                return (+m * 60 + +s) * 100 + +d;
-            }
-
-            if (v.includes('.')) {
-                const [s, d] = v.split('.');
-                return (+s) * 100 + +d;
-            }
-
-            return Infinity;
-        }
-
-        async function loadTable() {
-            const categorySelect = document.querySelector('[name="competition_category_id"]');
-            const roundSelect = document.querySelector('[name="round_number"]');
-            const tbody = document.getElementById('resultsTableBody');
-            const titleEl = document.getElementById('resultsTitle');
-
-            if (!categorySelect.value || !roundSelect.value) {
-                if (isFirstLoad) {
-                    tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" style="text-align:center;color:#9ca3af">
-                            Pilih kategori dan round
-                        </td>
-                    </tr>`;
-                }
-                return;
-            }
-
-            // 🔹 Update judul
-            const categoryName =
-                categorySelect.options[categorySelect.selectedIndex].text;
-            titleEl.textContent = `${categoryName} – Round ${roundSelect.value}`;
-
-            try {
-                const res = await fetch(
-                    `{{ route('admin.events.competition.results', $event) }}` +
-                    `?competition_category_id=${categorySelect.value}` +
-                    `&round_number=${roundSelect.value}`
-                );
-
-                let data = await res.json();
-
-                if (!data.length) {
-                    tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" style="text-align:center;color:#9ca3af">
-                            Belum ada data hasil
-                        </td>
-                    </tr>`;
                     return;
                 }
 
-                // 🔥 SORTING SESUAI WCA
-                data.sort((a, b) => {
-                    const avgA = timeToCS(a.average);
-                    const avgB = timeToCS(b.average);
+                const categoryName = categorySelect.options[categorySelect.selectedIndex].text;
+                resultsTitle.textContent = `${categoryName} – Round ${roundSelect.value}`;
 
-                    if (avgA !== avgB) return avgA - avgB;
+                try {
+                    const params = new URLSearchParams({
+                        competition_category_id: categorySelect.value,
+                        round_number: roundSelect.value
+                    });
 
-                    const bestA = timeToCS(a.best);
-                    const bestB = timeToCS(b.best);
+                    const res = await fetch(
+                        `{{ route('admin.events.competition.results', $event) }}?${params.toString()}`
+                    );
 
-                    return bestA - bestB;
-                });
+                    let data = await res.json();
 
-                // 🔥 Render tabel + ranking
-                tbody.innerHTML = data.map((r, i) => `
-                <tr>
-                    <td class="text-center">${i + 1}</td>
-                    <td>${r.name}</td>
-                    <td class="text-end">${r.attempt1 ?? '-'}</td>
-                    <td class="text-end">${r.attempt2 ?? '-'}</td>
-                    <td class="text-end">${r.attempt3 ?? '-'}</td>
-                    <td class="text-end">${r.attempt4 ?? '-'}</td>
-                    <td class="text-end">${r.attempt5 ?? '-'}</td>
-                    <td class="text-end"><strong>${r.average ?? '-'}</strong></td>
-                    <td class="text-end">${r.best ?? '-'}</td>
-                </tr>
-            `).join('');
+                    if (!data.length) {
+                        resultsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="9" style="text-align:center;color:#9ca3af">
+                                Belum ada hasil
+                            </td>
+                        </tr>
+                    `;
 
-                isFirstLoad = false;
+                        isFirstLoad = false;
+                        return;
+                    }
 
-            } catch (e) {
-                console.error(e);
+                    // data.sort((a, b) => {
+                    //     const avgA = timeToCS(a.average);
+                    //     const avgB = timeToCS(b.average);
+
+                    //     if (avgA !== avgB) return avgA - avgB;
+
+                    //     const bestA = timeToCS(a.best);
+                    //     const bestB = timeToCS(b.best);
+
+                    //     return bestA - bestB;
+                    // });
+
+                    resultsTableBody.innerHTML = data.map((r, i) => `
+                    <tr>
+                        <td class="text-center">${r.rank ?? i + 1}</td>
+                        <td>${r.name}</td>
+                        <td class="text-end">${r.attempt1 ?? '-'}</td>
+                        <td class="text-end">${r.attempt2 ?? '-'}</td>
+                        <td class="text-end">${r.attempt3 ?? '-'}</td>
+                        <td class="text-end">${r.attempt4 ?? '-'}</td>
+                        <td class="text-end">${r.attempt5 ?? '-'}</td>
+                        <td class="text-end"><strong>${r.average ?? '-'}</strong></td>
+                        <td class="text-end">${r.best ?? '-'}</td>
+                    </tr>
+                `).join('');
+
+                    isFirstLoad = false;
+
+                } catch (e) {
+                    console.error(e);
+                }
             }
-        }
 
-        // 🔥 Trigger reload
-        document.querySelector('[name="competition_category_id"]')
-            .addEventListener('change', loadTable);
+            function handleCategoryOrRoundChange() {
+                lastRequestKey = null;
 
-        document.querySelector('[name="round_number"]')
-            .addEventListener('change', loadTable);
+                setAttemptState();
+                checkAndPrefill();
+                loadTable();
+            }
 
-        // 🔥 Auto load tanpa flicker
-        if (
-            document.querySelector('[name="competition_category_id"]').value &&
-            document.querySelector('[name="round_number"]').value
-        ) {
-            requestAnimationFrame(loadTable);
-        }
-    </script>
-    <script>
-        (function() {
-            const form = document.getElementById('resultForm');
-            const participantInput = document.getElementById('participantInput');
-            const hiddenUserId = document.getElementById('participantUserId');
-            const attempts = document.querySelectorAll('.attempt-input');
-            const bestEl = document.getElementById('bestValue');
-            const avgEl = document.getElementById('avgValue');
-            const bestInput = document.getElementById('bestInput');
-            const avgInput = document.getElementById('avgInput');
+            categorySelect.addEventListener('change', function() {
+                resetParticipantSelection();
+                handleCategoryOrRoundChange();
+            });
 
+            roundSelect.addEventListener('change', handleCategoryOrRoundChange);
+            // =====================================================
+            // AJAX SUBMIT
+            // =====================================================
             form.addEventListener('submit', async function(e) {
-                e.preventDefault(); // stop reload
+                e.preventDefault();
+
+                if (!participantUserId.value) {
+                    alert('Silakan pilih kompetitor dari daftar');
+                    participantInput.focus();
+                    return;
+                }
+
+                calc();
 
                 const formData = new FormData(form);
 
@@ -675,34 +985,23 @@
                         return;
                     }
 
-                    // 🔥 reset cache edit/create agar prefill bisa jalan lagi
-                    if (typeof lastRequestKey !== 'undefined') {
-                        lastRequestKey = null;
-                    }
+                    lastRequestKey = null;
 
-                    // 🔥 refresh tabel
-                    if (typeof loadTable === 'function') {
-                        loadTable();
-                    }
+                    await loadTable();
 
-                    // 🔥 KOSONGKAN INPUT PESERTA
                     participantInput.value = '';
-                    hiddenUserId.value = '';
+                    participantUserId.value = '';
+                    participantUserId.removeAttribute('value');
 
-                    // 🔥 KOSONGKAN ATTEMPT
-                    attempts.forEach(i => {
-                        i.value = '';
-                        i.readOnly = true; // balik ke kondisi terkunci
-                        i.classList.add('is-disabled');
+                    participantDropdown.style.display = 'none';
+
+                    attempts.forEach(input => {
+                        input.value = '';
                     });
 
-                    // 🔥 RESET HASIL
-                    bestEl.textContent = '-';
-                    avgEl.textContent = '-';
-                    bestInput.value = '';
-                    avgInput.value = '';
+                    setAttemptState();
+                    resetResultSummary();
 
-                    // optional UX
                     participantInput.focus();
 
                 } catch (e) {
@@ -710,6 +1009,90 @@
                     alert('Terjadi kesalahan saat menyimpan');
                 }
             });
+
+            // =====================================================
+            // CATEGORY ICON LIST SELECT
+            // =====================================================
+            function initCategoryIconList() {
+                const wrapper = document.querySelector('[data-category-icon-list]');
+
+                if (!wrapper) return;
+
+                const select = wrapper.querySelector('[name="competition_category_id"]');
+                const choices = Array.from(wrapper.querySelectorAll('[data-category-choice]'));
+
+                if (!select || !choices.length) return;
+
+                function setCategory(id, dispatchChange = true) {
+                    select.value = id;
+
+                    choices.forEach(choice => {
+                        const isActive = choice.dataset.id === String(id);
+
+                        choice.classList.toggle('is-active', isActive);
+                        choice.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    });
+
+                    if (dispatchChange) {
+                        select.dispatchEvent(new Event('change', {
+                            bubbles: true
+                        }));
+                    }
+                }
+
+                choices.forEach((choice, index) => {
+                    choice.setAttribute('tabindex', '0');
+                    choice.setAttribute('aria-pressed', choice.classList.contains('is-active') ? 'true' :
+                        'false');
+
+                    choice.addEventListener('click', function() {
+                        setCategory(choice.dataset.id);
+                    });
+
+                    choice.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setCategory(choice.dataset.id);
+                            return;
+                        }
+
+                        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                            e.preventDefault();
+
+                            const next = choices[index + 1] || choices[0];
+                            next.focus();
+                            return;
+                        }
+
+                        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                            e.preventDefault();
+
+                            const prev = choices[index - 1] || choices[choices.length - 1];
+                            prev.focus();
+                        }
+                    });
+                });
+
+                select.addEventListener('change', function() {
+                    setCategory(select.value, false);
+                });
+
+                if (select.value) {
+                    setCategory(select.value, false);
+                } else if (choices[0]) {
+                    setCategory(choices[0].dataset.id, true);
+                }
+            }
+
+            // =====================================================
+            // INITIAL STATE
+            // =====================================================
+            initCategoryIconList();
+            setAttemptState();
+
+            if (categorySelect.value && roundSelect.value) {
+                requestAnimationFrame(loadTable);
+            }
         })();
     </script>
 

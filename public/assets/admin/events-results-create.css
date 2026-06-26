@@ -199,3 +199,9 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+body.hide-admin-topbar .admin-topbar,
+body.hide-admin-topbar .topbar,
+body.hide-admin-topbar header {
+    display: none !important;
+}

@@ -24,17 +24,23 @@ class CompetitionResultController extends Controller
     public function acceptedParticipants(Request $request, $eventId)
     {
         $q = $request->query('q');
+        $categoryId = $request->query('competition_category_id');
 
         return EventRegistration::with('user')
             ->where('event_id', $eventId)
             ->where('status', 'accepted')
-            ->whereHas(
-                'user',
-                fn($u) =>
-                $u->where('name', 'like', "%{$q}%")
-            )
+            ->when($categoryId, function ($query) use ($categoryId) {
+                $query->whereHas('competitionCategories', function ($cat) use ($categoryId) {
+                    $cat->where('competition_categories.id', $categoryId);
+                });
+            })
+            ->when($q, function ($query) use ($q) {
+                $query->whereHas('user', function ($u) use ($q) {
+                    $u->where('name', 'like', "%{$q}%");
+                });
+            })
             ->orderBy('created_at')
-            ->limit(10)
+            ->limit(50)
             ->get()
             ->map(fn($r) => [
                 'user_id' => $r->user->id,
@@ -50,7 +56,10 @@ class CompetitionResultController extends Controller
             ->where('category', 'kompetisi')
             ->firstOrFail();
 
-        $categories = $event->competitionCategories()->orderBy('name')->get();
+        $categories = $event->competitionCategories()
+            ->orderBy('competition_categories.sort_order')
+            ->orderBy('competition_categories.id')
+            ->get();
 
         $rounds = CompetitionRound::where('event_id', $event->id)
             ->orderBy('round_number')
@@ -165,6 +174,19 @@ class CompetitionResultController extends Controller
             ]
         );
 
+        $this->recalculateRanks(
+            $validated['event_id'],
+            $validated['competition_category_id'],
+            $round->id
+        );
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Hasil kompetisi berhasil disimpan',
+            ]);
+        }
+
         return redirect()
             ->route('admin.events.competition.create', [
                 'event_id' => $validated['event_id'],
@@ -196,11 +218,12 @@ class CompetitionResultController extends Controller
             ->where('event_id', $event->id)
             ->where('competition_category_id', $request->competition_category_id)
             ->where('round_id', $round->id)
-            ->orderBy('best')
+            ->orderBy('rank')
             ->get();
 
         return response()->json(
             $results->map(fn($r) => [
+                'rank' => $r->rank,
                 'name' => $r->user->name,
                 'attempt1' => $r->attempt1,
                 'attempt2' => $r->attempt2,
@@ -211,6 +234,62 @@ class CompetitionResultController extends Controller
                 'average' => $r->average,
             ])
         );
+    }
+
+    private function recalculateRanks($eventId, $categoryId, $roundId): void
+    {
+        $results = CompetitionResult::where('event_id', $eventId)
+            ->where('competition_category_id', $categoryId)
+            ->where('round_id', $roundId)
+            ->get()
+            ->sort(function ($a, $b) {
+                $avgA = $this->timeToCentiseconds($a->average);
+                $avgB = $this->timeToCentiseconds($b->average);
+
+                if ($avgA !== $avgB) {
+                    return $avgA <=> $avgB;
+                }
+
+                $bestA = $this->timeToCentiseconds($a->best);
+                $bestB = $this->timeToCentiseconds($b->best);
+
+                return $bestA <=> $bestB;
+            })
+            ->values();
+
+        foreach ($results as $index => $result) {
+            $result->update([
+                'rank' => $index + 1,
+            ]);
+        }
+    }
+
+    private function timeToCentiseconds($value): int
+    {
+        if (!$value) {
+            return PHP_INT_MAX;
+        }
+
+        $value = strtoupper(trim($value));
+
+        if ($value === 'DNF' || $value === 'DNS') {
+            return PHP_INT_MAX;
+        }
+
+        if (str_contains($value, ':')) {
+            [$minutes, $rest] = explode(':', $value);
+            [$seconds, $centiseconds] = explode('.', $rest);
+
+            return (((int) $minutes * 60) + (int) $seconds) * 100 + (int) $centiseconds;
+        }
+
+        if (str_contains($value, '.')) {
+            [$seconds, $centiseconds] = explode('.', $value);
+
+            return ((int) $seconds * 100) + (int) $centiseconds;
+        }
+
+        return PHP_INT_MAX;
     }
 
 }

@@ -3,7 +3,6 @@
         <button id="sidebarToggle" class="btn btn-icon" style="display:none;" aria-label="Toggle sidebar">
             ☰
         </button>
-        {{-- <h1 class="topbar-title">@yield('page-title', 'Dashboard')</h1> --}}
         <h1 class="topbar-title">Admin Panel</h1>
     </div>
 

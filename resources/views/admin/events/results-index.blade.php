@@ -17,9 +17,8 @@
             <div class="table-toolbar">
                 <input type="text" name="search" class="search-input" placeholder="Search event..." value="">
 
-                <select name="competition_category_id" class="filter-select" onchange="this.form.submit()">
-                    <option value="">Semua Kategori</option>
-                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i>
             </div>
         </form>
 

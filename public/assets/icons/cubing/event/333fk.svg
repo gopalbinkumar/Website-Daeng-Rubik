@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg
+    version="1.1"
+    id="Layer_1"
+    xmlns="http://www.w3.org/2000/svg"
+    x="0px"
+    y="0px"
+    width="500px"
+    height="500px"
+    viewBox="0 0 500 500"
+    xml:space="preserve">
+
+    <!-- 3x3 Cube -->
+    <rect x="131.259" y="43.322" fill="#000000" width="55.921" height="55.921"/>
+    <rect x="209.549" y="43.322" fill="#000000" width="55.921" height="55.921"/>
+    <rect x="287.838" y="43.322" fill="#000000" width="55.922" height="55.921"/>
+
+    <rect x="131.539" y="121.612" fill="#000000" width="55.921" height="55.921"/>
+    <rect x="209.828" y="121.612" fill="#000000" width="55.922" height="55.921"/>
+    <rect x="288.117" y="121.612" fill="#000000" width="55.922" height="55.921"/>
+
+    <rect x="131.679" y="199.901" fill="#000000" width="55.921" height="55.921"/>
+    <rect x="209.968" y="199.901" fill="#000000" width="55.920" height="55.921"/>
+    <rect x="288.258" y="199.901" fill="#000000" width="55.920" height="55.921"/>
+
+    <!-- Kids Face / Badge -->
+    <circle cx="250" cy="360" r="92" fill="#000000"/>
+  
+    <!-- Ears -->
+    <circle cx="154" cy="366" r="25" fill="#000000"/>
+    <circle cx="346" cy="366" r="25" fill="#000000"/>
+
+    <!-- White face details -->
+    <circle cx="218" cy="352" r="13" fill="#ffffff"/>
+    <circle cx="282" cy="352" r="13" fill="#ffffff"/>
+
+    <path
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="22"
+        stroke-linecap="round"
+        d="M207,395c20,25,66,25,86,0"/>
+
+    <!-- Small child body -->
+    <path
+        fill="#000000"
+        d="M185,470c8-44,32-68,65-68s57,24,65,68H185z"/>
+</svg>

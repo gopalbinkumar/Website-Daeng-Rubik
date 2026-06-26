@@ -15,6 +15,7 @@ class CompetitionCategory extends Model
         'code',
         'name',
         'main_category',
+        'sort_order',
         'is_active',
     ];
 
