@@ -54,7 +54,7 @@
                             @if ($featured->status !== 'finished')
                                 <a href="{{ route('events.register', $featured->slug) }}" class="btn btn-primary"
                                     style="flex:1">
-                                    Daftar sekarang
+                                    Daftar
                                 </a>
                             @endif
                             {{-- <button class="btn btn-secondary" onclick="openEventModal({{ $featured->id }})" style="flex:1">

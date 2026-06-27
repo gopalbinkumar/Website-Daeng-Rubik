@@ -50,11 +50,12 @@
     color: #15803d;
 }
 
-/* Tabel event saya */
+/* Card utama */
 .my-events-page .card {
     border-radius: 18px;
 }
 
+/* Tabel event saya */
 .my-events-page .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -78,11 +79,26 @@
 .my-events-page table.table tbody tr {
     transition:
         background-color 0.12s ease,
-        box-shadow 0.12s ease;
+        box-shadow 0.12s ease,
+        transform 0.12s ease;
 }
 
-.my-events-page table.table tbody tr:hover {
-    background: rgba(17, 24, 39, 0.02);
+/* Row / card bisa diklik */
+.my-events-page .my-events-clickable-row {
+    cursor: pointer;
+}
+
+.my-events-page table.table tbody tr.my-events-clickable-row:hover {
+    background: rgba(17, 24, 39, 0.025);
+}
+
+.my-events-page .my-events-title-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.my-events-page .my-events-title-link:hover {
+    color: var(--red);
 }
 
 /* Empty state */
@@ -132,7 +148,7 @@
     margin-bottom: 4px;
 }
 
-/* Responsive */
+/* Responsive: tablet dan mobile jadi card */
 @media (max-width: 992px) {
     .my-events-page .card.card-pad {
         padding: 16px 14px;
@@ -147,11 +163,122 @@
         width: 100%;
     }
 
-    .my-events-page table.table {
-        min-width: 680px;
+    .my-events-page .my-events-table-wrap {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0 !important;
     }
 
-    .my-events-page td:last-child .btn {
+    .my-events-page .table-responsive {
+        overflow: visible;
+    }
+
+    .my-events-page table.my-events-table {
+        min-width: 0 !important;
         width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 18px;
+    }
+
+    .my-events-page table.my-events-table thead {
+        display: none;
+    }
+
+    .my-events-page table.my-events-table,
+    .my-events-page table.my-events-table tbody,
+    .my-events-page table.my-events-table tr,
+    .my-events-page table.my-events-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .my-events-page table.my-events-table tbody tr {
+    background: #fff;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.my-events-page table.my-events-table tbody tr:last-child {
+    margin-bottom: 0;
+}
+
+    .my-events-page
+        table.my-events-table
+        tbody
+        tr.my-events-clickable-row:hover {
+        background: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .my-events-page table.my-events-table td {
+        padding: 10px 0;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .my-events-page table.my-events-table td::before {
+        content: attr(data-label);
+        flex: 0 0 110px;
+        font-size: 12px;
+        font-weight: 700;
+        color: rgba(17, 24, 39, 0.52);
+    }
+
+    .my-events-page table.my-events-table td:first-child {
+        padding-top: 0;
+        padding-bottom: 12px;
+        display: block;
+        border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+    }
+
+    .my-events-page table.my-events-table td:first-child::before {
+        display: none;
+    }
+
+    .my-events-page table.my-events-table td:first-child strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+        color: rgba(17, 24, 39, 0.92);
+    }
+
+    .my-events-page table.my-events-table td:last-child {
+        padding-bottom: 0;
+    }
+}
+
+/* Mobile kecil */
+@media (max-width: 576px) {
+    .my-events-page .page-head {
+        padding: 22px 0 14px;
+    }
+
+    .my-events-page .page-head .page-title {
+        font-size: 24px;
+    }
+
+    .my-events-page table.my-events-table tbody tr {
+        padding: 13px;
+        border-radius: 16px;
+    }
+
+    .my-events-page table.my-events-table td {
+        gap: 10px;
+    }
+
+    .my-events-page table.my-events-table td::before {
+        flex-basis: 92px;
     }
 }

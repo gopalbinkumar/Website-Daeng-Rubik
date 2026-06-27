@@ -50,10 +50,10 @@
         <div class="container">
             <div class="hero-grid">
                 <div>
-                    <span class="badge">
+                    {{-- <span class="badge">
                         <span aria-hidden="true"><i class="fa-solid fa-puzzle-piece"></i></span>
                         Rubik Store • Event • Belajar
-                    </span>
+                    </span> --}}
 
                     <h1 class="hero-title" style="margin-top:14px;">
                         Daeng <span class="grad">Rubik</span><br>

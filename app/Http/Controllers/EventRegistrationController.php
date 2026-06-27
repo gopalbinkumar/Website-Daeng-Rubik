@@ -112,7 +112,6 @@ class EventRegistrationController extends Controller
             'participant_whatsapp' => 'required|string|max:25',
 
         ], [
-            // 🔥 CUSTOM MESSAGE
             'categories.required' => 'Silakan pilih minimal satu kategori lomba.',
             'categories.min' => 'Anda harus memilih minimal satu kategori lomba.',
 
@@ -120,31 +119,43 @@ class EventRegistrationController extends Controller
             'participant_email.email' => 'Format email tidak valid.',
 
             'participant_whatsapp.required' => 'Nomor WhatsApp wajib diisi.',
-
         ]);
 
-        // simpan / ambil registrasi
-        $registration = EventRegistration::firstOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'event_id' => $request->event_id,
-            ],
-            [
+        $registration = EventRegistration::where('user_id', Auth::id())
+            ->where('event_id', $request->event_id)
+            ->first();
+
+        if ($registration && $registration->status === 'accepted') {
+            return redirect()
+                ->route('user.competitions')
+                ->with('error', 'Pendaftaran Anda sudah diterima dan tidak dapat didaftarkan ulang.');
+        }
+
+        if ($registration) {
+            $registration->update([
                 'participant_name' => $request->participant_name,
                 'participant_birthdate' => $request->participant_birthdate,
                 'participant_email' => $request->participant_email,
                 'participant_whatsapp' => $request->participant_whatsapp,
                 'status' => 'pending',
-            ]
-        );
+            ]);
+        } else {
+            $registration = EventRegistration::create([
+                'user_id' => Auth::id(),
+                'event_id' => $request->event_id,
+                'participant_name' => $request->participant_name,
+                'participant_birthdate' => $request->participant_birthdate,
+                'participant_email' => $request->participant_email,
+                'participant_whatsapp' => $request->participant_whatsapp,
+                'status' => 'pending',
+            ]);
+        }
 
-        // 🔥 SIMPAN KATEGORI LOMBA PER PESERTA
         $registration->competitionCategories()->sync($request->categories);
 
         return redirect()
-            ->route('user.competitions') // atau '/my-competitions'
-            ->with('success', 'Pendaftaran berhasil! Silakan cek Event Saya.');
-
+            ->route('user.competitions')
+            ->with('success', 'Pendaftaran ulang berhasil dikirim.');
     }
 
     public function update(Request $request, EventRegistration $registration)

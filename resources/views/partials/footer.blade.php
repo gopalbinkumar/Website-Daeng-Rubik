@@ -12,7 +12,7 @@
                     advanced.
                 </small>
                 <div class="social" style="margin-top:14px;">
-                    <a href="#" aria-label="Instagram">
+                    <a href="https://www.instagram.com/daengrubik" aria-label="Instagram">
                         <i class="fa-brands fa-instagram"></i>
                     </a>
 
@@ -20,11 +20,11 @@
                         <i class="fa-brands fa-facebook-f"></i>
                     </a>
 
-                    <a href="#" aria-label="YouTube">
+                    <a href="https://www.youtube.com/@daengrubik" aria-label="YouTube">
                         <i class="fa-brands fa-youtube"></i>
                     </a>
 
-                    <a href="#" aria-label="TikTok">
+                    <a href="https://www.tiktok.com/@daeng_rubik" aria-label="TikTok">
                         <i class="fa-brands fa-tiktok"></i>
                     </a>
 

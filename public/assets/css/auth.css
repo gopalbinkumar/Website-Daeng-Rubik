@@ -438,6 +438,59 @@ input[type="number"] {
     }
 }
 
+/* Google Login Button */
+.google-auth-btn {
+    width: 100%;
+    height: 48px;
+    padding: 0 18px;
+    background: #fff;
+    color: var(--text);
+    border: 1px solid rgba(17, 24, 39, 0.15);
+    border-radius: 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease,
+        background 0.25s ease;
+}
+
+.google-auth-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(17, 24, 39, 0.22);
+    box-shadow: 0 12px 30px rgba(17, 24, 39, 0.1);
+    background: #fff;
+}
+
+.google-auth-btn:active {
+    transform: translateY(0);
+}
+
+.google-auth-icon {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.google-auth-icon svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
 /* Links */
 .auth-link {
     text-align: center;

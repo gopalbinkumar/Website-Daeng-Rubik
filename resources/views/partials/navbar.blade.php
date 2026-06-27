@@ -192,9 +192,9 @@
                 Beranda
             </a>
 
-            <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}">
+            {{-- <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}">
                 Produk
-            </a>
+            </a> --}}
 
             <a class="nav-link {{ $active('event') }}" href="{{ route('events') }}">
                 Event
@@ -217,7 +217,7 @@
                 <div class="dropdown-divider" style="margin:14px 0;"></div>
 
                 <a class="nav-link" href="{{ route('profile') }}">
-                    <i class="fa-regular fa-user-circle"></i> Profil Saya
+                    <i class="fa-regular fa-user-circle"></i> Profil
                 </a>
 
                 <a class="nav-link" href="{{ route('user.competitions') }}">

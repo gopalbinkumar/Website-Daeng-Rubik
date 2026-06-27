@@ -31,7 +31,7 @@
                     {{-- EMPTY STATE --}}
                     <div class="card card-pad" style="text-align:center;padding:32px 20px;">
                         <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
-                           
+
 
                             <div>
                                 <h2 style="font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px;">
@@ -47,7 +47,7 @@
                 @else
                     {{-- TOOLBAR RINGKAS --}}
                     <div class="sortbar" style="margin-bottom:18px;">
-                        
+
                         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
                             <select class="select" aria-label="Filter status">
                                 <option>Semua status</option>
@@ -58,52 +58,55 @@
                     </div>
 
                     {{-- TABEL EVENT SAYA --}}
-                    <div class="card card-pad" style="padding:18px 18px 10px;">
+                    <div class="card card-pad my-events-table-wrap" style="padding:18px 18px 10px;">
                         <div class="table-responsive">
-                            <table class="table" style="margin-bottom:8px;min-width:760px;">
+                            <table class="table my-events-table" style="margin-bottom:8px;min-width:680px;">
                                 <thead>
                                     <tr style="background:rgba(17,24,39,.03);">
                                         <th style="border-bottom-color:rgba(17,24,39,.06);">Nama Kompetisi</th>
                                         <th style="border-bottom-color:rgba(17,24,39,.06);">Tanggal</th>
                                         <th style="border-bottom-color:rgba(17,24,39,.06);">Lokasi</th>
-                                        <th style="border-bottom-color:rgba(17,24,39,.06);">Status</th>
-                                        <th style="border-bottom-color:rgba(17,24,39,.06);width:160px;">Aksi</th>
+                                        <th style="border-bottom-color:rgba(17,24,39,.06);"></th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     @foreach ($events as $event)
                                         @php
-                                            $isCompetition = $event->category === 'kompetisi';
-                                            $jenisLabel = $isCompetition ? 'Kompetisi' : 'Non-kompetisi';
-                                            $statusLabel = $event->pivot->status ?? 'terdaftar'; // contoh
+                                            $statusLabel = $event->pivot->status ?? 'terdaftar';
+
                                             $statusClass = match ($statusLabel) {
                                                 'selesai' => 'badge-success',
                                                 default => 'badge-warning',
                                             };
+
+                                            $eventUrl = route('events.competition.show', [$event->id, $event->slug]);
                                         @endphp
-                                        <tr>
-                                            <td>
-                                                <strong>{{ $event->title }}</strong>
+
+                                        <tr class="my-events-clickable-row" data-url="{{ $eventUrl }}" tabindex="0"
+                                            role="link" aria-label="Lihat hasil kompetisi {{ $event->title }}">
+
+                                            <td data-label="Nama Kompetisi">
+                                                <a href="{{ $eventUrl }}" class="my-events-title-link">
+                                                    <strong>{{ $event->title }}</strong>
+                                                </a>
                                             </td>
-                                            <td>
+
+                                            <td data-label="Tanggal">
                                                 {{ $event->start_datetime->format('d M Y') }}<br>
-                                                <small class="muted">
+                                                {{-- <small class="muted">
                                                     {{ $event->start_datetime->format('H:i') }} WIB
-                                                </small>
+                                                </small> --}}
                                             </td>
-                                            <td>{{ $event->location }}</td>
-                                            <td>
+
+                                            <td data-label="Lokasi">
+                                                {{ $event->location }}
+                                            </td>
+
+                                            <td data-label=" ">
                                                 <span class="badge {{ $statusClass }}">
                                                     {{ ucfirst($statusLabel) }}
                                                 </span>
-                                            </td>
-                                            <td>
-                                                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                                                    <a href="{{ route('events.competition.show', [$event->id, $event->slug]) }}"
-                                                        class="btn btn-primary btn-sm" style="flex:1;min-width:130px;">
-                                                        Hasil Kompetisi
-                                                    </a>
-                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -115,4 +118,31 @@
             </div>
         </section>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.my-events-clickable-row').forEach(function(row) {
+                row.addEventListener('click', function(e) {
+                    if (e.target.closest('a')) return;
+
+                    const url = row.dataset.url;
+                    if (url) {
+                        window.location.href = url;
+                    }
+                });
+
+                row.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+
+                        const url = row.dataset.url;
+                        if (url) {
+                            window.location.href = url;
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
 @endsection

@@ -16,10 +16,18 @@ use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\UserCompetitionController;
 use App\Http\Controllers\WeightedScoringController;
-
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\TelegramController;
 use App\Mail\ResetCodeMail;
 use Illuminate\Support\Facades\Mail;
+
+use App\Http\Controllers\Auth\GoogleAuthController;
+
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
+    ->name('auth.google.redirect');
+
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+    ->name('auth.google.callback');
 
 Route::get('/test-otp', function () {
 
@@ -58,7 +66,7 @@ Route::prefix('keranjang')->name('cart.')->group(function () {
     Route::delete('/item/{item}', [CartController::class, 'remove'])
         ->name('remove');
     Route::post('/item/{item}/qty', [CartController::class, 'updateQuantity'])
-    ->name('updateQty');
+        ->name('updateQty');
 });
 
 
@@ -120,8 +128,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-transactions', [TransactionController::class, 'index'])
         ->name('transactions');
 
-    Route::get('/my-competitions',[UserCompetitionController::class, 'index']
-        )->name('user.competitions');
+    Route::get(
+        '/my-competitions',
+        [UserCompetitionController::class, 'index']
+    )->name('user.competitions');
 });
 
 Route::get(
@@ -313,3 +323,15 @@ Route::middleware(['auth', 'admin'])
         Route::post('/logout', [UserController::class, 'logout'])
             ->name('logout');
     });
+
+
+
+        Route::get('/storage/{path}', function ($path) {
+            if (!Storage::disk('public')->exists($path)) {
+                abort(404);
+            }
+
+            return response()->file(
+                storage_path('app/public/' . $path)
+            );
+        })->where('path', '.*');

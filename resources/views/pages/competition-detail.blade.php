@@ -60,6 +60,7 @@
                                 <label class="muted" style="font-size:13px;margin:0;">
                                     Kategori
                                 </label>
+
                                 <select name="category" id="categorySelect" class="select">
                                     <option value="">Semua</option>
                                     @foreach ($competitionCategories as $cat)
@@ -71,23 +72,24 @@
                                 </select>
                             </div>
 
-                            {{-- ROUND --}}
-                            <div style="display:flex;gap:6px;align-items:center;">
-                                <label class="muted" style="font-size:13px;margin:0;">
-                                    Round
-                                </label>
-                                <select name="round" id="roundSelect" class="select"
-                                    {{ request('category') ? '' : 'disabled' }}>
-                                    <option value="">Semua</option>
-                                    @foreach ($rounds as $round)
-                                        <option value="{{ $round->round_number }}"
-                                            {{ request('round') == $round->round_number ? 'selected' : '' }}>
-                                            {{ $round->name ?? 'Round ' . $round->round_number }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            {{-- ROUND: hanya tampil jika kategori dipilih --}}
+                            @if (request('category'))
+                                <div id="roundFilterWrap" style="display:flex;gap:6px;align-items:center;">
+                                    <label class="muted" style="font-size:13px;margin:0;">
+                                        Round
+                                    </label>
 
+                                    <select name="round" id="roundSelect" class="select">
+                                        <option value="">Semua</option>
+                                        @foreach ($rounds as $round)
+                                            <option value="{{ $round->round_number }}"
+                                                {{ request('round') == $round->round_number ? 'selected' : '' }}>
+                                                {{ $round->name ?? 'Round ' . $round->round_number }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
                         </form>
                     </div>
                 </div>
@@ -133,15 +135,20 @@
                                     </thead>
 
                                     <tbody>
-                                        @foreach ($rows as $index => $row)
-                                            <tr class="result-row" data-a1="{{ $row->attempt1 ?? 'DNF' }}"
+                                        @foreach ($rows as $row)
+                                            <tr class="result-row" data-category="{{ $categoryName }}"
+                                                data-round="{{ $rounds->firstWhere('round_number', $roundNumber)->name ?? 'Round ' . $roundNumber }}"
+                                                data-rank="{{ $row->rank ?? '-' }}" data-name="{{ $row->user->name }}"
+                                                data-a1="{{ $row->attempt1 ?? 'DNF' }}"
                                                 data-a2="{{ $row->attempt2 ?? 'DNF' }}"
                                                 data-a3="{{ $row->attempt3 ?? 'DNF' }}"
                                                 data-a4="{{ $row->attempt4 ?? 'DNF' }}"
-                                                data-a5="{{ $row->attempt5 ?? 'DNF' }}">
+                                                data-a5="{{ $row->attempt5 ?? 'DNF' }}"
+                                                data-average="{{ $row->average ?? '-' }}"
+                                                data-best="{{ $row->best ?? '-' }}">
 
                                                 <td class="text-end rank-cell">
-                                                    {{ $row->rank ?? $index + 1 }}
+                                                    {{ $row->rank ?? '-' }}
                                                 </td>
 
                                                 <td class="text-start name-cell">
@@ -184,10 +191,31 @@
 
     <div id="attemptModal" class="attempt-modal">
         <div class="attempt-modal-content">
-            <h3>Detail Waktu</h3>
-            <ul id="attemptList"></ul>
-            <button onclick="closeAttemptModal()" class="btn btn-primary" style="width:100%;margin-top:12px;">
-                Tutup
+            <div class="attempt-modal-head">
+                <div>
+                    <p id="modalCategoryRound" class="attempt-modal-meta"></p>
+                    <h3 id="modalRankName">Detail Waktu</h3>
+                </div>
+            </div>
+
+            <div class="attempt-summary">
+                <div>
+                    <span>Average</span>
+                    <strong id="modalAverage">-</strong>
+                </div>
+
+                <div>
+                    <span>Best</span>
+                    <strong id="modalBest">-</strong>
+                </div>
+            </div>
+
+            <div class="attempt-list-wrap">
+                <ul id="attemptList"></ul>
+            </div>
+
+            <button onclick="closeAttemptModal()" class="attempt-modal-close" aria-label="Tutup detail">
+                <i class="fa-solid fa-chevron-down"></i>
             </button>
         </div>
     </div>
@@ -195,48 +223,71 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-
             const categorySelect = document.getElementById("categorySelect");
             const roundSelect = document.getElementById("roundSelect");
 
-            function toggleRound() {
-                if (categorySelect.value === "") {
-                    roundSelect.disabled = true;
-                    roundSelect.value = "";
-                } else {
-                    roundSelect.disabled = false;
-                }
-            }
-
-            toggleRound();
-
             categorySelect.addEventListener("change", function() {
-                toggleRound();
-                this.form.submit();
+                const url = new URL(window.location.href);
+
+                url.searchParams.set('category', this.value);
+                url.searchParams.delete('round');
+
+                if (!this.value) {
+                    url.searchParams.delete('category');
+                }
+
+                window.location.href = url.toString();
             });
 
-            roundSelect.addEventListener("change", function() {
-                this.form.submit();
-            });
+            if (roundSelect) {
+                roundSelect.addEventListener("change", function() {
+                    const url = new URL(window.location.href);
 
+                    if (this.value) {
+                        url.searchParams.set('round', this.value);
+                    } else {
+                        url.searchParams.delete('round');
+                    }
+
+                    window.location.href = url.toString();
+                });
+            }
         });
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
             document.querySelectorAll('.result-row').forEach(row => {
-
                 row.addEventListener('click', function() {
-
                     if (window.innerWidth > 768) return;
+
+                    const category = row.dataset.category || '-';
+                    const round = row.dataset.round || '-';
+                    const rank = row.dataset.rank || '-';
+                    const name = row.dataset.name || '-';
+                    const average = row.dataset.average || '-';
+                    const best = row.dataset.best || '-';
+
+                    document.getElementById('modalCategoryRound').textContent = category + ' • ' +
+                        round;
+                    document.getElementById('modalRankName').innerHTML = `
+                        <strong>#${rank}</strong>
+                        <span>${name}</span>
+                    `;
+                    document.getElementById('modalAverage').textContent = average;
+                    document.getElementById('modalBest').textContent = best;
 
                     const list = document.getElementById('attemptList');
                     list.innerHTML = '';
 
                     for (let i = 1; i <= 5; i++) {
                         const val = row.dataset['a' + i] || 'DNF';
+
                         const li = document.createElement('li');
-                        li.textContent = 'Attempt ' + i + ': ' + val;
+                        li.innerHTML = `
+                        <span>Attempt ${i}</span>
+                        <strong>${val}</strong>
+                    `;
+
                         list.appendChild(li);
                     }
 
@@ -244,9 +295,9 @@
                     document.getElementById('attemptModalBackdrop').classList.add('open');
                     document.body.style.overflow = 'hidden';
                 });
-
             });
 
+            document.getElementById('attemptModalBackdrop').addEventListener('click', closeAttemptModal);
         });
 
         function closeAttemptModal() {

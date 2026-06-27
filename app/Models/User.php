@@ -22,8 +22,11 @@ class User extends Authenticatable
         'birthdate',
         'email',
         'whatsapp',
+        'email_verified_at',
         'password',
         'role',
+        'google_id',
+        'avatar',
         'reset_code',
         'reset_code_expires_at',
     ];

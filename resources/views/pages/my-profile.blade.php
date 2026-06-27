@@ -128,29 +128,42 @@
                     </div>
 
 
-                    {{-- UBAH PASSWORD --}}
+                    {{-- UBAH / BUAT PASSWORD --}}
                     <div class="event-register-form-card">
-                        <h3 style="font-size:18px;margin:0 0 20px;">Ubah Password</h3>
+                        <h3 style="font-size:18px;margin:0 0 20px;">
+                            {{ auth()->user()->password ? 'Ubah Password' : 'Buat Password' }}
+                        </h3>
+
+                        @if (!auth()->user()->password)
+                            <div class="form-success" style="margin-bottom:16px;">
+                                Akun Anda terhubung dengan Google. Buat password agar Anda juga bisa login manual
+                                menggunakan email dan password.
+                            </div>
+                        @endif
 
                         <form method="POST" action="{{ route('profile.password') }}" class="event-register-form">
                             @csrf
                             @method('PUT')
 
-                            {{-- PASSWORD LAMA --}}
-                            <div class="form-group">
-                                <label class="form-label">Password Lama</label>
-                                <div class="password-field">
-                                    <input type="password" name="current_password" class="form-input password-input"
-                                        required>
-                                    <button type="button" class="toggle-password">
-                                        <i class="fa-regular fa-eye"></i>
-                                    </button>
+                            @if (auth()->user()->password)
+                                {{-- PASSWORD LAMA --}}
+                                <div class="form-group">
+                                    <label class="form-label">Password Lama</label>
+                                    <div class="password-field">
+                                        <input type="password" name="current_password" class="form-input password-input"
+                                            required>
+                                        <button type="button" class="toggle-password">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
 
                             {{-- PASSWORD BARU --}}
                             <div class="form-group">
-                                <label class="form-label">Password Baru</label>
+                                <label class="form-label">
+                                    {{ auth()->user()->password ? 'Password Baru' : 'Password' }}
+                                </label>
                                 <div class="password-field">
                                     <input type="password" name="password" class="form-input password-input" required>
                                     <button type="button" class="toggle-password">
@@ -161,7 +174,7 @@
 
                             {{-- KONFIRMASI PASSWORD --}}
                             <div class="form-group">
-                                <label class="form-label">Konfirmasi Password Baru</label>
+                                <label class="form-label">Konfirmasi Password</label>
                                 <div class="password-field">
                                     <input type="password" name="password_confirmation" class="form-input password-input"
                                         required>
@@ -171,10 +184,9 @@
                                 </div>
                             </div>
 
-
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-outline">
-                                    Perbarui Password
+                                    {{ auth()->user()->password ? 'Perbarui Password' : 'Buat Password' }}
                                 </button>
                             </div>
                         </form>

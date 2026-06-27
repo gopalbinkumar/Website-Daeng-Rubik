@@ -274,23 +274,44 @@ class UserController extends Controller
 // =====================
     public function updatePassword(Request $request)
     {
-        $request->validate([
-            'current_password' => 'required',
-            'password' => 'required|min:8|confirmed',
-        ], [
-            'current_password.required' => 'Password lama wajib diisi.',
-            'password.confirmed' => 'Konfirmasi password tidak sama.',
-        ]);
+        $user = Auth::user();
 
-        if (!Hash::check($request->current_password, Auth::user()->password)) {
-            return back()->with('error', 'Password lama tidak sesuai.');
+        $isCreatingPassword = empty($user->password);
+
+        if ($isCreatingPassword) {
+            $request->validate([
+                'password' => 'required|min:8|confirmed',
+            ], [
+                'password.required' => 'Password wajib diisi.',
+                'password.min' => 'Password minimal 8 karakter.',
+                'password.confirmed' => 'Konfirmasi password tidak sama.',
+            ]);
+        } else {
+            $request->validate([
+                'current_password' => 'required',
+                'password' => 'required|min:8|confirmed',
+            ], [
+                'current_password.required' => 'Password lama wajib diisi.',
+                'password.required' => 'Password baru wajib diisi.',
+                'password.min' => 'Password minimal 8 karakter.',
+                'password.confirmed' => 'Konfirmasi password tidak sama.',
+            ]);
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return back()->with('error', 'Password lama tidak sesuai.');
+            }
         }
 
-        Auth::user()->update([
+        $user->update([
             'password' => Hash::make($request->password),
         ]);
 
-        return back()->with('success', 'Password berhasil diperbarui.');
+        return back()->with(
+            'success',
+            $isCreatingPassword
+            ? 'Password berhasil dibuat. Sekarang Anda bisa login manual menggunakan email dan password.'
+            : 'Password berhasil diperbarui.'
+        );
     }
 
 

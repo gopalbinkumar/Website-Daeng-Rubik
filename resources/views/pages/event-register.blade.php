@@ -16,6 +16,55 @@
             </p>
         </div>
     </section>
+    <style>
+        .category-summary-row {
+            align-items: flex-start;
+        }
+
+        .summary-category-icon-list {
+            display: flex+;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding-top: 0px;
+        }
+
+        .summary-category-icon-choice {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 8px;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .summary-category-icon-choice .cubing-category-icon {
+            width: 22px !important;
+            height: 22px !important;
+            display: block;
+            flex-shrink: 0;
+
+            background-color: currentColor;
+
+            mask-image: var(--icon-url);
+            mask-repeat: no-repeat;
+            mask-position: center;
+            mask-size: contain;
+
+            -webkit-mask-image: var(--icon-url);
+            -webkit-mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            -webkit-mask-size: contain;
+        }
+    </style>
 
     <section class="section" style="padding-top:22px;">
         <div class="container">
@@ -60,11 +109,19 @@
                             <span>{{ $event->location }}</span>
                         </div>
 
-                        <div class="summary-info-item">
+                        <div class="summary-info-item category-summary-row">
                             <span class="info-icon">
                                 <i class="fa-solid fa-tags"></i>
                             </span>
-                            <span>{{ $event->competitionCategories->pluck('name')->implode(', ') }}</span>
+
+                            <div class="summary-category-icon-list">
+                                @foreach ($event->competitionCategories as $cat)
+                                    <span class="summary-category-icon-choice" title="{{ $cat->name }}"
+                                        aria-label="{{ $cat->name }}">
+                                        <x-category-icon :code="$cat->code" :name="$cat->name" size="26" />
+                                    </span>
+                                @endforeach
+                            </div>
                         </div>
 
                         <span class="summary-info-item">{{ $event->description }}</span>
@@ -81,7 +138,8 @@
 
                         @if ($registration && $registration->status === 'pending')
                             <p class="muted" style="line-height:1.6">
-                                Status pendaftaran Anda masih <strong>pending</strong>.
+                                Status pendaftaran Anda masih <strong>pending</strong>, namun anda dapat melakukan
+                                pendaftaran ulang jika ingin mengubah data.
                             </p>
                         @endif
 
@@ -95,22 +153,151 @@
                             @csrf
                             <input type="hidden" name="event_id" value="{{ $event->id }}">
 
-                            <!-- isi form kamu tetap di sini -->
+                            <div class="form-group">
+                                <label class="form-label">Nama Lengkap Peserta <span class="required">*</span></label>
+                                <input type="text" class="form-input" name="participant_name"
+                                    value="{{ $user->name }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Lahir <span class="required">*</span></label>
+                                <input type="date" class="form-input" name="participant_birthdate"
+                                    value="{{ old('participant_birthdate', $user->birthdate) }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Email <span class="required">*</span></label>
+                                <input type="email" class="form-input" name="participant_email"
+                                    value="{{ old('participant_email', $user->email) }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Nomor WhatsApp <span class="required">*</span></label>
+                                <input type="text" class="form-input" name="participant_whatsapp"
+                                    value="{{ old('participant_whatsapp', $user->whatsapp) }}" required
+                                    inputmode="numeric">
+                                <small class="form-helper">Contoh: 081234567890</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Kategori Lomba <span class="required">*</span></label>
+                                <div class="checkbox-list">
+                                    @foreach ($event->competitionCategories as $cat)
+                                        <label class="checkbox-item">
+                                            <input type="checkbox" class="checkbox-input" name="categories[]"
+                                                value="{{ $cat->id }}">
+                                            <span>{{ $cat->name }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <small class="form-helper">Pilih satu atau lebih kategori lomba yang ingin diikuti.</small>
+                            </div>
+
+                            <div class="form-actions">
+                                <a href="{{ route('events') }}" class="btn btn-secondary">Kembali ke halaman Event</a>
+                                <button type="submit" class="btn btn-primary">Daftar Event</button>
+                            </div>
                         </form>
                     </div>
                 @else
                     <div class="event-register-form-card">
-                        <h3 style="font-size:18px;margin:0 0 20px;">Anda sudah mendaftar</h3>
+                        @if ($registration && $registration->status === 'accepted')
+                            <h3 style="font-size:18px;margin:0 0 20px;">Pendaftaran Diterima</h3>
 
-                        <p class="muted" style="line-height:1.6">
-                            Anda sudah terdaftar pada event ini.
-                            Silakan cek status pendaftaran dan detail kategori lomba
-                            di halaman <strong>Event Saya</strong>.
-                        </p>
+                            <p class="muted" style="line-height:1.6;margin-bottom:20px;">
+                                Pendaftaran Anda pada event ini sudah <strong>diterima</strong>.
+                                Hubungi panitia jika ingin mengubah data pendaftaran Anda.
+                            </p>
 
-                        <a href="/my-competitions" class="btn btn-primary">
-                            Lihat Event Saya
-                        </a>
+                            <div style="display:grid;gap:14px;">
+                                <div class="summary-info-item">
+                                    <span class="info-icon">
+                                        <i class="fa-regular fa-user"></i>
+                                    </span>
+                                    <span>
+                                        <strong>Nama:</strong>
+                                        {{ $registration->participant_name }}
+                                    </span>
+                                </div>
+
+                                <div class="summary-info-item">
+                                    <span class="info-icon">
+                                        <i class="fa-regular fa-calendar"></i>
+                                    </span>
+                                    <span>
+                                        <strong>Tanggal Lahir:</strong>
+                                        {{ \Carbon\Carbon::parse($registration->participant_birthdate)->format('d M Y') }}
+                                    </span>
+                                </div>
+
+                                <div class="summary-info-item">
+                                    <span class="info-icon">
+                                        <i class="fa-regular fa-envelope"></i>
+                                    </span>
+                                    <span>
+                                        <strong>Email:</strong>
+                                        {{ $registration->participant_email }}
+                                    </span>
+                                </div>
+
+                                <div class="summary-info-item">
+                                    <span class="info-icon">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </span>
+                                    <span>
+                                        <strong>WhatsApp:</strong>
+                                        {{ $registration->participant_whatsapp }}
+                                    </span>
+                                </div>
+
+                                <div class="summary-info-item">
+                                    <span class="info-icon">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    </span>
+                                    <span>
+                                        <strong>Status:</strong>
+                                        Diterima
+                                    </span>
+                                </div>
+
+                                <div class="summary-info-item">
+                                    <span class="info-icon">
+                                        <i class="fa-solid fa-tags"></i>
+                                    </span>
+                                    <span>
+                                        <strong>Kategori:</strong>
+
+                                        @if ($registration->competitionCategories && $registration->competitionCategories->count())
+                                            {{ $registration->competitionCategories->pluck('name')->implode(', ') }}
+                                        @else
+                                            -
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-actions" style="margin-top:22px;">
+                                <a href="{{ route('events') }}" class="btn btn-secondary">
+                                    Kembali ke halaman Event
+                                </a>
+
+                                <a href="{{ route('user.competitions') }}" class="btn btn-primary">
+                                    Lihat Event Saya
+                                </a>
+                            </div>
+                        @else
+                            <h3 style="font-size:18px;margin:0 0 20px;">Anda sudah mendaftar</h3>
+
+                            <p class="muted" style="line-height:1.6">
+                                Anda sudah terdaftar pada event ini.
+                                Silakan cek status pendaftaran dan detail kategori lomba
+                                di halaman <strong>Event Saya</strong>.
+                            </p>
+
+                            <a href="{{ route('user.competitions') }}" class="btn btn-primary">
+                                Lihat Event Saya
+                            </a>
+                        @endif
                     </div>
                 @endif
             </div>
