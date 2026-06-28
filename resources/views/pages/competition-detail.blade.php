@@ -14,7 +14,7 @@
         <section class="page-head">
             <div class="container">
                 <div class="breadcrumb">
-                    Beranda &gt; Event &gt; Event Saya &gt; Detail Kompetisi
+                    Beranda &gt; Event &gt; Hasil Kompetisi
                 </div>
 
                 <h1 class="page-title" style="margin-bottom:4px;">
@@ -24,10 +24,16 @@
                 <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px;">
                     <p class="muted" style="margin:0;">
                         <i class="fa-regular fa-calendar"></i>
-                        {{ $event->start_datetime->format('d M Y') }} –
-                        {{ $event->end_datetime->format('d M Y') }}
-                        • {{ $event->start_datetime->format('H:i') }} WIB
+
+                        @if ($event->start_datetime->isSameDay($event->end_datetime))
+                            {{ $event->start_datetime->format('d M Y') }}
+                        @else
+                            {{ $event->start_datetime->format('d M Y') }} –
+                            {{ $event->end_datetime->format('d M Y') }}
+                        @endif
+
                         <br>
+
                         <i class="fa-solid fa-location-dot"></i>
                         {{ $event->location }}
                     </p>
@@ -47,22 +53,21 @@
                 <div class="card card-pad" style="padding:20px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
 
-                        <div>
-                            @php
-                                $selectedCategory = $competitionCategories->firstWhere('id', request('category'));
-                                $selectedRound = $rounds->firstWhere('round_number', request('round'));
-                            @endphp
-                        </div>
+                        @php
+                            $selectedCategory = $competitionCategories->firstWhere('id', request('category'));
+                            $selectedRound = $rounds->firstWhere('round_number', request('round'));
+                        @endphp
+
 
                         <form method="GET" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;width:100%;">
                             {{-- KATEGORI --}}
                             <div style="display:flex;gap:6px;align-items:center;">
-                                <label class="muted" style="font-size:13px;margin:0;">
+                                {{-- <label class="muted" style="font-size:13px;margin:0;">
                                     Kategori
-                                </label>
+                                </label> --}}
 
                                 <select name="category" id="categorySelect" class="select">
-                                    <option value="">Semua</option>
+                                    <option value="">Semua Kategori</option>
                                     @foreach ($competitionCategories as $cat)
                                         <option value="{{ $cat->id }}"
                                             {{ request('category') == $cat->id ? 'selected' : '' }}>
@@ -75,12 +80,12 @@
                             {{-- ROUND: hanya tampil jika kategori dipilih --}}
                             @if (request('category'))
                                 <div id="roundFilterWrap" style="display:flex;gap:6px;align-items:center;">
-                                    <label class="muted" style="font-size:13px;margin:0;">
+                                    {{-- <label class="muted" style="font-size:13px;margin:0;">
                                         Round
-                                    </label>
+                                    </label> --}}
 
                                     <select name="round" id="roundSelect" class="select">
-                                        <option value="">Semua</option>
+                                        <option value="">Semua Round</option>
                                         @foreach ($rounds as $round)
                                             <option value="{{ $round->round_number }}"
                                                 {{ request('round') == $round->round_number ? 'selected' : '' }}>
@@ -107,14 +112,14 @@
 
                         {{-- Judul Kategori --}}
                         @if ($categoryName)
-                            <h2 style="margin-bottom:12px;">
+                            <h2 class="competition-category-title">
                                 {{ $categoryName }}
                             </h2>
                         @endif
 
                         @forelse ($roundGroups as $roundNumber => $rows)
                             {{-- Judul Round --}}
-                            <h4 style="font-weight:650;margin:12px 0 6px;">
+                            <h4 class="competition-round-title">
                                 {{ $rounds->firstWhere('round_number', $roundNumber)->name ?? 'Round ' . $roundNumber }}
                             </h4>
 
@@ -175,12 +180,12 @@
                             </div>
 
                         @empty
-                            <p class="muted">Belum ada hasil.</p>
+                            <p class="muted" style="margin:0;">Belum ada hasil.</p>
                         @endforelse
                     </div>
                 @empty
                     <div class="card card-pad" style="padding:20px;">
-                        <p class="muted">Belum ada hasil kompetisi.</p>
+                        <p class="muted" style="margin:0;">Belum ada hasil kompetisi.</p>
                     </div>
                 @endforelse
 
@@ -219,7 +224,6 @@
             </button>
         </div>
     </div>
-
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {

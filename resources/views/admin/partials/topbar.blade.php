@@ -30,7 +30,7 @@
 
         <div class="topbar-user">
             <div class="user-avatar">{{ $initials }}</div>
-            <span class="user-name">Admin: {{ $displayName }}</span>
+            {{-- <span class="user-name">Admin: {{ $displayName }}</span> --}}
         </div>
 
     </div>

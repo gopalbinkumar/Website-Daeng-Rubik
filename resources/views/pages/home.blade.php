@@ -132,7 +132,7 @@
 
     </section>
 
-    <section class="section" style="padding-top:0; display: none;">
+    <section class="section" style="padding-top:0;">
         <div class="container">
             <div class="section-title">
                 <div>

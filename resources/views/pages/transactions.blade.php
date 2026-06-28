@@ -27,8 +27,8 @@
             <form method="GET">
                 <div class="sortbar">
                     <div class="search-wrapper">
-                        <input type="text" name="search" class="search-input" placeholder="Cari kode transaksi atau nama produk"
-                            value="{{ request('search') }}">
+                        <input type="text" name="search" class="search-input"
+                            placeholder="Cari kode transaksi atau nama produk" value="{{ request('search') }}">
 
                         <button type="submit" class="search-btn">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -53,11 +53,16 @@
                     <article class="card prod">
                         <div class="prod-body">
 
-                            <p class="prod-name">
-                                {{ $trx->code }}
-                            </p>
-
                             @php
+                                $firstItem = $trx->items->first();
+                                $otherItemsCount = max($trx->items->count() - 1, 0);
+
+                                $productSummary = $firstItem ? $firstItem->product_name : 'Produk tidak tersedia';
+
+                                if ($otherItemsCount > 0) {
+                                    $productSummary .= ' dan ' . $otherItemsCount . ' produk lainnya';
+                                }
+
                                 $statusText = match ($trx->status) {
                                     'paid' => 'Diverifikasi',
                                     'failed' => 'Ditolak',
@@ -73,10 +78,24 @@
                                 };
                             @endphp
 
+                            <p class="prod-name" style="margin-bottom:6px;">
+                                {{ $trx->code }}
+                            </p>
+
+                            <div style="display:grid;gap:6px;margin-bottom:12px;">
+                                <div style="font-size:13px;color:var(--muted);">
+                                    <i class="fa-regular fa-calendar"></i>
+                                    {{ $trx->created_at->format('d M Y') }}
+                                </div>
+
+                                <div style="font-size:14px;line-height:1.5;color:var(--text);">
+                                    <strong>Produk:</strong> {{ $productSummary }}
+                                </div>
+                            </div>
+
                             <span class="badge {{ $statusClass }}">
                                 {{ $statusText }}
                             </span>
-
 
                             <div class="prod-actions">
                                 <button class="btn btn-primary" type="button" style="flex:1"
@@ -153,6 +172,7 @@
             $transactionsData[$trx->code] = [
                 'code' => $trx->code,
                 'status' => ucfirst($trx->status),
+                'date_time' => $trx->created_at->format('d M Y, H:i'),
                 'name' => $trx->receiver_name,
                 'phone' => $trx->receiver_phone,
                 'address' => $trx->receiver_address,
@@ -211,6 +231,11 @@
 
         <div class="product-modal-body">
             <h2 class="product-modal-title">${trx.code}</h2>
+
+            <p style="margin:6px 0 12px;color:var(--muted);font-size:14px;">
+                <i class="fa-regular fa-calendar"></i>
+                ${trx.date_time}
+            </p>
 
             <span class="badge ${badgeClass}">${badgeText}</span>
 

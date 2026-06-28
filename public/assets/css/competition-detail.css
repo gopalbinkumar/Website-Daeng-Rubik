@@ -36,6 +36,10 @@
     background: #fff;
 }
 
+.competition-detail-page .select {
+    font-weight: 400;
+}
+
 /* ==============================
    TABLE RED ROW STRIPED + RADIUS
 ================================= */
@@ -82,6 +86,16 @@
     vertical-align: middle;
 }
 
+.competition-detail-page table.table th:last-child,
+.competition-detail-page table.table td:last-child {
+    padding-right: 22px;
+}
+
+.competition-detail-page table.table th:first-child,
+.competition-detail-page table.table td:first-child {
+    padding-left: 5px;
+}
+
 /* Radius sudut atas */
 .competition-detail-page table.table thead tr th:first-child {
     border-top-left-radius: 12px;
@@ -117,6 +131,35 @@
     text-align: right;
 }
 
+/* ==============================
+   RESULT CARD SPACING
+================================= */
+
+.competition-detail-page .competition-category-title {
+    margin: 0 0 12px;
+    font-size: 22px;
+    line-height: 1.25;
+}
+
+.competition-detail-page .competition-round-title {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.competition-detail-page .table-responsive + .competition-round-title {
+    margin-top: 16px;
+}
+
+.competition-detail-page .card.card-pad > :first-child {
+    margin-top: 0;
+}
+
+.competition-detail-page .card.card-pad > :last-child {
+    margin-bottom: 0;
+}
+
 /* Empty state dalam tabel */
 .competition-detail-page .results-empty {
     text-align: center;
@@ -145,6 +188,12 @@
    MOBILE RESULT TABLE
 ================================= */
 @media (max-width: 768px) {
+    .competition-detail-page .name-cell {
+        max-width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     .competition-detail-page .page-head {
         padding: 22px 0 16px;
     }
@@ -171,13 +220,23 @@
 
     .competition-detail-page table.table th,
     .competition-detail-page table.table td {
-        font-size: 13px;
-        padding: 7px 8px;
+        font-size: 12px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+        padding-left: 10px;
+        padding-right: 10px;
     }
 
     .competition-detail-page table.table th:first-child,
     .competition-detail-page table.table td:first-child {
-        width: 44px;
+        padding-left: 15px;
+        padding-right: 6px;
+    }
+
+    .competition-detail-page table.table th:last-child,
+    .competition-detail-page table.table td:last-child {
+        padding-left: 10px;
+        padding-right: 16px;
     }
 
     .competition-detail-page table.table th:nth-child(2),

@@ -79,24 +79,48 @@
                                                 </td>
 
                                                 <td>
+                                                    @php
+                                                        $stock = max((int) $item->product->stock, 1);
+                                                    @endphp
+
                                                     <div class="qty-control">
 
                                                         <form action="{{ route('cart.updateQty', $item->id) }}"
                                                             method="POST" style="display:inline;">
                                                             @csrf
                                                             <input type="hidden" name="action" value="dec">
-                                                            <button type="submit" class="qty-btn">−</button>
+
+                                                            <button type="submit" class="qty-btn"
+                                                                {{ $item->quantity <= 1 ? 'disabled' : '' }}>
+                                                                −
+                                                            </button>
                                                         </form>
 
-                                                        <span class="qty-value">{{ $item->quantity }}</span>
+                                                        <form action="{{ route('cart.updateQty', $item->id) }}"
+                                                            method="POST" class="qty-input-form" style="display:inline;">
+                                                            @csrf
+
+                                                            <input type="number" name="quantity"
+                                                                class="qty-value qty-input" value="{{ $item->quantity }}"
+                                                                min="1" max="{{ $stock }}" data-min="1"
+                                                                data-max="{{ $stock }}" inputmode="numeric">
+                                                        </form>
 
                                                         <form action="{{ route('cart.updateQty', $item->id) }}"
                                                             method="POST" style="display:inline;">
                                                             @csrf
                                                             <input type="hidden" name="action" value="inc">
-                                                            <button type="submit" class="qty-btn">+</button>
+
+                                                            <button type="submit" class="qty-btn"
+                                                                {{ $item->quantity >= $stock ? 'disabled' : '' }}>
+                                                                +
+                                                            </button>
                                                         </form>
 
+                                                    </div>
+
+                                                    <div class="cart-stock-text">
+                                                        Stok: {{ $item->product->stock }}
                                                     </div>
                                                 </td>
 

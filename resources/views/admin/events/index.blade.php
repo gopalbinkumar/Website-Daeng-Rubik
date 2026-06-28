@@ -25,7 +25,7 @@
                     value="{{ request('search') }}">
 
                 <select name="status" class="filter-select" onchange="this.form.submit()">
-                    <option value="">Status: Semua</option>
+                    <option value="">Semua</option>
                     <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>
                         Upcoming
                     </option>
@@ -38,7 +38,7 @@
                 </select>
 
                 <select name="sort" class="sort-select" onchange="this.form.submit()">
-                    <option value="">Sort: Terbaru</option>
+                    <option value="">Terbaru</option>
                     <option value="nearest" {{ request('sort') == 'nearest' ? 'selected' : '' }}>
                         Terdekat
                     </option>
@@ -46,6 +46,10 @@
                         Terlama
                     </option>
                 </select>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
             </div>
         </form>
         <table class="table">

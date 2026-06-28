@@ -147,7 +147,8 @@ class CartController extends Controller
     public function updateQuantity(Request $request, CartItem $item)
     {
         $request->validate([
-            'action' => 'required|in:inc,dec',
+            'action' => 'nullable|in:inc,dec',
+            'quantity' => 'nullable|integer',
         ]);
 
         $cart = Cart::where('status', 'active')
@@ -159,29 +160,46 @@ class CartController extends Controller
         }
 
         $product = $item->product;
-        $stock = $product->stock;
 
-        if ($request->action === 'inc') {
-
-            if ($item->quantity >= $stock) {
-                return redirect()->back()->with('error', 'Stok tidak mencukupi');
-            }
-
-            $item->quantity += 1;
+        if (!$product) {
+            $item->delete();
+            return redirect()->back();
         }
 
-        if ($request->action === 'dec') {
+        $stock = (int) $product->stock;
 
-            if ($item->quantity <= 1) {
-                return redirect()->back()->with('error', 'Minimal pembelian adalah 1');
-            }
-
-            $item->quantity -= 1;
+        // Jika stok sudah habis, hapus item dari keranjang tanpa alert
+        if ($stock <= 0) {
+            $item->delete();
+            return redirect()->back();
         }
 
-        $item->save();
+        /**
+         * Jika user mengetik qty langsung
+         */
+        if ($request->filled('quantity')) {
+            $quantity = (int) $request->quantity;
+        }
 
-        return redirect()->back()->with('success', 'Jumlah diperbarui');
+        /**
+         * Jika user klik tombol + / -
+         */ elseif ($request->action === 'inc') {
+            $quantity = (int) $item->quantity + 1;
+        } elseif ($request->action === 'dec') {
+            $quantity = (int) $item->quantity - 1;
+        } else {
+            $quantity = (int) $item->quantity;
+        }
+
+        // Kunci qty: minimal 1, maksimal stok
+        $quantity = max(1, min($quantity, $stock));
+
+        $item->update([
+            'quantity' => $quantity,
+        ]);
+
+        // Tidak pakai with('success') / with('error') agar tidak muncul alert
+        return redirect()->back();
     }
 
 

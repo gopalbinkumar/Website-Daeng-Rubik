@@ -1,17 +1,19 @@
 <footer class="footer">
     <div class="container">
         <div class="footer-grid">
-            <div>
-                <div class="brand" style="margin-bottom:10px;">
-                    <img src="{{ asset('assets/logo-daeng-rubik.png') }}" alt="Daeng Rubik Logo"
-                        style="width:38px;height:38px;object-fit:contain;display:block;" />
+
+            <div class="footer-about">
+                <a href="{{ url('/') }}" class="footer-brand">
+                    <img src="{{ asset('assets/logo-daeng-rubik.png') }}" alt="Daeng Rubik Logo">
                     <span>Daeng <span style="color:var(--red)">Rubik</span></span>
-                </div>
-                <small class="muted" style="color:rgba(255,255,255,.70);display:block;line-height:1.7">
+                </a>
+
+                <small class="footer-desc">
                     Platform terpadu untuk belanja rubik, mengikuti event rubik, dan belajar rubik dari basic sampai
                     advanced.
                 </small>
-                <div class="social" style="margin-top:14px;">
+
+                <div class="social">
                     <a href="https://www.instagram.com/daengrubik" aria-label="Instagram">
                         <i class="fa-brands fa-instagram"></i>
                     </a>
@@ -32,12 +34,11 @@
                         <i class="fa-brands fa-whatsapp"></i>
                     </a>
                 </div>
-
             </div>
 
-            <div>
+            <div class="footer-col">
                 <h4>Navigasi</h4>
-                <div style="display:grid;gap:8px;">
+                <div class="footer-links">
                     <a href="{{ url('/') }}">Beranda</a>
                     <a href="{{ route('products') }}">Produk</a>
                     <a href="{{ route('events') }}">Event</a>
@@ -45,9 +46,9 @@
                 </div>
             </div>
 
-            <div>
+            <div class="footer-col">
                 <h4>Layanan</h4>
-                <div style="display:grid;gap:8px;">
+                <div class="footer-links">
                     <a href="{{ route('products') }}">Katalog Rubik</a>
                     <a href="{{ route('events') }}">Kompetisi & Workshop</a>
                     <a href="{{ route('learn.index') }}">Tutorial Rubik</a>
@@ -55,20 +56,22 @@
                 </div>
             </div>
 
-            <div>
+            <div class="footer-col">
                 <h4>Kontak</h4>
-                <small style="display:block;color:rgba(255,255,255,.70);line-height:1.7">
+                <small class="footer-contact">
                     WhatsApp: +62 812-3456-7890<br>
                     Email: info@daengrubik.com<br>
                     Makassar, Indonesia
                 </small>
             </div>
+
         </div>
 
         <div class="footer-bottom">
             <small>© {{ date('Y') }} Daeng Rubik. All rights reserved.</small>
-            <small>
-                <a href="#" style="margin-right:10px;">Kebijakan Privasi</a>
+
+            <small class="footer-policy">
+                <a href="#">Kebijakan Privasi</a>
                 <a href="#">Syarat & Ketentuan</a>
             </small>
         </div>

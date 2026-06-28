@@ -128,11 +128,11 @@ class GoogleAuthController extends Controller
 
             Auth::login($user, true);
 
-            if (empty($user->whatsapp) || empty($user->birthdate)) {
-                return redirect()
-                    ->route('profile')
-                    ->with('success', 'Login berhasil. Silakan lengkapi profil terlebih dahulu.');
-            }
+            // if (empty($user->whatsapp) || empty($user->birthdate)) {
+            //     return redirect()
+            //         ->route('profile')
+            //         ->with('success', 'Login berhasil. Silakan lengkapi profil terlebih dahulu.');
+            // }
 
             return redirect()
                 ->route('home')

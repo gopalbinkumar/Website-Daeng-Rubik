@@ -69,6 +69,43 @@
     .dropdown-danger:hover {
         background: rgba(220, 38, 38, .08);
     }
+
+    /* ===== CART RESPONSIVE ===== */
+    .desktop-cart {
+        display: inline-flex;
+    }
+
+    .drawer-cart {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .drawer-cart-inner {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .drawer-cart .cart-count {
+        position: static;
+        margin-left: auto;
+        min-width: 20px;
+        height: 20px;
+        line-height: 20px;
+        box-shadow: none;
+    }
+
+    @media (max-width: 720px) {
+        .desktop-cart {
+            display: none !important;
+        }
+
+        .drawer-cart {
+            display: flex !important;
+        }
+    }
 </style>
 
 <header class="topbar">
@@ -80,25 +117,42 @@
             </a>
 
             <nav class="nav-links" aria-label="Navigasi utama">
-                <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}"
-                    href="{{ route('home') }}">Beranda</a>
-                <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}" style="display:none;">Produk</a>
-                <a class="nav-link {{ $active('event') }}" href="{{ route('events') }}">Event</a>
+                <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
+                    Beranda
+                </a>
+
+                <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}">
+                    Produk
+                </a>
+
+                <a class="nav-link {{ $active('event') }}" href="{{ route('events') }}">
+                    Event
+                </a>
+
                 <a class="nav-link {{ request()->routeIs('learn.*') ? 'active' : '' }}"
                     href="{{ route('learn.index') }}">
-                    Belajar
+                    Tutorial
                 </a>
-                <a class="nav-link {{ $active('tentang') }}" href="{{ route('about') }}">Tentang</a>
-                <a class="nav-link {{ $active('kontak') }}" href="{{ route('contact') }}">Kontak</a>
+
+                <a class="nav-link {{ $active('tentang') }}" href="{{ route('about') }}">
+                    Tentang
+                </a>
+
+                <a class="nav-link {{ $active('kontak') }}" href="{{ route('contact') }}">
+                    Kontak
+                </a>
             </nav>
 
             <div class="nav-actions">
-                    <a href="{{ route('cart.index') }}" class="icon-btn cart-badge" aria-label="Keranjang" style="display:none;">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        @if ($cartItemCount > 0)
-                            <span class="cart-count">{{ $cartItemCount }}</span>
-                        @endif
-                    </a>
+
+                {{-- ===== CART DESKTOP ONLY ===== --}}
+                <a href="{{ route('cart.index') }}" class="icon-btn cart-badge desktop-cart" aria-label="Keranjang">
+                    <i class="fa-solid fa-cart-shopping"></i>
+
+                    @if (($cartItemCount ?? 0) > 0)
+                        <span class="cart-count">{{ $cartItemCount }}</span>
+                    @endif
+                </a>
 
                 <div class="user-dropdown">
                     <button class="icon-btn" id="userDropdownBtn" aria-label="User menu">
@@ -116,14 +170,14 @@
                             <div class="dropdown-divider"></div>
 
                             <a href="{{ route('profile') }}">
-                                <i class="fa-regular fa-user-circle"></i> Profil Saya
+                                <i class="fa-regular fa-user-circle"></i> Profil
                             </a>
 
                             <a href="{{ route('user.competitions') }}">
-                                <i class="fa-regular fa-calendar-check"></i> Event Saya
+                                <i class="fa-regular fa-calendar-check"></i> Event
                             </a>
 
-                            <a href="{{ route('transactions') }}" style="display:none;">
+                            <a href="{{ route('transactions') }}">
                                 <i class="fa-solid fa-wallet"></i> Transaksi
                             </a>
 
@@ -139,6 +193,7 @@
                             <a href="{{ route('auth.login') }}">
                                 <i class="fa-solid fa-right-to-bracket"></i> Login
                             </a>
+
                             <a href="{{ route('auth.register') }}">
                                 <i class="fa-solid fa-user-plus"></i> Daftar Akun
                             </a>
@@ -146,7 +201,6 @@
 
                     </div>
                 </div>
-
 
                 <button id="openDrawer" class="icon-btn hamburger" type="button" aria-label="Buka menu">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -159,6 +213,7 @@
 </header>
 
 <div id="drawerBackdrop" class="drawer-backdrop" aria-hidden="true"></div>
+
 <aside id="mobileDrawer" class="drawer" aria-label="Menu mobile">
 
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
@@ -166,6 +221,7 @@
             <img src="{{ asset('assets/logo-daeng-rubik.png') }}" alt="Daeng Rubik Logo" class="brand-logo" />
             <span>Daeng <span style="color:var(--red)">Rubik</span></span>
         </a>
+
         <button id="closeDrawer" class="icon-btn" type="button" aria-label="Tutup menu">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 6l12 12M18 6l-12 12" />
@@ -179,84 +235,99 @@
             <strong style="display:block;font-size:14px;">
                 {{ auth()->user()->name }}
             </strong>
+
             <small style="color:var(--muted);font-size:12px;">
                 {{ auth()->user()->email }}
             </small>
         </div>
-        @endif
+    @endauth
 
-        {{-- ===== NAV LINKS ===== --}}
-        <nav class="drawer-links" aria-label="Navigasi mobile">
+    {{-- ===== NAV LINKS ===== --}}
+    <nav class="drawer-links" aria-label="Navigasi mobile">
 
-            <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
-                Beranda
+        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
+            Beranda
+        </a>
+
+        <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}">
+            Produk
+        </a>
+
+        <a class="nav-link {{ $active('event') }}" href="{{ route('events') }}">
+            Event
+        </a>
+
+        <a class="nav-link {{ request()->routeIs('learn.*') ? 'active' : '' }}" href="{{ route('learn.index') }}">
+            Tutorial
+        </a>
+
+        <a class="nav-link {{ $active('tentang') }}" href="{{ route('about') }}">
+            Tentang
+        </a>
+
+        <a class="nav-link {{ $active('kontak') }}" href="{{ route('contact') }}">
+            Kontak
+        </a>
+
+        {{-- ===== MENU USER MOBILE ===== --}}
+        @auth
+            <div class="dropdown-divider" style="margin:14px 0;"></div>
+
+            <a class="nav-link" href="{{ route('profile') }}">
+                <i class="fa-regular fa-user-circle"></i> Profil
             </a>
 
-            {{-- <a class="nav-link {{ $active('produk') }}" href="{{ route('products') }}">
-                Produk
-            </a> --}}
+            {{-- ===== CART MOBILE ONLY ===== --}}
+            <a href="{{ route('cart.index') }}"
+                class="nav-link drawer-cart {{ request()->routeIs('cart.*') ? 'active' : '' }}">
+                <span class="drawer-cart-inner">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    Keranjang
+                </span>
 
-            <a class="nav-link {{ $active('event') }}" href="{{ route('events') }}">
-                Event
+                @if (($cartItemCount ?? 0) > 0)
+                    <span class="cart-count">{{ $cartItemCount }}</span>
+                @endif
             </a>
 
-            <a class="nav-link {{ request()->routeIs('learn.*') ? 'active' : '' }}" href="{{ route('learn.index') }}">
-                Belajar
+            <a class="nav-link" href="{{ route('user.competitions') }}">
+                <i class="fa-regular fa-calendar-check"></i> Event
             </a>
 
-            <a class="nav-link {{ $active('tentang') }}" href="{{ route('about') }}">
-                Tentang
+            <a class="nav-link" href="{{ route('transactions') }}">
+                <i class="fa-solid fa-wallet"></i> Transaksi
             </a>
+        @endauth
 
-            <a class="nav-link {{ $active('kontak') }}" href="{{ route('contact') }}">
-                Kontak
+    </nav>
+
+    {{-- ===== FOOTER BUTTON ===== --}}
+    <div class="drawer-footer">
+
+        @auth
+            <form id="mobileLogoutForm" action="{{ route('auth.logout') }}" method="POST" style="width:100%;">
+                @csrf
+
+                <button type="button" onclick="confirmMobileLogout()" class="btn btn-outline"
+                    style="width:100%;justify-content:center;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </form>
+        @else
+            <a class="btn btn-primary" href="{{ route('auth.login') }}" style="width:100%;justify-content:center;">
+                <i class="fa-solid fa-right-to-bracket"></i> Login
             </a>
+        @endauth
 
-            {{-- ===== MENU USER (MOBILE) ===== --}}
-            @auth
-                <div class="dropdown-divider" style="margin:14px 0;"></div>
+    </div>
 
-                <a class="nav-link" href="{{ route('profile') }}">
-                    <i class="fa-regular fa-user-circle"></i> Profil
-                </a>
+</aside>
 
-                <a class="nav-link" href="{{ route('user.competitions') }}">
-                    <i class="fa-regular fa-calendar-check"></i> Event Saya
-                </a>
+<script>
+    const userBtn = document.getElementById('userDropdownBtn');
+    const userMenu = document.getElementById('userDropdownMenu');
 
-                <a class="nav-link" href="{{ route('transactions') }}" style="display:none;">
-                    <i class="fa-solid fa-wallet"></i> Transaksi Saya
-                </a>
-            @endauth
-
-        </nav>
-
-        {{-- ===== FOOTER BUTTON ===== --}}
-        <div class="drawer-footer">
-
-            @auth
-                <form id="mobileLogoutForm" action="{{ route('auth.logout') }}" method="POST" style="width:100%;">
-                    @csrf
-                    <button type="button" onclick="confirmMobileLogout()" class="btn btn-outline"
-                        style="width:100%;justify-content:center;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </button>
-                </form>
-            @else
-                <a class="btn btn-primary" href="{{ route('auth.login') }}" style="width:100%;justify-content:center;">
-                    <i class="fa-solid fa-right-to-bracket"></i> Login
-                </a>
-            @endauth
-
-        </div>
-
-    </aside>
-
-
-    <script>
-        const userBtn = document.getElementById('userDropdownBtn');
-        const userMenu = document.getElementById('userDropdownMenu');
-
+    if (userBtn && userMenu) {
         userBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             userMenu.style.display =
@@ -266,46 +337,81 @@
         document.addEventListener('click', () => {
             userMenu.style.display = 'none';
         });
-    </script>
-    <script>
-        function confirmUserLogout() {
-            Swal.fire({
-                title: 'Yakin ingin logout?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Logout',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#E53935',
-                cancelButtonColor: '#fff',
-                customClass: {
-                    confirmButton: 'btn btn-primary',
-                    cancelButton: 'btn btn-secondary'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('userLogoutForm').submit();
-                }
-            });
-        }
-    </script>
 
-    <script>
-        function confirmMobileLogout() {
-            Swal.fire({
-                title: 'Yakin ingin logout?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Logout',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#E53935',
-                customClass: {
-                    confirmButton: 'btn btn-primary',
-                    cancelButton: 'btn btn-secondary'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('mobileLogoutForm').submit();
-                }
-            });
+        userMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+</script>
+
+<script>
+    const openDrawerBtn = document.getElementById('openDrawer');
+    const closeDrawerBtn = document.getElementById('closeDrawer');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const drawerBackdrop = document.getElementById('drawerBackdrop');
+
+    function openMobileDrawer() {
+        mobileDrawer?.classList.add('open');
+        drawerBackdrop?.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileDrawer() {
+        mobileDrawer?.classList.remove('open');
+        drawerBackdrop?.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    openDrawerBtn?.addEventListener('click', openMobileDrawer);
+    closeDrawerBtn?.addEventListener('click', closeMobileDrawer);
+    drawerBackdrop?.addEventListener('click', closeMobileDrawer);
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMobileDrawer();
         }
-    </script>
+    });
+</script>
+
+<script>
+    function confirmUserLogout() {
+        Swal.fire({
+            title: 'Yakin ingin logout?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Logout',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#E53935',
+            cancelButtonColor: '#fff',
+            customClass: {
+                confirmButton: 'btn btn-primary',
+                cancelButton: 'btn btn-secondary'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('userLogoutForm').submit();
+            }
+        });
+    }
+</script>
+
+<script>
+    function confirmMobileLogout() {
+        Swal.fire({
+            title: 'Yakin ingin logout?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Logout',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#E53935',
+            customClass: {
+                confirmButton: 'btn btn-primary',
+                cancelButton: 'btn btn-secondary'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('mobileLogoutForm').submit();
+            }
+        });
+    }
+</script>

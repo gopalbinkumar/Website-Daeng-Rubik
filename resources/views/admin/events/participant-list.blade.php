@@ -31,16 +31,102 @@
     </div>
 
     <div class="table-wrapper">
+
+        @if (!$summaryMode)
+            @php
+                $selectedEvent = $competitionEvents->firstWhere('id', request('event_id'));
+            @endphp
+
+            <div class="table-toolbar" style="justify-content:space-between;">
+                <div>
+                    <strong>
+                        {{ $selectedEvent?->title ?? 'Daftar Peserta Kompetisi' }}
+                    </strong>
+                </div>
+
+                <a href="{{ route('admin.events.participants.index') }}" class="btn btn-secondary btn-small">
+                    ← Kembali ke Ringkasan
+                </a>
+            </div>
+        @endif
+
         <form method="GET" action="{{ route('admin.events.participants.index') }}">
             <div class="table-toolbar">
-                <select name="event_id" class="filter-select" onchange="this.form.submit()">
-                    <option value="">Semua Kompetisi</option>
-                    @foreach ($competitionEvents as $event)
-                        <option value="{{ $event->id }}" {{ request('event_id') == $event->id ? 'selected' : '' }}>
-                            {{ $event->title }}
+
+                @if (!$summaryMode)
+                    <input type="hidden" name="event_id" value="{{ request('event_id') }}">
+                @endif
+
+                <input type="text" name="search" class="search-input"
+                    placeholder="{{ $summaryMode ? 'Search kompetisi...' : 'Search peserta...' }}"
+                    value="{{ request('search') }}">
+
+                @if ($summaryMode)
+                    <select name="status" class="filter-select" onchange="this.form.submit()">
+                        <option value="">Semua</option>
+                        <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>
+                            Upcoming
                         </option>
-                    @endforeach
-                </select>
+                        <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>
+                            Ongoing
+                        </option>
+                        <option value="finished" {{ request('status') == 'finished' ? 'selected' : '' }}>
+                            Finished
+                        </option>
+                    </select>
+                @else
+                    <select name="status" class="filter-select" onchange="this.form.submit()">
+                        <option value="">Semua</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>
+                            Menunggu
+                        </option>
+                        <option value="accepted" {{ request('status') == 'accepted' ? 'selected' : '' }}>
+                            Dikonfirmasi
+                        </option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>
+                            Ditolak
+                        </option>
+                    </select>
+                @endif
+
+                @if ($summaryMode)
+                    <select name="sort" class="sort-select" onchange="this.form.submit()">
+                        <option value="">Terbaru</option>
+                        <option value="nearest" {{ request('sort') == 'nearest' ? 'selected' : '' }}>
+                            Terdekat
+                        </option>
+                        <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>
+                            Terlama
+                        </option>
+                    </select>
+                @else
+                    <select name="sort" class="sort-select" onchange="this.form.submit()">
+                        <option value="">Terbaru</option>
+                        <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>
+                            Terlama
+                        </option>
+                        <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>
+                            Nama A-Z
+                        </option>
+                        <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>
+                            Nama Z-A
+                        </option>
+                    </select>
+                @endif
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+
+                {{-- @if (request()->hasAny(['search', 'status', 'sort']))
+                    <a href="{{ $summaryMode
+                        ? route('admin.events.participants.index')
+                        : route('admin.events.participants.index', ['event_id' => request('event_id')]) }}"
+                        class="btn btn-secondary btn">
+                        <i class="fa-solid fa-xmark"></i> Reset
+                    </a>
+                @endif --}}
+
             </div>
         </form>
 
@@ -66,8 +152,11 @@
             <tbody>
                 @if ($summaryMode)
                     @forelse ($eventSummaries as $event)
-                        <tr>
-                            <td><strong>{{ $event->title }}</strong></td>
+                        <tr onclick="window.location='{{ route('admin.events.participants.index', ['event_id' => $event->id]) }}'"
+                            style="cursor:pointer;" title="Lihat peserta {{ $event->title }}">
+                            <td>
+                                <strong>{{ $event->title }}</strong>
+                            </td>
                             <td>{{ $event->registrations_count }}</td>
                             <td>{{ $event->start_datetime->format('d M Y') }}</td>
                         </tr>
@@ -108,6 +197,7 @@
                                         onclick="openEditParticipantModal({{ $row->id }})" title="Edit Peserta">
                                         <i class="fa-solid fa-edit"></i>
                                     </button>
+
                                     <button type="button" class="btn btn-icon btn-primary"
                                         onclick="openParticipantModal({{ $row->id }})" title="Detail Peserta">
                                         <i class="fa-solid fa-eye"></i>
@@ -128,11 +218,9 @@
 
         @php
             $pager = $summaryMode ? $eventSummaries : $participants;
-            $label = $summaryMode ? 'kompetisi' : 'peserta';
         @endphp
 
         <x-admin-pagination :paginator="$pager" />
-
 
     </div>
 

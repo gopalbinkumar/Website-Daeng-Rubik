@@ -12,7 +12,7 @@
             <div class="breadcrumb">Beranda &gt; Belajar</div>
             <h1 class="page-title">Belajar Rubik</h1>
             <p class="muted" style="margin:8px 0 0;max-width:820px;line-height:1.7">
-                Materi pembelajaran dari tingkat dasar hingga lanjutan. Pilih level dan mulai latihan (UI dulu).
+                Materi pembelajaran dari tingkat dasar hingga lanjutan. Pilih level dan mulai latihan.
             </p>
         </div>
     </section>

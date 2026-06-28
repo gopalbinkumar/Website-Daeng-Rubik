@@ -18,7 +18,7 @@
                     value="{{ request('search') }}">
 
                 <select class="filter-select" name="category" onchange="this.form.submit()">
-                    <option value="">Filter: Semua</option>
+                    <option value="">Semua</option>
                     @foreach ($cubeCategories as $cat)
                         <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>
                             {{ $cat->name }}
@@ -28,7 +28,7 @@
 
                 <select name="sort" class="sort-select" onchange="this.form.submit()">
                     <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>
-                        Sort: Terbaru
+                        Terbaru
                     </option>
                     <option value="price_low" {{ request('sort') == 'price_low' ? 'selected' : '' }}>
                         Harga Terendah

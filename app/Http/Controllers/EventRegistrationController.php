@@ -11,40 +11,113 @@ class EventRegistrationController extends Controller
 {
     public function adminIndex(Request $request)
     {
-        // semua event kompetisi (urut terdekat)
+        $search = trim((string) $request->search);
+        $status = $request->status;
+        $sort = $request->sort;
+
+        // Semua event kompetisi untuk kebutuhan selectedEvent / referensi
         $competitionEvents = Event::competition()
             ->orderBy('start_datetime', 'asc')
             ->get();
 
         /**
-         * JIKA FILTER EVENT DIPILIH
-         * → TAMPILKAN PESERTA
+         * JIKA EVENT DIPILIH
+         * → TAMPILKAN PESERTA EVENT TERSEBUT
          */
         if ($request->filled('event_id')) {
-            $participants = EventRegistration::with([
-                'event.competitionCategories', // 🔥 INI PENTING
-                'competitionCategories'        // 🔥 INI PENTING
+            $selectedEvent = Event::competition()
+                ->where('id', $request->event_id)
+                ->firstOrFail();
+
+            $participantsQuery = EventRegistration::with([
+                'event.competitionCategories',
+                'competitionCategories',
             ])
-                ->where('event_id', $request->event_id)
-                ->orderBy('created_at', 'desc')
+                ->where('event_id', $selectedEvent->id);
+
+            // Search peserta
+            if ($search !== '') {
+                $participantsQuery->where(function ($query) use ($search) {
+                    $query->where('participant_name', 'like', "%{$search}%")
+                        ->orWhere('participant_email', 'like', "%{$search}%")
+                        ->orWhere('participant_whatsapp', 'like', "%{$search}%")
+                        ->orWhereHas('competitionCategories', function ($catQuery) use ($search) {
+                            $catQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('code', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // Filter status pendaftaran peserta
+            if (in_array($status, ['pending', 'accepted', 'rejected'], true)) {
+                $participantsQuery->where('status', $status);
+            }
+
+            // Sort peserta
+            match ($sort) {
+                'oldest' => $participantsQuery->orderBy('created_at', 'asc'),
+                'name_asc' => $participantsQuery->orderBy('participant_name', 'asc'),
+                'name_desc' => $participantsQuery->orderBy('participant_name', 'desc'),
+                default => $participantsQuery->orderBy('created_at', 'desc'),
+            };
+
+            $participants = $participantsQuery
                 ->paginate(10)
                 ->withQueryString();
 
             return view('admin.events.participant-list', [
                 'competitionEvents' => $competitionEvents,
+                'selectedEvent' => $selectedEvent,
                 'participants' => $participants,
                 'summaryMode' => false,
             ]);
         }
 
         /**
-         * JIKA SEMUA EVENT
+         * JIKA BELUM MEMILIH EVENT
          * → TAMPILKAN RINGKASAN EVENT
          */
-        $eventSummaries = Event::competition()
-            ->withCount('registrations')
-            ->orderBy('start_datetime', 'asc')
-            ->paginate(10);
+        $eventSummariesQuery = Event::competition()
+            ->withCount('registrations');
+
+        // Search kompetisi
+        if ($search !== '') {
+            $eventSummariesQuery->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter status event berdasarkan tanggal
+        if (in_array($status, ['upcoming', 'ongoing', 'finished'], true)) {
+            $now = now();
+
+            if ($status === 'upcoming') {
+                $eventSummariesQuery->where('start_datetime', '>', $now);
+            }
+
+            if ($status === 'ongoing') {
+                $eventSummariesQuery
+                    ->where('start_datetime', '<=', $now)
+                    ->where('end_datetime', '>=', $now);
+            }
+
+            if ($status === 'finished') {
+                $eventSummariesQuery->where('end_datetime', '<', $now);
+            }
+        }
+
+        // Sort kompetisi
+        match ($sort) {
+            'nearest' => $eventSummariesQuery->orderBy('start_datetime', 'asc'),
+            'oldest' => $eventSummariesQuery->orderBy('created_at', 'asc'),
+            default => $eventSummariesQuery->orderBy('created_at', 'desc'),
+        };
+
+        $eventSummaries = $eventSummariesQuery
+            ->paginate(10)
+            ->withQueryString();
 
         return view('admin.events.participant-list', [
             'competitionEvents' => $competitionEvents,
