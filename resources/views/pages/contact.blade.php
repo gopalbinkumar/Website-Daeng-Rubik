@@ -30,7 +30,9 @@
                             </span>
                             <span>
                                 <b>Alamat</b><br>
-                                <span class="muted">Jakarta, Indonesia</span>
+                                <span class="muted">Jalan Pondok Mawa, Tombolo, Somba Opu
+                                    (BTN Pao-Pao Permai Blok H2 No. 12) SOMBA OPU (UPU), KAB. GOWA, SULAWESI SELATAN, ID
+                                    92114</span>
                             </span>
                         </div>
 
@@ -50,7 +52,7 @@
                             </span>
                             <span>
                                 <b>Email</b><br>
-                                <span class="muted">info@daengrubik.com</span>
+                                <span class="muted">celebescubers@gmail.com</span>
                             </span>
                         </div>
 
@@ -74,7 +76,7 @@
                     <div class="divider"></div>
                     <h3 style="margin:0 0 10px;font-size:14px;letter-spacing:-.01em">Media Sosial</h3>
                     <div class="social">
-                        <a href="#" aria-label="Instagram">
+                        <a href="https://www.instagram.com/daengrubik" aria-label="Instagram">
                             <i class="fa-brands fa-instagram"></i>
                         </a>
 
@@ -82,11 +84,11 @@
                             <i class="fa-brands fa-facebook-f"></i>
                         </a>
 
-                        <a href="#" aria-label="YouTube">
+                        <a href="https://www.youtube.com/@daengrubik" aria-label="YouTube">
                             <i class="fa-brands fa-youtube"></i>
                         </a>
 
-                        <a href="#" aria-label="TikTok">
+                        <a href="https://www.tiktok.com/@daeng_rubik" aria-label="TikTok">
                             <i class="fa-brands fa-tiktok"></i>
                         </a>
 
@@ -96,13 +98,24 @@
                     </div>
                 </div>
                 <div class="card card-pad">
-                    <h2 style="margin:0 0 10px;font-size:18px;letter-spacing:-.02em"><i
-                            class="fa-solid fa-map-location-dot"></i>
+                    <h2 style="margin:0 0 10px;font-size:18px;letter-spacing:-.02em">
+                        <i class="fa-solid fa-map-location-dot"></i>
                         Lokasi
                     </h2>
-                    <div
-                        style="border:1px solid rgba(17,24,39,.10);border-radius:18px;overflow:hidden;background:linear-gradient(135deg,rgba(25,118,210,.10),rgba(253,216,53,.14),rgba(229,57,53,.10));min-height:260px;display:flex;align-items:center;justify-content:center">
-                        <span class="muted" style="font-weight:800"></span>
+
+                    <div style="border:1px solid rgba(17,24,39,.10);border-radius:18px;overflow:hidden;">
+                        <iframe src="https://www.google.com/maps?q=-5.123456,119.123456&z=17&output=embed" width="100%"
+                            height="320" style="border:0;display:block;" loading="lazy" allowfullscreen
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+
+                    <div style="margin-top:14px;">
+                        <a href="https://www.google.com/maps?q=-5.123456,119.123456" target="_blank" rel="noopener"
+                            class="btn btn-secondary" style="width:100%;justify-content:center;">
+                            <i class="fa-solid fa-location-arrow"></i>
+                            Buka di Google Maps
+                        </a>
                     </div>
                 </div>
             </div>

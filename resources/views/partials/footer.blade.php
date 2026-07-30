@@ -60,7 +60,7 @@
                 <h4>Kontak</h4>
                 <small class="footer-contact">
                     WhatsApp: +62 812-3456-7890<br>
-                    Email: info@daengrubik.com<br>
+                    Email: celebescubers@gmail.com<br>
                     Makassar, Indonesia
                 </small>
             </div>

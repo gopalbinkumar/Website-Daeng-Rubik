@@ -1,4 +1,3 @@
-// Auth Pages JavaScript (FIXED & FINAL)
 
 (() => {
     document.addEventListener("DOMContentLoaded", () => {

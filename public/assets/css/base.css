@@ -243,3 +243,39 @@ img {
         padding: 52px 0;
     }
 }
+
+/* SweetAlert2 - ukuran lebih kecil di tablet & mobile */
+@media (max-width: 768px) {
+    .swal2-popup {
+        width: 88% !important;
+        max-width: 320px !important;
+        padding: 1.25rem !important;
+        border-radius: 12px !important;
+    }
+
+    .swal2-title {
+        font-size: 1.2rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .swal2-html-container {
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
+        margin-top: 0.5rem !important;
+    }
+
+    .swal2-icon {
+        transform: scale(0.8);
+        margin: 0.75rem auto !important;
+    }
+
+    .swal2-actions {
+        margin-top: 1rem !important;
+    }
+
+    .swal2-confirm,
+    .swal2-cancel {
+        font-size: 0.9rem !important;
+        padding: 0.6rem 1.4rem !important;
+    }
+}
