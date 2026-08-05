@@ -1,17 +1,13 @@
 <div class="admin-topbar">
     <div class="topbar-left">
-        <button id="sidebarToggle" class="btn btn-icon" style="display:none;" aria-label="Toggle sidebar">
-            ☰
+        <button id="sidebarToggle" class="btn btn-icon btn-secondary sidebar-toggle" type="button"
+            aria-label="Buka menu admin" aria-expanded="false">
+            <i class="fa-solid fa-bars"></i>
         </button>
-        <h1 class="topbar-title">Admin Panel</h1>
+        <h1 class="topbar-title">@yield('page-title', 'Admin Panel')</h1>
     </div>
 
     <div class="topbar-right">
-        {{-- <div class="topbar-notification">
-            <span>🔔</span>
-            <span class="notification-badge">3</span>
-        </div> --}}
-
         @php
             $fullName = Auth::user()->name ?? 'Admin';
 

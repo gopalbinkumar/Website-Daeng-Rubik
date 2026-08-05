@@ -14,25 +14,35 @@
                 </small>
 
                 <div class="social">
-                    <a href="https://www.instagram.com/daengrubik" aria-label="Instagram">
-                        <i class="fa-brands fa-instagram"></i>
-                    </a>
+                    @if ($siteContact->instagram_url)
+                        <a href="{{ $siteContact->instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                    @endif
 
-                    <a href="#" aria-label="Facebook">
-                        <i class="fa-brands fa-facebook-f"></i>
-                    </a>
+                    @if ($siteContact->facebook_url)
+                        <a href="{{ $siteContact->facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                    @endif
 
-                    <a href="https://www.youtube.com/@daengrubik" aria-label="YouTube">
-                        <i class="fa-brands fa-youtube"></i>
-                    </a>
+                    @if ($siteContact->youtube_url)
+                        <a href="{{ $siteContact->youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">
+                            <i class="fa-brands fa-youtube"></i>
+                        </a>
+                    @endif
 
-                    <a href="https://www.tiktok.com/@daeng_rubik" aria-label="TikTok">
-                        <i class="fa-brands fa-tiktok"></i>
-                    </a>
+                    @if ($siteContact->tiktok_url)
+                        <a href="{{ $siteContact->tiktok_url }}" target="_blank" rel="noopener" aria-label="TikTok">
+                            <i class="fa-brands fa-tiktok"></i>
+                        </a>
+                    @endif
 
-                    <a href="{{ route('contact') }}" aria-label="WhatsApp">
-                        <i class="fa-brands fa-whatsapp"></i>
-                    </a>
+                    @if ($siteContact->whatsapp_url)
+                        <a href="{{ $siteContact->whatsapp_url }}" target="_blank" rel="noopener" aria-label="WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
+                    @endif
                 </div>
             </div>
 
@@ -59,15 +69,15 @@
             <div class="footer-col">
                 <h4>Kontak</h4>
                 <small class="footer-contact">
-                    WhatsApp: +62 812-3456-7890<br>
-                    Email: celebescubers@gmail.com<br>
-                    Makassar, Indonesia
+                    WhatsApp: {{ $siteContact->whatsapp_number ?: '-' }}<br>
+                    Email: {{ $siteContact->email ?: '-' }}<br>
+                    {{ $siteContact->address ?: '-' }}
                 </small>
             </div>
 
         </div>
 
-        <div class="footer-bottom">
+        <div class="footer-bottom" style="display: none">
             <small>© {{ date('Y') }} Daeng Rubik. All rights reserved.</small>
 
             <small class="footer-policy">

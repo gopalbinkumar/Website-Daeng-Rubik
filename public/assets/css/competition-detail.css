@@ -40,6 +40,47 @@
     font-weight: 400;
 }
 
+.competition-detail-page .competition-filter-card,
+.competition-detail-page .competition-result-card {
+    padding: 12px;
+}
+
+.competition-detail-page .competition-filter-head,
+.competition-detail-page .competition-filter-form {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.competition-detail-page .competition-filter-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.competition-detail-page .competition-filter-field .select {
+    min-width: 220px;
+}
+
+.competition-detail-page .competition-results-gap {
+    height: 18px;
+}
+
+.competition-detail-page .competition-result-card {
+    margin-bottom: 18px;
+}
+
+.competition-detail-page .competition-result-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
 /* ==============================
    TABLE RED ROW STRIPED + RADIUS
 ================================= */
@@ -136,13 +177,13 @@
 ================================= */
 
 .competition-detail-page .competition-category-title {
-    margin: 0 0 12px;
+    margin: 0;
     font-size: 22px;
     line-height: 1.25;
 }
 
 .competition-detail-page .competition-round-title {
-    margin: 0 0 8px;
+    margin: 0;
     font-size: 15px;
     font-weight: 650;
     line-height: 1.25;
@@ -175,8 +216,9 @@
 
 /* Responsive tablet */
 @media (max-width: 992px) {
-    .competition-detail-page .card.card-pad {
-        padding: 16px 14px;
+    .competition-detail-page .competition-filter-card,
+    .competition-detail-page .competition-result-card {
+        padding: 10px;
     }
 
     .competition-detail-page table.table {
@@ -200,6 +242,17 @@
 
     .competition-detail-page .page-head .page-title {
         font-size: 24px;
+    }
+
+    .competition-detail-page .competition-filter-field,
+    .competition-detail-page .competition-filter-field .select {
+        width: 100%;
+    }
+
+    .competition-detail-page .competition-result-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
     }
 
     /* Aktifkan modal hanya di mobile */

@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Models\Cart;
+use App\Models\ContactUs;
 use App\Models\Transaction;
 use App\Models\EventRegistration;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
@@ -48,6 +50,9 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'pendingTransactionCount' => $pendingTransactionCount,
                 'pendingParticipantCount' => $pendingParticipantCount,
+                'siteContact' => Schema::hasTable('contact_us')
+                    ? ContactUs::current()
+                    : new ContactUs(),
             ]);
         });
     }

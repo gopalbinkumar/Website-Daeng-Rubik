@@ -21,21 +21,19 @@
 </head>
 
 <body class="@yield('body-class')">
+    <div class="admin-layout">
+        @include('admin.partials.sidebar')
 
-    <body>
-        <div class="admin-layout">
-            @include('admin.partials.sidebar')
+        <div class="admin-main">
+            @include('admin.partials.topbar')
 
-            <div class="admin-main">
-                @include('admin.partials.topbar')
-
-                <div class="admin-content">
-                    @yield('content')
-                </div>
+            <div class="admin-content">
+                @yield('content')
             </div>
         </div>
-        <!-- Modal Backdrop -->
-        <div id="modalBackdrop" class="modal-backdrop"></div>
+    </div>
+    <!-- Modal Backdrop -->
+    <div id="modalBackdrop" class="modal-backdrop"></div>
 
         <script src="{{ asset('assets/admin/admin.js') }}" defer></script>
         <script src="{{ asset('assets/admin/events.js') }}" defer></script>
@@ -65,6 +63,21 @@
                         customClass: {
                             confirmButton: 'btn btn-primary',
                             cancelButton: 'btn'
+                        }
+                    });
+                });
+            </script>
+        @endif
+
+        @if ($errors->any())
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: "{{ $errors->first() }}",
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
                         }
                     });
                 });
@@ -142,6 +155,6 @@
 
 
 
-    </body>
+</body>
 
 </html>

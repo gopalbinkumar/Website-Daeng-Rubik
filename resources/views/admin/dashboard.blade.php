@@ -4,7 +4,7 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px;">
+    <div class="admin-stats-grid">
         <div class="stat-card">
             <div class="stat-icon"><i class="fa-solid fa-box"></i></div>
             <div class="stat-value">{{ $totalProducts }}</div>
@@ -40,7 +40,7 @@
     @endphp --}}
 
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="admin-dashboard-grid">
         {{-- weighted scoring --}}
         <div class="card">
             <div class="card-header">

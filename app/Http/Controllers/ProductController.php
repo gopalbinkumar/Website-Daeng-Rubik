@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductMarketplaceLink;
-use App\Models\CubeCategory;
+use App\Models\ProductBrand;
+use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\ProductImage;
@@ -29,7 +30,7 @@ class ProductController extends Controller
 
     public function adminIndex(Request $request)
     {
-        $query = Product::with(['primaryImage', 'cubeCategory']);
+        $query = Product::with(['primaryImage', 'productCategory']);
 
         /* =========================
            SEARCH (NAMA PRODUK)
@@ -39,10 +40,10 @@ class ProductController extends Controller
         }
 
         /* =========================
-           FILTER KATEGORI (cube_categories)
+           FILTER KATEGORI (product_categories)
         ========================= */
         if ($request->filled('category')) {
-            $query->where('cube_category_id', $request->category);
+            $query->where('product_category_id', $request->category);
         }
 
         /* =========================
@@ -72,9 +73,18 @@ class ProductController extends Controller
         /* =========================
            DATA KATEGORI (UNTUK FILTER)
         ========================= */
-        $cubeCategories = CubeCategory::orderBy('name')->get();
+        $productCategories = ProductCategory::where('is_active', true)
+            ->orderByRaw("CASE WHEN name = 'Lainnya' THEN 1 ELSE 0 END")
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+        $productBrands = ProductBrand::where('is_active', true)
+            ->orderByRaw("CASE WHEN name = 'Lainnya' THEN 1 ELSE 0 END")
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
 
-        return view('admin.products.index', compact('products', 'cubeCategories'));
+        return view('admin.products.index', compact('products', 'productCategories', 'productBrands'));
     }
 
     public function store(Request $request)
@@ -83,8 +93,9 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
-            'cube_category_id' => 'required|exists:cube_categories,id',
-            'brand' => 'required|string|max:100',
+            'condition' => 'nullable|in:baru,bekas',
+            'product_category_id' => 'required|exists:product_categories,id',
+            'brand' => 'required|exists:product_brands,name',
             'difficulty_level' => 'required|string|max:50',
             'description' => 'required|string',
             'is_active' => 'boolean',
@@ -104,7 +115,8 @@ class ProductController extends Controller
                 'slug' => Str::slug($validated['name']),
                 'price' => $validated['price'],
                 'stock' => $validated['stock'],
-                'cube_category_id' => $validated['cube_category_id'],
+                'condition' => $validated['condition'] ?? 'baru',
+                'product_category_id' => $validated['product_category_id'],
                 'brand' => $validated['brand'],
                 'difficulty_level' => $validated['difficulty_level'],
                 'description' => $validated['description'],
@@ -151,8 +163,9 @@ class ProductController extends Controller
             'name' => 'required',
             'price' => 'required|integer',
             'stock' => 'required|integer',
-            'cube_category_id' => 'required|exists:cube_categories,id',
-            'brand' => 'required',
+            'condition' => 'nullable|in:baru,bekas',
+            'product_category_id' => 'required|exists:product_categories,id',
+            'brand' => 'required|exists:product_brands,name',
             'difficulty_level' => 'required',
             'description' => 'required',
             'is_active' => 'boolean',
@@ -181,9 +194,10 @@ class ProductController extends Controller
             'name' => $validated['name'],
             'price' => $validated['price'],
             'stock' => $validated['stock'],
+            'condition' => $validated['condition'] ?? 'baru',
 
             // 🔥 UPDATE FK
-            'cube_category_id' => $validated['cube_category_id'],
+            'product_category_id' => $validated['product_category_id'],
 
             'brand' => $validated['brand'],
             'difficulty_level' => $validated['difficulty_level'],
@@ -298,13 +312,13 @@ class ProductController extends Controller
 
     public function userIndex(Request $request)
     {
-        $query = Product::with(['primaryImage', 'cubeCategory'])
+        $query = Product::with(['primaryImage', 'productCategory'])
             ->where('is_active', true);
 
 
         // 🔎 FILTER KATEGORI (MULTI)
         if ($request->filled('category')) {
-            $query->whereIn('cube_category_id', $request->category);
+            $query->whereIn('product_category_id', $request->category);
         }
 
         /* =========================
@@ -356,7 +370,7 @@ class ProductController extends Controller
 
             // 🔵 FILTER KATEGORI
             if ($category) {
-                $query->whereHas('cubeCategory', function ($q) use ($category) {
+                $query->whereHas('productCategory', function ($q) use ($category) {
                     $q->whereRaw('LOWER(name) = ?', [$category]);
                 });
             }
@@ -392,14 +406,18 @@ class ProductController extends Controller
             ->paginate(12)
             ->withQueryString(); // 🔥 filter tidak hilang saat pindah halaman
 
-        $cubeCategories = CubeCategory::orderByRaw
-        ("
-        CASE 
-            WHEN name = 'Lainnya' THEN 1
-            ELSE 0
-        END
-        ")->orderBy('name')->get();
-        return view('pages.products', compact('products', 'cubeCategories'));
+        $productCategories = ProductCategory::where('is_active', true)
+            ->orderByRaw("CASE WHEN name = 'Lainnya' THEN 1 ELSE 0 END")
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+        $productBrands = ProductBrand::where('is_active', true)
+            ->orderByRaw("CASE WHEN name = 'Lainnya' THEN 1 ELSE 0 END")
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        return view('pages.products', compact('products', 'productCategories', 'productBrands'));
     }
 
 
@@ -469,7 +487,10 @@ class ProductController extends Controller
         /* =========================
            BRAND
         ========================= */
-        $brandList = ['gan', 'moyu', 'qiyi', 'yj'];
+        $brandList = ProductBrand::query()
+            ->pluck('name')
+            ->map(fn ($name) => strtolower($name))
+            ->all();
 
         foreach ($brandList as $brand) {
             if (preg_match('/\b' . $brand . '\b/', $search)) {
@@ -488,4 +509,3 @@ class ProductController extends Controller
         ];
     }
 }
-

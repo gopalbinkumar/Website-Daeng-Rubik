@@ -7,6 +7,10 @@
 @endpush
 
 @section('content')
+    @php
+        $mapsQuery = $contact->maps_query;
+    @endphp
+
     <section class="page-head">
         <div class="container">
             <div class="breadcrumb">Beranda &gt; Kontak</div>
@@ -30,9 +34,7 @@
                             </span>
                             <span>
                                 <b>Alamat</b><br>
-                                <span class="muted">Jalan Pondok Mawa, Tombolo, Somba Opu
-                                    (BTN Pao-Pao Permai Blok H2 No. 12) SOMBA OPU (UPU), KAB. GOWA, SULAWESI SELATAN, ID
-                                    92114</span>
+                                <span class="muted">{{ $contact->address ?: '-' }}</span>
                             </span>
                         </div>
 
@@ -42,7 +44,7 @@
                             </span>
                             <span>
                                 <b>Telepon</b><br>
-                                <span class="muted">+62 812-3456-7890</span>
+                                <span class="muted">{{ $contact->phone ?: '-' }}</span>
                             </span>
                         </div>
 
@@ -52,7 +54,7 @@
                             </span>
                             <span>
                                 <b>Email</b><br>
-                                <span class="muted">celebescubers@gmail.com</span>
+                                <span class="muted">{{ $contact->email ?: '-' }}</span>
                             </span>
                         </div>
 
@@ -62,13 +64,16 @@
                             </span>
                             <span>
                                 <b>WhatsApp</b><br>
-                                <span class="muted">Chat cepat untuk tanya stok & event</span>
+                                <span class="muted">{{ $contact->whatsapp_number ?: 'Chat cepat untuk tanya stok & event' }}</span>
                             </span>
                         </div>
                     </div>
 
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-                        <a class="btn btn-primary" href="#" style="flex:1;justify-content:center;">Chat WhatsApp</a>
+                        @if ($contact->whatsapp_url)
+                            <a class="btn btn-primary" href="{{ $contact->whatsapp_url }}" target="_blank" rel="noopener"
+                                style="flex:1;justify-content:center;">Chat WhatsApp</a>
+                        @endif
                         <a class="btn btn-secondary" href="{{ route('products') }}"
                             style="flex:1;justify-content:center;">Lihat Produk</a>
                     </div>
@@ -76,25 +81,35 @@
                     <div class="divider"></div>
                     <h3 style="margin:0 0 10px;font-size:14px;letter-spacing:-.01em">Media Sosial</h3>
                     <div class="social">
-                        <a href="https://www.instagram.com/daengrubik" aria-label="Instagram">
-                            <i class="fa-brands fa-instagram"></i>
-                        </a>
+                        @if ($contact->instagram_url)
+                            <a href="{{ $contact->instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                        @endif
 
-                        <a href="#" aria-label="Facebook">
-                            <i class="fa-brands fa-facebook-f"></i>
-                        </a>
+                        @if ($contact->facebook_url)
+                            <a href="{{ $contact->facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                        @endif
 
-                        <a href="https://www.youtube.com/@daengrubik" aria-label="YouTube">
-                            <i class="fa-brands fa-youtube"></i>
-                        </a>
+                        @if ($contact->youtube_url)
+                            <a href="{{ $contact->youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        @endif
 
-                        <a href="https://www.tiktok.com/@daeng_rubik" aria-label="TikTok">
-                            <i class="fa-brands fa-tiktok"></i>
-                        </a>
+                        @if ($contact->tiktok_url)
+                            <a href="{{ $contact->tiktok_url }}" target="_blank" rel="noopener" aria-label="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                        @endif
 
-                        <a href="#" aria-label="WhatsApp">
-                            <i class="fa-brands fa-whatsapp"></i>
-                        </a>
+                        @if ($contact->whatsapp_url)
+                            <a href="{{ $contact->whatsapp_url }}" target="_blank" rel="noopener" aria-label="WhatsApp">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </a>
+                        @endif
                     </div>
                 </div>
                 <div class="card card-pad">
@@ -103,20 +118,24 @@
                         Lokasi
                     </h2>
 
-                    <div style="border:1px solid rgba(17,24,39,.10);border-radius:18px;overflow:hidden;">
-                        <iframe src="https://www.google.com/maps?q=-5.123456,119.123456&z=17&output=embed" width="100%"
-                            height="320" style="border:0;display:block;" loading="lazy" allowfullscreen
-                            referrerpolicy="no-referrer-when-downgrade">
-                        </iframe>
-                    </div>
+                    @if ($mapsQuery)
+                        <div style="border:1px solid rgba(17,24,39,.10);border-radius:18px;overflow:hidden;">
+                            <iframe src="https://www.google.com/maps?q={{ urlencode($mapsQuery) }}&z=17&output=embed"
+                                width="100%" height="320" style="border:0;display:block;" loading="lazy" allowfullscreen
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
 
-                    <div style="margin-top:14px;">
-                        <a href="https://www.google.com/maps?q=-5.123456,119.123456" target="_blank" rel="noopener"
-                            class="btn btn-secondary" style="width:100%;justify-content:center;">
-                            <i class="fa-solid fa-location-arrow"></i>
-                            Buka di Google Maps
-                        </a>
-                    </div>
+                        <div style="margin-top:14px;">
+                            <a href="https://www.google.com/maps?q={{ urlencode($mapsQuery) }}" target="_blank" rel="noopener"
+                                class="btn btn-secondary" style="width:100%;justify-content:center;">
+                                <i class="fa-solid fa-location-arrow"></i>
+                                Buka di Google Maps
+                            </a>
+                        </div>
+                    @else
+                        <p class="muted" style="margin:0;">Lokasi belum diatur.</p>
+                    @endif
                 </div>
             </div>
         </div>

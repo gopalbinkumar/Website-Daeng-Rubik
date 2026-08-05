@@ -50,8 +50,8 @@
                 {{-- ========================= --}}
                 {{-- FILTER CARD --}}
                 {{-- ========================= --}}
-                <div class="card card-pad" style="padding:20px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                <div class="card card-pad competition-filter-card">
+                    <div class="competition-filter-head">
 
                         @php
                             $selectedCategory = $competitionCategories->firstWhere('id', request('category'));
@@ -59,9 +59,9 @@
                         @endphp
 
 
-                        <form method="GET" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;width:100%;">
+                        <form method="GET" class="competition-filter-form">
                             {{-- KATEGORI --}}
-                            <div style="display:flex;gap:6px;align-items:center;">
+                            <div class="competition-filter-field">
                                 {{-- <label class="muted" style="font-size:13px;margin:0;">
                                     Kategori
                                 </label> --}}
@@ -79,7 +79,7 @@
 
                             {{-- ROUND: hanya tampil jika kategori dipilih --}}
                             @if (request('category'))
-                                <div id="roundFilterWrap" style="display:flex;gap:6px;align-items:center;">
+                                <div id="roundFilterWrap" class="competition-filter-field">
                                     {{-- <label class="muted" style="font-size:13px;margin:0;">
                                         Round
                                     </label> --}}
@@ -99,7 +99,7 @@
                     </div>
                 </div>
 
-                <div style="height:22px;"></div>
+                <div class="competition-results-gap"></div>
 
                 {{-- MODE FILTER AKTIF (Kategori + Round dipilih) --}}
 
@@ -108,20 +108,20 @@
                         $categoryName = $competitionCategories->firstWhere('id', $categoryId)->name ?? '';
                     @endphp
 
-                    <div class="card card-pad" style="padding:20px;margin-bottom:22px;">
+                    @forelse ($roundGroups as $roundNumber => $rows)
+                        <div class="card card-pad competition-result-card">
+                            <div class="competition-result-head">
+                                @if ($categoryName)
+                                    <h2 class="competition-category-title">
+                                        {{ $categoryName }}
+                                    </h2>
+                                @endif
 
-                        {{-- Judul Kategori --}}
-                        @if ($categoryName)
-                            <h2 class="competition-category-title">
-                                {{ $categoryName }}
-                            </h2>
-                        @endif
-
-                        @forelse ($roundGroups as $roundNumber => $rows)
-                            {{-- Judul Round --}}
-                            <h4 class="competition-round-title">
-                                {{ $rounds->firstWhere('round_number', $roundNumber)->name ?? 'Round ' . $roundNumber }}
-                            </h4>
+                                {{-- Judul Round --}}
+                                <h4 class="competition-round-title">
+                                    {{ $rounds->firstWhere('round_number', $roundNumber)->name ?? 'Round ' . $roundNumber }}
+                                </h4>
+                            </div>
 
                             <div class="table-responsive">
                                 <table class="table table-sm">
@@ -178,13 +178,20 @@
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
 
-                        @empty
+                    @empty
+                        <div class="card card-pad competition-result-card">
+                            @if ($categoryName)
+                                <h2 class="competition-category-title">
+                                    {{ $categoryName }}
+                                </h2>
+                            @endif
                             <p class="muted" style="margin:0;">Belum ada hasil.</p>
-                        @endforelse
-                    </div>
+                        </div>
+                    @endforelse
                 @empty
-                    <div class="card card-pad" style="padding:20px;">
+                    <div class="card card-pad competition-result-card">
                         <p class="muted" style="margin:0;">Belum ada hasil kompetisi.</p>
                     </div>
                 @endforelse

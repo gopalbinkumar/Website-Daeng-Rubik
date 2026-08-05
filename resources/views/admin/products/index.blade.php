@@ -19,7 +19,7 @@
 
                 <select class="filter-select" name="category" onchange="this.form.submit()">
                     <option value="">Semua</option>
-                    @foreach ($cubeCategories as $cat)
+                    @foreach ($productCategories as $cat)
                         <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>
                             {{ $cat->name }}
                         </option>
@@ -66,7 +66,7 @@
                         </td>
 
                         <td><strong>{{ $product->name }}</strong></td>
-                        <td>{{ $product->cubeCategory->name }}</td>
+                        <td>{{ $product->productCategory?->name ?? '-' }}</td>
                         <td>Rp {{ number_format($product->price, 0, ',', '.') }}</td>
                         <td>{{ $product->stock }}</td>
 
@@ -83,7 +83,8 @@
                                 <button class="btn btn-icon btn-secondary" onclick="openEditProduct(this)"
                                     data-id="{{ $product->id }}" data-name="{{ $product->name }}"
                                     data-price="{{ $product->price }}" data-stock="{{ $product->stock }}"
-                                    data-cube-category="{{ $product->cube_category_id }}"
+                                    data-condition="{{ $product->condition ?? 'baru' }}"
+                                    data-product-category="{{ $product->product_category_id }}"
                                     data-brand="{{ $product->brand }}" data-difficulty="{{ $product->difficulty_level }}"
                                     data-description="{{ $product->description }}" data-active="{{ $product->is_active }}"
                                     data-images='@json($product->images->map(fn($img) => asset('storage/' . $img->image_path)))' {{-- MARKETPLACE --}}
@@ -189,9 +190,9 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Kategori <span class="required">*</span></label>
-                        <select name="cube_category_id" class="form-select" required>
+                        <select name="product_category_id" class="form-select" required>
                             <option value="">Pilih Kategori</option>
-                            @foreach ($cubeCategories as $cat)
+                            @foreach ($productCategories as $cat)
                                 <option value="{{ $cat->id }}">
                                     {{ $cat->name }}
                                 </option>
@@ -214,10 +215,19 @@
                         <label class="form-label">Brand <span class="required">*</span></label>
                         <select name="brand" class="form-select" required>
                             <option value="">Pilih Brand</option>
-                            <option value="MoYu">MoYu</option>
-                            <option value="GAN">GAN</option>
-                            <option value="QiYi">QiYi</option>
-                            <option value="Lainnya">Lainnya</option>
+                            @foreach ($productBrands as $brand)
+                                <option value="{{ $brand->name }}">
+                                    {{ $brand->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Kondisi <span class="required">*</span></label>
+                        <select name="condition" class="form-select" required>
+                            <option value="baru" selected>Baru</option>
+                            <option value="bekas">Bekas</option>
                         </select>
                     </div>
 
@@ -327,9 +337,9 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Kategori *</label>
-                        <select name="cube_category_id" class="form-select" required>
+                        <select name="product_category_id" class="form-select" required>
                             <option value="">Pilih Kategori</option>
-                            @foreach ($cubeCategories as $cat)
+                            @foreach ($productCategories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                             @endforeach
                         </select>
@@ -350,10 +360,19 @@
                         <label class="form-label">Brand *</label>
                         <select name="brand" class="form-select" required>
                             <option value="">Pilih</option>
-                            <option value="MoYu">MoYu</option>
-                            <option value="GAN">GAN</option>
-                            <option value="QiYi">QiYi</option>
-                            <option value="Lainnya">Lainnya</option>
+                            @foreach ($productBrands as $brand)
+                                <option value="{{ $brand->name }}">
+                                    {{ $brand->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Kondisi *</label>
+                        <select name="condition" class="form-select" required>
+                            <option value="baru">Baru</option>
+                            <option value="bekas">Bekas</option>
                         </select>
                     </div>
 

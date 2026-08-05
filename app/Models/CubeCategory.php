@@ -9,11 +9,6 @@ class CubeCategory extends Model
 {
     protected $fillable = ['name', 'slug', 'description', 'icon', 'sort_order'];
 
-    public function products()
-    {
-        return $this->hasMany(Product::class, 'cube_category_id');
-    }
-
     public function learningMaterials()
     {
         return $this->hasMany(LearningMaterial::class, 'category_id');

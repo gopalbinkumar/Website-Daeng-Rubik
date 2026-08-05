@@ -186,7 +186,7 @@
                         <h3>Kategori</h3>
 
                         <div class="category-grid">
-                            @foreach ($cubeCategories as $cat)
+                            @foreach ($productCategories as $cat)
                                 <label class="field">
                                     <input type="checkbox" name="category[]" value="{{ $cat->id }}"
                                         {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
@@ -218,11 +218,11 @@
                         {{-- BRAND --}}
                         <h3>Brand</h3>
                         <div class="brand-grid">
-                            @foreach (['MoYu', 'GAN', 'QiYi', 'YJ', 'Lainnya'] as $brand)
+                            @foreach ($productBrands as $brand)
                                 <label class="field">
-                                    <input type="checkbox" name="brand[]" value="{{ $brand }}"
-                                        {{ in_array($brand, request('brand', [])) ? 'checked' : '' }}>
-                                    {{ $brand }}
+                                    <input type="checkbox" name="brand[]" value="{{ $brand->name }}"
+                                        {{ in_array($brand->name, request('brand', [])) ? 'checked' : '' }}>
+                                    {{ $brand->name }}
                                 </label>
                             @endforeach
                         </div>
@@ -257,7 +257,7 @@
                 {{-- ================= KATEGORI ================= --}}
                 <h3>Kategori</h3>
                 <div class="category-grid">
-                    @foreach ($cubeCategories as $cat)
+                    @foreach ($productCategories as $cat)
                         <label class="field">
                             <input type="checkbox" name="category[]" value="{{ $cat->id }}"
                                 {{ in_array($cat->id, request('category', [])) ? 'checked' : '' }}>
@@ -286,11 +286,11 @@
                 {{-- ================= BRAND ================= --}}
                 <h3>Brand</h3>
                 <div class="brand-grid">
-                    @foreach (['MoYu', 'GAN', 'QiYi', 'YJ', 'Lainnya'] as $brand)
+                    @foreach ($productBrands as $brand)
                         <label class="field">
-                            <input type="checkbox" name="brand[]" value="{{ $brand }}"
-                                {{ in_array($brand, request('brand', [])) ? 'checked' : '' }}>
-                            {{ $brand }}
+                            <input type="checkbox" name="brand[]" value="{{ $brand->name }}"
+                                {{ in_array($brand->name, request('brand', [])) ? 'checked' : '' }}>
+                            {{ $brand->name }}
                         </label>
                     @endforeach
                 </div>
@@ -341,8 +341,9 @@
                         'name' => $p->name,
                         'price' => $p->price,
                         'description' => $p->description,
-                        'cube_category' => $p->cubeCategory?->name,
+                        'product_category' => $p->productCategory?->name,
                         'brand' => $p->brand,
+                        'condition' => $p->condition ?? 'baru',
                         'difficulty_level' => $p->difficulty_level,
         
                         // 🔥 SEMUA GAMBAR URUT POSITION
@@ -427,7 +428,7 @@
             <div class="product-modal-body">
                 <h2 class="product-modal-title">${activeProduct.name}</h2>
 
-                <span class="badge badge-secondary">${activeProduct.cube_category ?? ''}</span>
+                <span class="badge badge-secondary">${activeProduct.product_category ?? ''}</span>
 
                 <div class="product-modal-price">
                     ${activeProduct.price.toLocaleString('id-ID', {
@@ -443,7 +444,8 @@
                 <div class="product-modal-specs">
                     <div class="specs-grid">
                         <div><b>Brand</b> ${activeProduct.brand}</div>
-                        <div><b>Level</b> ${capitalizeFirst(activeProduct.difficulty_level)}</div>
+                        <div style="display: none;"><b>Level</b> ${capitalizeFirst(activeProduct.difficulty_level)}</div>
+                        <div><b>Kondisi</b> ${capitalizeFirst(activeProduct.condition || 'baru')}</div>
                     </div>
                 </div>
                 

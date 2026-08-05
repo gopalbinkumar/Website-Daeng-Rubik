@@ -7,8 +7,10 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\LearningMaterialController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\SalesReportController;
+use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\UserEventController;
 use App\Http\Controllers\CompetitionResultController;
 use App\Http\Controllers\DashboardAdminController;
@@ -110,7 +112,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::view('/tentang', 'pages.about')->name('about');
-Route::view('/kontak', 'pages.contact')->name('contact');
+Route::get('/kontak', [ContactController::class, 'show'])->name('contact');
 
 
 
@@ -284,7 +286,23 @@ Route::middleware(['auth', 'admin'])
         /* =====================
          | ADMIN & PENGATURAN
          ===================== */
-        Route::view('/pengaturan', 'admin.settings')->name('settings');
+        Route::get('/pengaturan', [AdminSettingsController::class, 'index'])->name('settings');
+        Route::put('/pengaturan/contact-us', [AdminSettingsController::class, 'updateContact'])
+            ->name('settings.contact.update');
+        Route::delete('/pengaturan/contact-us', [AdminSettingsController::class, 'destroyContact'])
+            ->name('settings.contact.destroy');
+        Route::post('/pengaturan/product-brands', [AdminSettingsController::class, 'storeBrand'])
+            ->name('settings.brands.store');
+        Route::put('/pengaturan/product-brands/{brand}', [AdminSettingsController::class, 'updateBrand'])
+            ->name('settings.brands.update');
+        Route::delete('/pengaturan/product-brands/{brand}', [AdminSettingsController::class, 'destroyBrand'])
+            ->name('settings.brands.destroy');
+        Route::post('/pengaturan/product-categories', [AdminSettingsController::class, 'storeCategory'])
+            ->name('settings.categories.store');
+        Route::put('/pengaturan/product-categories/{category}', [AdminSettingsController::class, 'updateCategory'])
+            ->name('settings.categories.update');
+        Route::delete('/pengaturan/product-categories/{category}', [AdminSettingsController::class, 'destroyCategory'])
+            ->name('settings.categories.destroy');
 
         /* ===============================
              ADMIN USER MANAGEMENT

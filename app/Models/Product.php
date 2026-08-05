@@ -16,7 +16,8 @@ class Product extends Model
         'slug',
         'price',
         'stock',
-        'cube_category_id', // ✅ GANTI INI
+        'condition',
+        'product_category_id',
         'brand',
         'difficulty_level',
         'description',
@@ -25,6 +26,10 @@ class Product extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'condition' => 'baru',
     ];
 
     // 🖼️ RELASI IMAGE
@@ -46,10 +51,10 @@ class Product extends Model
         return $this->hasMany(ProductMarketplaceLink::class);
     }
 
-    // 🧊 RELASI KATEGORI RUBIK
-    public function cubeCategory()
+    // 🧊 RELASI KATEGORI PRODUK
+    public function productCategory()
     {
-        return $this->belongsTo(CubeCategory::class);
+        return $this->belongsTo(ProductCategory::class);
     }
 
     public function transactionItems()
