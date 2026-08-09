@@ -3,7 +3,7 @@
 @section('title', 'Checkout Produk — Daeng Rubik')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/checkout.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/checkout.css') }}">
 @endpush
 
 @section('content')

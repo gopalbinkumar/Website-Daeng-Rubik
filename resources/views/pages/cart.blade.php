@@ -3,7 +3,7 @@
 @section('title', 'Keranjang — Daeng Rubik')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/cart.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/cart.css') }}">
 @endpush
 
 @section('content')

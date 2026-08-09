@@ -3,7 +3,7 @@
 @section('title', 'Kontak — Daeng Rubik')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/contact.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/contact.css') }}">
 @endpush
 
 @section('content')

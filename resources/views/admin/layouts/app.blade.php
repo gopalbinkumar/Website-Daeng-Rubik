@@ -16,7 +16,7 @@
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.1/css/all.css">
 
-    <link rel="stylesheet" href="{{ asset('assets/admin/admin.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/admin/admin.css') }}">
     @stack('styles')
 </head>
 
@@ -35,8 +35,8 @@
     <!-- Modal Backdrop -->
     <div id="modalBackdrop" class="modal-backdrop"></div>
 
-        <script src="{{ asset('assets/admin/admin.js') }}" defer></script>
-        <script src="{{ asset('assets/admin/events.js') }}" defer></script>
+        <script src="{{ assetVersion('assets/admin/admin.js') }}" defer></script>
+        <script src="{{ assetVersion('assets/admin/events.js') }}" defer></script>
         @stack('scripts')
 
         @if (session('success'))

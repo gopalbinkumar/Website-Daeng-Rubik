@@ -10,8 +10,8 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,600,700,800,900&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/base.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/auth.css') }}">
 </head>
 
 <body>
@@ -177,7 +177,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('assets/auth.js') }}" defer></script>
+    <script src="{{ assetVersion('assets/auth.js') }}" defer></script>
 
     @if (session('success'))
         <script>

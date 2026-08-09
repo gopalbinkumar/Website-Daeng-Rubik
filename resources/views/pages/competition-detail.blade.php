@@ -3,8 +3,8 @@
 @section('title', $event->title . ' — Hasil Kompetisi')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/events.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/competition-detail.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/events.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/competition-detail.css') }}">
 @endpush
 
 @section('content')
@@ -153,7 +153,7 @@
                                                 data-best="{{ $row->best ?? '-' }}">
 
                                                 <td
-                                                    class="text-end rank-cell {{ auth()->check() && $row->user_id === auth()->id() ? 'my-rank-cell' : '' }}">
+                                                    class="text-end rank-cell {{ auth()->check() && $row->user_id == auth()->id() ? 'my-rank-cell' : '' }}">
                                                     {{ $row->rank ?? '-' }}
                                                 </td>
 

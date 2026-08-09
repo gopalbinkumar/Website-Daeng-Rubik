@@ -6,7 +6,7 @@
 @section('page-title', 'Input Hasil Kompetisi')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/admin/events-results-create.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/admin/events-results-create.css') }}">
 @endpush
 
 @section('content')

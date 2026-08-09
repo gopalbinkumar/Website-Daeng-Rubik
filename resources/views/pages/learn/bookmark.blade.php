@@ -3,7 +3,7 @@
 @section('title', 'Bookmark Belajar — Daeng Rubik')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/learn.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/learn.css') }}">
 @endpush
 
 @section('content')

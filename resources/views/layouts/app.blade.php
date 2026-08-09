@@ -18,8 +18,8 @@
 
 
     <!-- Base CSS (always loaded) -->
-    <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/layout.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/base.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/layout.css') }}">
 
     <!-- Page-specific CSS -->
     @stack('styles')
@@ -34,7 +34,7 @@
 
     @include('partials.footer')
 
-    <script src="{{ asset('assets/daengrubik.js') }}" defer></script>
+    <script src="{{ assetVersion('assets/daengrubik.js') }}" defer></script>
 
     @if (session('success'))
         <script>

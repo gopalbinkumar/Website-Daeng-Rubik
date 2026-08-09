@@ -3,8 +3,8 @@
 @section('title', 'Event Saya — Daeng Rubik')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/events.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/my-events.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/events.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/my-events.css') }}">
 @endpush
 
 @section('content')

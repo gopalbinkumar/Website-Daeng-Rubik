@@ -3,7 +3,7 @@
 @section('title', 'Tentang Kami — Daeng Rubik')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/about.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/about.css') }}">
 @endpush
 
 @section('content')
@@ -84,4 +84,3 @@
         </div>
     </section>
 @endsection
-

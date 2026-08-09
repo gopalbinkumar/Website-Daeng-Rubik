@@ -3,7 +3,7 @@
 @section('title', 'Daeng Rubik — Solve, Learn, Compete')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/home.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/home.css') }}">
 @endpush
 
 @section('content')

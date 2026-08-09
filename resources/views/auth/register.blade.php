@@ -14,8 +14,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
-    <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/base.css') }}">
+    <link rel="stylesheet" href="{{ assetVersion('assets/css/auth.css') }}">
 </head>
 
 <body>
@@ -158,7 +158,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('assets/auth.js') }}" defer></script>
+    <script src="{{ assetVersion('assets/auth.js') }}" defer></script>
     @if (session('success'))
         <script>
             Swal.fire({
