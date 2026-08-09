@@ -152,7 +152,8 @@
                                                 data-average="{{ $row->average ?? '-' }}"
                                                 data-best="{{ $row->best ?? '-' }}">
 
-                                                <td class="text-end rank-cell">
+                                                <td
+                                                    class="text-end rank-cell {{ auth()->check() && $row->user_id === auth()->id() ? 'my-rank-cell' : '' }}">
                                                     {{ $row->rank ?? '-' }}
                                                 </td>
 

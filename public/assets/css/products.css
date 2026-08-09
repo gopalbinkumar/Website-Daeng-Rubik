@@ -127,30 +127,50 @@
 .prod:hover {
     transform: translateY(-2px);
 }
+
 .prod-img {
-    aspect-ratio: 1/1;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    overflow: hidden;
+
     background:
         radial-gradient(
-            130px 130px at 30% 30%,
-            rgba(229, 57, 53, 0.22),
-            transparent 60%
+            180px 180px at 30% 30%,
+            rgba(229, 57, 53, 0.12),
+            transparent 65%
         ),
         radial-gradient(
-            130px 130px at 70% 60%,
-            rgba(25, 118, 210, 0.18),
-            transparent 60%
+            200px 200px at 75% 75%,
+            rgba(229, 57, 53, 0.08),
+            transparent 70%
         ),
-        linear-gradient(180deg, #fff, #f3f6ff);
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #ffffff 70%,
+            #fff8f8 100%
+        );
+
     border-bottom: 1px solid rgba(17, 24, 39, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
 }
+
+.prod-cover {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+    transition: transform .25s ease;
+}
+.prod:hover .prod-cover {
+    transform: scale(1.04);
+}
+
 .prod-img .badge {
     position: absolute;
     top: 12px;
     left: 12px;
+    z-index: 2;
 }
 .prod-body {
     padding: 14px;
@@ -304,7 +324,7 @@
 
 .product-modal-title {
     font-size: 22px;
-    font-weight: 800;
+    font-weight: 750;
     letter-spacing: -0.02em;
     line-height: 1.25; /* 🔥 supaya judul tidak renggang */
     margin: 0; /* hapus margin bawah */
@@ -313,7 +333,7 @@
 
 .product-modal-price {
     font-size: 26px;
-    font-weight: 900;
+    font-weight: 700;
     color: var(--red);
     margin-bottom: 10px; 
 }

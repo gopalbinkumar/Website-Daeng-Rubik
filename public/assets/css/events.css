@@ -73,7 +73,21 @@
 
 .featured-body {
     padding: 18px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
+
+.featured-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: auto; /* tombol selalu di bawah */
+}
+
+.featured-body > .badge {
+    align-self: flex-start;
+}
+
 .kv {
     display: grid;
     gap: 8px;
@@ -90,12 +104,56 @@
     text-align: center;
 }
 
+.featured-category-row{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+}
+
+.featured-category-icons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+
+    flex:1;
+    min-width:0;      /* penting agar tidak overflow */
+    overflow:hidden;  /* cegah keluar dari card */
+}
+
+.featured-category-icons span{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+}
+
+.featured-category-icons .cubing-category-icon{
+    width:22px;
+    height:22px;
+    display:block;
+    flex-shrink:0;
+
+    background-color:currentColor;
+
+    mask-image:var(--icon-url);
+    mask-repeat:no-repeat;
+    mask-position:center;
+    mask-size:contain;
+
+    -webkit-mask-image:var(--icon-url);
+    -webkit-mask-repeat:no-repeat;
+    -webkit-mask-position:center;
+    -webkit-mask-size:contain;
+}
 /* Event card */
 .prod {
     overflow: hidden;
     transition:
         transform 0.15s ease,
         box-shadow 0.15s ease;
+
+    display: flex;
+    flex-direction: column;
 }
 .prod:hover {
     transform: translateY(-2px);
@@ -156,10 +214,25 @@
 }
 
 .prod-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     padding: 14px;
 }
 .prod-name {
     margin: 0 0 6px;
+}
+
+.prod-body .muted {
+    margin: 0;
+}
+
+/* tombol selalu di bawah */
+.prod-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 14px;
 }
 
 /* Tabs */
@@ -174,9 +247,9 @@
     border-radius: 999px;
     border: 1px solid rgba(17, 24, 39, 0.1);
     background: #fff;
-    font-weight: 850;
+    font-weight: 800;
     font-size: 13px;
-    color: rgba(17, 24, 39, 0.75);
+    color: black;
     cursor: pointer;
 }
 .tab.active {

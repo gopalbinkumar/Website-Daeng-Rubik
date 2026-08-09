@@ -23,7 +23,7 @@
 
             <div class="tabs" aria-label="Filter status event">
                 <button class="tab active" type="button" data-tab="all">Semua</button>
-                <button class="tab" type="button" data-tab="upcoming">Upcoming</button>
+                <button class="tab" type="button" data-tab="upcoming">Akan Datang</button>
                 <button class="tab" type="button" data-tab="ongoing">Berlangsung</button>
                 <button class="tab" type="button" data-tab="finished">Selesai</button>
             </div>
@@ -42,15 +42,36 @@
                     <div class="featured-body">
                         <span class="badge hot">Featured</span>
                         <h3>{{ $featured->title }}</h3>
-                        <p class="muted">{{ Str::limit($featured->description, 120) }}</p>
+                        {{-- <p class="muted">{{ Str::limit($featured->description, 120) }}</p> --}}
+
 
                         <div class="kv">
-                            <div><i class="fa-regular fa-calendar-days"></i>
-                                {{ $featured->start_datetime->translatedFormat('d M Y • H:i') }}</div>
-                            <div><i class="fa-solid fa-location-dot"></i> {{ $featured->location }}</div>
+                            <div>
+                                <i class="fa-regular fa-calendar-days"></i>
+                                {{ $featured->start_datetime->translatedFormat('d M Y • H:i') }}
+                            </div>
+
+                            <div>
+                                <i class="fa-solid fa-location-dot"></i>
+                                {{ $featured->location }}
+                            </div>
+
+                            @if ($featured->competitionCategories->isNotEmpty())
+                                <div class="featured-category-row">
+                                    <i class="fa-solid fa-tags"></i>
+
+                                    <div class="featured-category-icons">
+                                        @foreach ($featured->competitionCategories as $category)
+                                            <span title="{{ $category->name }}" aria-label="{{ $category->name }}">
+                                                <x-category-icon :code="$category->code" :name="$category->name" size="22" />
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
 
-                        <div style="display:flex;gap:12px;">
+                        <div class="featured-actions">
                             @if ($featured->status !== 'finished')
                                 <a href="{{ route('events.register', $featured->slug) }}" class="btn btn-primary"
                                     style="flex:1">
@@ -100,7 +121,7 @@
                                 <i class="fa-solid fa-location-dot"></i> {{ $ev->location }}
                             </p>
 
-                            <div style="display:flex;gap:10px;">
+                            <div class="prod-actions">
                                 @if ($ev->category === 'kompetisi')
                                     @if ($ev->status !== 'finished')
                                         <a href="{{ route('events.register', $ev->slug) }}" class="btn btn-primary"

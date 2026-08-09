@@ -153,29 +153,54 @@
     transform: translateY(-2px);
 }
 .prod-img {
-    aspect-ratio: 1/1;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    overflow: hidden;
+
     background:
         radial-gradient(
-            130px 130px at 30% 30%,
-            rgba(229, 57, 53, 0.22),
-            transparent 60%
+            180px 180px at 30% 30%,
+            rgba(229, 57, 53, 0.12),
+            transparent 65%
         ),
         radial-gradient(
-            130px 130px at 70% 60%,
-            rgba(25, 118, 210, 0.18),
-            transparent 60%
+            200px 200px at 75% 75%,
+            rgba(229, 57, 53, 0.08),
+            transparent 70%
         ),
-        linear-gradient(180deg, #fff, #f3f6ff);
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #ffffff 70%,
+            #fff8f8 100%
+        );
+
     border-bottom: 1px solid rgba(17, 24, 39, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+}
+
+.prod-cover {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+    transition: transform .25s ease;
+}
+.prod:hover .prod-cover {
+    transform: scale(1.04);
+}
+
+.prod-img .badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
 }
 .prod-img .badge {
     position: absolute;
     top: 12px;
     left: 12px;
+    z-index: 2;
 }
 .prod-body {
     padding: 14px;
@@ -272,7 +297,21 @@
 
 .featured-body {
     padding: 18px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
+
+.featured-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: auto; /* tombol selalu di bawah */
+}
+
+.featured-body > .badge {
+    align-self: flex-start;
+}
+
 .kv {
     display: grid;
     gap: 8px;
@@ -287,6 +326,48 @@
 .kv .k {
     width: 22px;
     text-align: center;
+}
+
+.featured-category-row{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+}
+
+.featured-category-icons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+
+    flex:1;
+    min-width:0;      /* penting agar tidak overflow */
+    overflow:hidden;  /* cegah keluar dari card */
+}
+
+.featured-category-icons span{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+}
+
+.featured-category-icons .cubing-category-icon{
+    width:22px;
+    height:22px;
+    display:block;
+    flex-shrink:0;
+
+    background-color:currentColor;
+
+    mask-image:var(--icon-url);
+    mask-repeat:no-repeat;
+    mask-position:center;
+    mask-size:contain;
+
+    -webkit-mask-image:var(--icon-url);
+    -webkit-mask-repeat:no-repeat;
+    -webkit-mask-position:center;
+    -webkit-mask-size:contain;
 }
 
 /* Stats */

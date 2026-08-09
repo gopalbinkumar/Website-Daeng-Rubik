@@ -91,9 +91,9 @@
                             {{ $event->badge_label }}
                         </span> --}}
 
-                        <h4 style="font-size:20px;margin:12px 0 8px;font-weight:800;">
+                        <h3 style="font-size:20px;margin:12px 0 8px;font-weight:700;">
                             {{ $event->title }}
-                        </h4>
+                        </h3>
 
                         <div class="summary-info-item">
                             <span class="info-icon">
@@ -124,7 +124,7 @@
                             </div>
                         </div>
 
-                        <span class="summary-info-item">{{ $event->description }}</span>
+                        <span class="summary-info-item">{!! nl2br(e($event->description)) !!}</span>
                     </div>
 
                     <a href="{{ route('events') }}" class="summary-link">← Lihat detail event</a>

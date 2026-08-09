@@ -65,18 +65,14 @@
                         @forelse ($products as $p)
                             <article class="card prod">
                                 <div class="prod-img">
-                                    <div style="width:74%;max-width:240px;">
+                                    <div class="prod-img">
                                         <img src="{{ $p->primaryImage
                                             ? asset('storage/' . $p->primaryImage->image_path)
-                                            : asset('assets/img/placeholder-product.png') }}"
-                                            alt="{{ $p->name }}"
-                                            style="
-                                                width:100%;
-                                                aspect-ratio: 1 / 1;
-                                                object-fit: cover;
-                                                border-radius:18px;
-                                                border:6px solid var(--line);
-                                                ">
+                                            : asset('assets/img/placeholder-product.jpeg') }}"
+                                            alt="{{ $p->name }}" class="prod-cover">
+
+                                        {{-- Badge jika diperlukan --}}
+                                        {{-- <span class="badge hot">Baru</span> --}}
                                     </div>
                                 </div>
 
@@ -322,8 +318,8 @@
 
     <script>
         /* =========================
-                                                    GLOBAL STATE
-                  ========================= */
+                                                                GLOBAL STATE
+                              ========================= */
         let activeProduct = null;
         let currentImageIndex = 0;
 
@@ -363,6 +359,15 @@
         ========================= */
         function capitalizeFirst(text) {
             return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+        }
+
+        function escapeHtml(text) {
+            return String(text ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         /* =========================
@@ -408,20 +413,20 @@
                         style="width:100%;height:100%;object-fit:cover;">
 
                     ${activeProduct.images.length > 1 ? `
-                                                                <button onclick="prevImage()"
-                                                                    style="position:absolute;left:10px;top:50%;
-                                                                    transform:translateY(-50%);
-                                                                    width:36px;height:36px;border-radius:50%;
-                                                                    border:none;background:rgba(0,0,0,.45);
-                                                                    color:#fff;font-size:22px;cursor:pointer;">‹</button>
+                        <button onclick="prevImage()"
+                            style="position:absolute;left:10px;top:50%;
+                            transform:translateY(-50%);
+                            width:36px;height:36px;border-radius:50%;
+                            border:none;background:rgba(0,0,0,.45);
+                            color:#fff;font-size:22px;cursor:pointer;">‹</button>
 
-                                                                <button onclick="nextImage()"
-                                                                    style="position:absolute;right:10px;top:50%;
-                                                                    transform:translateY(-50%);
-                                                                    width:36px;height:36px;border-radius:50%;
-                                                                    border:none;background:rgba(0,0,0,.45);
-                                                                    color:#fff;font-size:22px;cursor:pointer;">›</button>
-                                                            ` : ''}
+                        <button onclick="nextImage()"
+                            style="position:absolute;right:10px;top:50%;
+                            transform:translateY(-50%);
+                            width:36px;height:36px;border-radius:50%;
+                            border:none;background:rgba(0,0,0,.45);
+                            color:#fff;font-size:22px;cursor:pointer;">›</button>
+                    ` : ''}
                 </div>
             </div>
 
@@ -438,7 +443,7 @@
 
                 <div class="product-modal-description">
                     <h3>Deskripsi</h3>
-                    <p>${activeProduct.description}</p>
+                    <p>${(activeProduct.description ?? '').trim().replace(/\r?\n/g, '<br>')}</p>
                 </div>
 
                 <div class="product-modal-specs">

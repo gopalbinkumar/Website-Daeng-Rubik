@@ -120,6 +120,12 @@
     color: #000;
 }
 
+.competition-detail-page .my-rank-cell{
+    color: var(--red);
+    font-weight: 700;
+    box-shadow: inset 4px 0 0 var(--red);
+}
+
 /* Padding */
 .competition-detail-page table.table th,
 .competition-detail-page table.table td {

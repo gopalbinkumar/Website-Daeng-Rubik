@@ -73,12 +73,6 @@
             <span>Pengguna</span>
         </a>
 
-        <a href="{{ route('admin.settings') }}"
-            class="menu-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-            <i class="fa-solid fa-gear"></i>
-            <span>Pengaturan Website</span>
-        </a>
-
         <a href="{{ route('admin.reports.sales') }}"
             class="menu-item {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">
 
@@ -89,6 +83,13 @@
                 <span class="badge-dot"></span>
             @endif
         </a>
+
+        <a href="{{ route('admin.settings') }}"
+            class="menu-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+            <i class="fa-solid fa-gear"></i>
+            <span>Pengaturan</span>
+        </a>
+
     </nav>
     <div class="sidebar-footer">
         <form id="logoutForm" action="{{ route('auth.logout') }}" method="POST">

@@ -7,44 +7,6 @@
 @endpush
 
 @section('content')
-    @php
-        $rupiah = fn(int $n) => 'Rp ' . number_format($n, 0, ',', '.');
-
-        $events = [
-            [
-                'title' => 'Kompetisi Rubik Nasional',
-                'date' => '15 Feb 2026 • 08:00 WIB',
-                'location' => 'Jakarta Convention Center',
-                'status' => 'Upcoming',
-                'badge' => ['hot', 'Featured'],
-                'desc' => 'Kompetisi rubik tingkat nasional dengan berbagai kategori lomba dan hadiah menarik.',
-            ],
-            [
-                'title' => 'Workshop Basic 3x3',
-                'date' => '20 Feb 2026 • 13:00 WIB',
-                'location' => 'Bandung',
-                'status' => 'Upcoming',
-                'badge' => ['ok', 'Workshop'],
-                'desc' => 'Belajar dasar rubik 3x3 dari nol, cocok untuk pemula.',
-            ],
-            [
-                'title' => 'Speedcubing Meetup',
-                'date' => '25 Feb 2026 • 16:00 WIB',
-                'location' => 'Surabaya',
-                'status' => 'Upcoming',
-                'badge' => ['muted', 'Meetup'],
-                'desc' => 'Meetup komunitas, sharing teknik, dan mini challenge.',
-            ],
-            [
-                'title' => 'Rubik Fun Competition',
-                'date' => '1 Mar 2026 • 09:00 WIB',
-                'location' => 'Yogyakarta',
-                'status' => 'Upcoming',
-                'badge' => ['warn', 'Competition'],
-                'desc' => 'Kompetisi santai untuk semua level, seru dan ramah pemula.',
-            ],
-        ];
-    @endphp
 
     <section class="hero">
         <div class="container">
@@ -94,26 +56,39 @@
                     <div class="featured-body">
                         <span class="badge hot">Featured</span>
                         <h3>{{ $featuredEvent->title }}</h3>
-                        <p class="muted">{{ Str::limit($featuredEvent->description, 120) }}</p>
+                        {{-- <p class="muted">{{ Str::limit($featuredEvent->description, 120) }}</p> --}}
 
                         <div class="kv">
                             <div><i class="fa-regular fa-calendar-days"></i>
                                 {{ $featuredEvent->start_datetime->translatedFormat('d M Y • H:i') }}</div>
                             <div><i class="fa-solid fa-location-dot"></i> {{ $featuredEvent->location }}</div>
+
+                            @if ($featuredEvent->competitionCategories->isNotEmpty())
+                                <div class="featured-category-row">
+                                    <i class="fa-solid fa-tags"></i>
+
+                                    <div class="featured-category-icons">
+                                        @foreach ($featuredEvent->competitionCategories as $category)
+                                            <span title="{{ $category->name }}" aria-label="{{ $category->name }}">
+                                                <x-category-icon :code="$category->code" :name="$category->name" size="22" />
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
 
-                        <div style="display:flex;gap:12px;">
-
+                        <div class="featured-actions">
                             @if ($featuredEvent->category === 'kompetisi')
-                                <a href="{{ route('events') }}" class="btn btn-primary" style="flex:1">
-                                    Daftar sekarang
+                                <a href="{{ route('events.register', $featuredEvent->slug) }}" class="btn btn-primary"
+                                    style="flex:1">
+                                    Daftar
                                 </a>
                             @else
                                 <a href="{{ route('events') }}" class="btn btn-primary" style="flex:1">
-                                    Lihat detail
+                                    Lihat Detail
                                 </a>
                             @endif
-
                         </div>
                     </div>
                 </div>
@@ -146,7 +121,6 @@
                 @foreach ($featuredProducts as $p)
                     <article class="card prod">
                         <div class="prod-img">
-                            <div style="width:72%;max-width:220px;">
                                 <img src="{{ $p->primaryImage
                                     ? asset('storage/' . $p->primaryImage->image_path)
                                     : asset('assets/img/placeholder-product.png') }}"
@@ -155,10 +129,8 @@
                                     width:100%;
                                     aspect-ratio:1/1;
                                     object-fit:cover;
-                                    border-radius:18px;
                                     border:6px solid var(--line);
                                 ">
-                            </div>
                         </div>
 
                         <div class="prod-body">
