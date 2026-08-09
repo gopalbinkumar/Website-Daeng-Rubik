@@ -27,45 +27,97 @@
         <section class="section" style="padding-top:22px;">
             <div class="container">
 
+                @if ($hasEvents)
+                    {{-- TOOLBAR --}}
+                    <div class="sortbar" style="margin-bottom:18px;">
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                            <form method="GET">
+                                <select name="status" class="select" aria-label="Filter status"
+                                    onchange="this.form.submit()">
+                                    <option value="" {{ empty($status) ? 'selected' : '' }}>
+                                        Semua
+                                    </option>
+
+                                    <option value="accepted" {{ $status === 'accepted' ? 'selected' : '' }}>
+                                        Diterima
+                                    </option>
+
+                                    <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>
+                                        Menunggu
+                                    </option>
+
+                                    <option value="rejected" {{ $status === 'rejected' ? 'selected' : '' }}>
+                                        Ditolak
+                                    </option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+
+
                 @if ($events->isEmpty())
+
                     {{-- EMPTY STATE --}}
                     <div class="card card-pad" style="text-align:center;padding:32px 20px;">
                         <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
 
+                            @if ($hasEvents && !empty($status))
+                                @php
+                                    $emptyStatusText = match ($status) {
+                                        'accepted' => 'Diterima',
+                                        'pending' => 'Menunggu',
+                                        'rejected' => 'Ditolak',
+                                        default => 'status tersebut',
+                                    };
+                                @endphp
 
-                            <div>
-                                <h2 style="font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px;">
-                                    Kamu belum terdaftar di kompetisi mana pun
-                                </h2>
-                            </div>
+                                <div>
+                                    <h2 style="font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px;">
+                                        Tidak ada kompetisi
+                                    </h2>
 
-                            <a href="{{ route('events') }}" class="btn btn-primary">
-                                Cari Event
-                            </a>
+                                    <p class="muted" style="margin:0;">
+                                        Coba pilih status lainnya.
+                                    </p>
+                                </div>
+
+                                <a href="{{ url()->current() }}" class="btn btn-primary">
+                                    Tampilkan Semua Event
+                                </a>
+                            @else
+                                <div>
+                                    <h2 style="font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px;">
+                                        Kamu belum terdaftar di kompetisi mana pun
+                                    </h2>
+                                </div>
+
+                                <a href="{{ route('events') }}" class="btn btn-primary">
+                                    Cari Event
+                                </a>
+                            @endif
+
                         </div>
                     </div>
                 @else
-                    {{-- TOOLBAR RINGKAS --}}
-                    <div class="sortbar" style="margin-bottom:18px;">
-
-                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                            <select class="select" aria-label="Filter status">
-                                <option>Semua status</option>
-                                <option>Terdaftar</option>
-                                <option>Selesai</option>
-                            </select>
-                        </div>
-                    </div>
-
                     {{-- TABEL EVENT SAYA --}}
                     <div class="card card-pad my-events-table-wrap" style="padding:18px 18px 10px;">
                         <div class="table-responsive">
                             <table class="table my-events-table" style="margin-bottom:8px;min-width:680px;">
                                 <thead>
                                     <tr style="background:rgba(17,24,39,.03);">
-                                        <th style="border-bottom-color:rgba(17,24,39,.06);">Nama Kompetisi</th>
-                                        <th style="border-bottom-color:rgba(17,24,39,.06);">Tanggal</th>
-                                        <th style="border-bottom-color:rgba(17,24,39,.06);">Lokasi</th>
+                                        <th style="border-bottom-color:rgba(17,24,39,.06);">
+                                            Nama Kompetisi
+                                        </th>
+
+                                        <th style="border-bottom-color:rgba(17,24,39,.06);">
+                                            Tanggal
+                                        </th>
+
+                                        <th style="border-bottom-color:rgba(17,24,39,.06);">
+                                            Lokasi
+                                        </th>
+
                                         <th style="border-bottom-color:rgba(17,24,39,.06);"></th>
                                     </tr>
                                 </thead>
@@ -73,11 +125,20 @@
                                 <tbody>
                                     @foreach ($events as $event)
                                         @php
-                                            $statusLabel = $event->pivot->status ?? 'terdaftar';
+                                            $statusLabel = $event->pivot->status ?? 'pending';
+
+                                            $statusText = match ($statusLabel) {
+                                                'accepted' => 'Diterima',
+                                                'pending' => 'Menunggu',
+                                                'rejected' => 'Ditolak',
+                                                default => ucfirst($statusLabel),
+                                            };
 
                                             $statusClass = match ($statusLabel) {
-                                                'selesai' => 'badge-success',
-                                                default => 'badge-warning',
+                                                'accepted' => 'badge-success',
+                                                'pending' => 'badge-warning',
+                                                'rejected' => 'badge-danger',
+                                                default => 'badge-secondary',
                                             };
 
                                             $eventUrl = route('events.competition.show', [$event->id, $event->slug]);
@@ -93,28 +154,28 @@
                                             </td>
 
                                             <td data-label="Tanggal">
-                                                {{ $event->start_datetime->format('d M Y') }}<br>
-                                                {{-- <small class="muted">
-                                                    {{ $event->start_datetime->format('H:i') }} WIB
-                                                </small> --}}
+                                                {{ $event->start_datetime->format('d M Y') }}
                                             </td>
 
                                             <td data-label="Lokasi">
                                                 {{ $event->location }}
                                             </td>
 
-                                            <td data-label=" ">
+                                            <td data-label="Status">
                                                 <span class="badge {{ $statusClass }}">
-                                                    {{ ucfirst($statusLabel) }}
+                                                    {{ $statusText }}
                                                 </span>
                                             </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
                     </div>
+
                 @endif
+
             </div>
         </section>
     </div>

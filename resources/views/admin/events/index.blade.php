@@ -237,17 +237,17 @@
                 <div class="form-row">
                     <div class="form-group" id="priceGroup" style="display:none;">
                         <label class="form-label">Harga Tiket</label>
-                        <input type="number" class="form-input" name="ticket_price" min="0">
+                        <input type="number" class="form-input" name="ticket_price" value="0" required>
                     </div>
                     <div class="form-group" id="quotaGroup" style="display:none;">
                         <label class="form-label">Max Peserta <span class="required">*</span></label>
-                        <input type="number" class="form-input" name="max_participants" min="1">
+                        <input type="number" class="form-input" name="max_participants"  value="0" required>
                     </div>
                 </div>
 
                 <div class="form-group" id="prizeGroup" style="display:none;">
                     <label class="form-label">Total Hadiah</label>
-                    <input type="number" class="form-input" name="total_prize" min="0">
+                    <input type="number" class="form-input" name="total_prize" value="0" required>
                 </div>
 
                 <!-- Kategori Lomba -->
@@ -283,7 +283,7 @@
                 <!-- Status -->
                 <div class="form-group" id="statusGroup" style="display:none;">
                     <label class="form-label">Status <span class="required">*</span></label>
-                    <select class="form-select" name="status">
+                    <select class="form-select" name="status" required>
                         <option value="upcoming">Upcoming</option>
                         <option value="ongoing">Ongoing</option>
                         <option value="finished">Finished</option>
@@ -379,7 +379,7 @@
                 <div class="form-row">
                     <div class="form-group" id="editPriceGroup" style="display:none;">
                         <label class="form-label">Harga Tiket</label>
-                        <input type="number" class="form-input" name="ticket_price" min="0">
+                        <input type="number" class="form-input" name="ticket_price" value="0" required>
                     </div>
                     <div class="form-group" id="editQuotaGroup" style="display:none;">
                         <label class="form-label">Max Peserta <span class="required">*</span></label>
@@ -389,7 +389,7 @@
 
                 <div class="form-group" id="editPrizeGroup" style="display:none;">
                     <label class="form-label">Total Hadiah</label>
-                    <input type="number" class="form-input" name="total_prize" min="0">
+                    <input type="number" class="form-input" name="total_prize" value="0" required>
                 </div>
 
                 <!-- Kategori Lomba -->
@@ -419,7 +419,7 @@
                 <!-- Status -->
                 <div class="form-group" id="editStatusGroup" style="display:none;">
                     <label class="form-label">Status <span class="required">*</span></label>
-                    <select class="form-select" name="status">
+                    <select class="form-select" name="status" required>
                         <option value="upcoming">Upcoming</option>
                         <option value="ongoing">Ongoing</option>
                         <option value="finished">Finished</option>

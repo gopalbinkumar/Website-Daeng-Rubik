@@ -146,29 +146,42 @@ class EventRegistrationController extends Controller
     }
 
 
-    public function create($slug)
-    {
-        $event = Event::competition()
-            ->where('slug', $slug)
-            ->with(['competitionCategories' => fn($q) => $q->active()])
-            ->firstOrFail();
+    
+public function create($slug)
+{
+    $event = Event::competition()
+        ->where('slug', $slug)
+        ->with([
+            'competitionCategories' => fn($q) => $q->active()
+        ])
+        ->firstOrFail();
 
-        $user = Auth::user();
+    $user = Auth::user();
 
+    $registration = null;
+
+    if ($user) {
         $registration = EventRegistration::where('event_id', $event->id)
             ->where('user_id', $user->id)
             ->latest()
             ->first();
-
-        $showRegistrationForm = !$registration || in_array($registration->status, ['pending', 'rejected']);
-
-        return view('pages.event-register', [
-            'event' => $event,
-            'user' => $user,
-            'registration' => $registration,
-            'showRegistrationForm' => $showRegistrationForm,
-        ]);
     }
+
+    $showRegistrationForm = $user &&
+        (
+            !$registration ||
+            in_array($registration->status, ['pending', 'rejected'])
+        );
+
+    return view('pages.event-register', [
+        'event' => $event,
+        'user' => $user,
+        'registration' => $registration,
+        'showRegistrationForm' => $showRegistrationForm,
+    ]);
+}
+
+
 
 
     public function store(Request $request)

@@ -31,8 +31,9 @@
 
 /* Badge jenis event & status */
 .my-events-page .badge.badge-danger {
-    background: rgba(229, 57, 53, 0.08);
-    color: var(--red);
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    font-weight: 700;
 }
 
 .my-events-page .badge.badge-secondary {
@@ -41,13 +42,15 @@
 }
 
 .my-events-page .badge.badge-warning {
-    background: rgba(245, 158, 11, 0.12);
-    color: #b45309;
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+    font-weight: 700;
 }
 
 .my-events-page .badge.badge-success {
     background: rgba(34, 197, 94, 0.12);
-    color: #15803d;
+    color: #16a34a;
+    font-weight: 700;
 }
 
 /* Card utama */

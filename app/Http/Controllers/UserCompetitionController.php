@@ -10,16 +10,36 @@ use Illuminate\Support\Facades\Auth;
 
 class UserCompetitionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $events = Auth::user()
+        $status = $request->input('status');
+
+        $user = Auth::user();
+
+        // Cek apakah user memiliki minimal 1 event kompetisi
+        $hasEvents = $user
             ->events()
-            ->where('category', 'kompetisi')
-            ->whereIn('event_registrations.status', ['pending', 'accepted'])
-            ->orderBy('start_datetime', 'desc')
+            ->where('events.category', 'kompetisi')
+            ->exists();
+
+        // Ambil event sesuai filter
+        $events = $user
+            ->events()
+            ->where('events.category', 'kompetisi')
+            ->when(
+                in_array($status, ['accepted', 'pending', 'rejected']),
+                function ($query) use ($status) {
+                    $query->where('event_registrations.status', $status);
+                }
+            )
+            ->orderBy('events.start_datetime', 'desc')
             ->get();
 
-        return view('pages.my-events', compact('events'));
+        return view('pages.my-events', compact(
+            'events',
+            'status',
+            'hasEvents'
+        ));
     }
 
     public function show($id, $slug)
@@ -97,7 +117,7 @@ class UserCompetitionController extends Controller
                 ->groupBy('competition_category_id')
                 ->map(function ($categoryGroup) {
                     return $categoryGroup
-                        ->groupBy(fn ($row) => optional($row->round)->round_number)
+                        ->groupBy(fn($row) => optional($row->round)->round_number)
                         ->sortKeys();
                 })
                 ->sortKeys();
@@ -107,10 +127,9 @@ class UserCompetitionController extends Controller
         |--------------------------------------------------------------------------
         | MODE 2 — FILTER KATEGORI SAJA
         |--------------------------------------------------------------------------
-        */
-        elseif (request('category') && !request('round')) {
+        */ elseif (request('category') && !request('round')) {
             $groupedResults = $allResults
-                ->groupBy(fn ($row) => optional($row->round)->round_number)
+                ->groupBy(fn($row) => optional($row->round)->round_number)
                 ->sortKeys();
 
             $groupedResults = collect([
@@ -122,13 +141,12 @@ class UserCompetitionController extends Controller
         |--------------------------------------------------------------------------
         | MODE 3 — FILTER ROUND SAJA
         |--------------------------------------------------------------------------
-        */
-        elseif (!request('category') && request('round')) {
+        */ elseif (!request('category') && request('round')) {
             $groupedResults = $allResults
                 ->groupBy('competition_category_id')
                 ->map(function ($categoryGroup) {
                     return $categoryGroup
-                        ->groupBy(fn ($row) => optional($row->round)->round_number)
+                        ->groupBy(fn($row) => optional($row->round)->round_number)
                         ->sortKeys();
                 })
                 ->sortKeys();
@@ -138,8 +156,7 @@ class UserCompetitionController extends Controller
         |--------------------------------------------------------------------------
         | MODE 4 — FILTER KATEGORI + ROUND
         |--------------------------------------------------------------------------
-        */
-        elseif (request('category') && request('round')) {
+        */ elseif (request('category') && request('round')) {
             $groupedResults = collect([
                 request('category') => collect([
                     request('round') => $allResults,

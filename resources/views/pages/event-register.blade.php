@@ -127,82 +127,140 @@
                         <span class="summary-info-item">{!! nl2br(e($event->description)) !!}</span>
                     </div>
 
-                    <a href="{{ route('events') }}" class="summary-link">← Lihat detail event</a>
+                    {{-- <a href="{{ route('events') }}" class="summary-link">← Lihat detail event</a> --}}
                 </aside>
 
 
-                @if ($showRegistrationForm)
-                    <!-- Registration Form -->
+                @if (!auth()->check())
+
+                    {{-- GUEST / BELUM LOGIN --}}
                     <div class="event-register-form-card">
-                        <h3 style="font-size:18px;margin:0 0 20px;">Form Registrasi</h3>
+                        <h3 style="font-size:18px;margin:0 0 12px;">
+                            Silakan Login untuk Mendaftar
+                        </h3>
+
+                        <p class="muted" style="line-height:1.6;margin-bottom:20px;">
+                            Silakan login terlebih dahulu untuk mendaftar dan mengikuti kompetisi ini.
+                        </p>
+
+                        <div class="form-actions">
+                            <a href="{{ route('auth.login') }}" class="btn btn-primary">
+                                Login untuk Mendaftar
+                            </a>
+
+                            <a href="{{ route('events') }}" class="btn btn-secondary">
+                                Kembali ke halaman Event
+                            </a>
+                        </div>
+                    </div>
+                @elseif ($showRegistrationForm)
+                    {{-- FORM REGISTRASI --}}
+                    <div class="event-register-form-card">
 
                         @if ($registration && $registration->status === 'pending')
                             <p class="muted" style="line-height:1.6">
-                                Status pendaftaran Anda masih <strong>pending</strong>, namun anda dapat melakukan
-                                pendaftaran ulang jika ingin mengubah data.
+                                Status pendaftaran Anda masih <strong>pending</strong>,
+                                namun Anda dapat melakukan pendaftaran ulang jika ingin mengubah data.
                             </p>
                         @endif
 
                         @if ($registration && $registration->status === 'rejected')
                             <p class="muted" style="line-height:1.6">
-                                Status pendaftaran Anda <strong>ditolak</strong>. Silakan daftar ulang.
+                                Status pendaftaran Anda <strong>ditolak</strong>.
+                                Silakan daftar ulang.
                             </p>
                         @endif
 
                         <form method="POST" action="{{ route('events.register.store') }}" class="event-register-form">
+
                             @csrf
+
                             <input type="hidden" name="event_id" value="{{ $event->id }}">
 
                             <div class="form-group">
-                                <label class="form-label">Nama Lengkap Peserta <span class="required">*</span></label>
+                                <label class="form-label">
+                                    Nama Lengkap Peserta <span class="required">*</span>
+                                </label>
+
                                 <input type="text" class="form-input" name="participant_name"
-                                    value="{{ $user->name }}">
+                                    value="{{ $user->name }}" required>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Tanggal Lahir <span class="required">*</span></label>
+                                <label class="form-label">
+                                    Tanggal Lahir <span class="required">*</span>
+                                </label>
+
                                 <input type="date" class="form-input" name="participant_birthdate"
                                     value="{{ old('participant_birthdate', $user->birthdate) }}" required>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Email <span class="required">*</span></label>
+                                <label class="form-label">
+                                    Email <span class="required">*</span>
+                                </label>
+
                                 <input type="email" class="form-input" name="participant_email"
                                     value="{{ old('participant_email', $user->email) }}" required>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Nomor WhatsApp <span class="required">*</span></label>
+                                <label class="form-label">
+                                    Nomor WhatsApp <span class="required">*</span>
+                                </label>
+
                                 <input type="text" class="form-input" name="participant_whatsapp"
                                     value="{{ old('participant_whatsapp', $user->whatsapp) }}" required
                                     inputmode="numeric">
-                                <small class="form-helper">Contoh: 081234567890</small>
+
+                                <small class="form-helper">
+                                    Contoh: 081234567890
+                                </small>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Kategori Lomba <span class="required">*</span></label>
+                                <label class="form-label">
+                                    Kategori Lomba <span class="required">*</span>
+                                </label>
+
                                 <div class="checkbox-list">
                                     @foreach ($event->competitionCategories as $cat)
                                         <label class="checkbox-item">
                                             <input type="checkbox" class="checkbox-input" name="categories[]"
                                                 value="{{ $cat->id }}">
+
                                             <span>{{ $cat->name }}</span>
                                         </label>
                                     @endforeach
                                 </div>
-                                <small class="form-helper">Pilih satu atau lebih kategori lomba yang ingin diikuti.</small>
+
+                                <small class="form-helper">
+                                    Pilih satu atau lebih kategori lomba yang ingin diikuti.
+                                </small>
                             </div>
 
                             <div class="form-actions">
-                                <a href="{{ route('events') }}" class="btn btn-secondary">Kembali ke halaman Event</a>
-                                <button type="submit" class="btn btn-primary">Daftar Event</button>
+
+                                <button type="submit" class="btn btn-primary">
+                                    Daftar Event
+                                </button>
+
+                                <a href="{{ route('events') }}" class="btn btn-secondary">
+                                    Kembali ke halaman Event
+                                </a>
                             </div>
+
                         </form>
                     </div>
                 @else
+                    {{-- SUDAH TERDAFTAR --}}
                     <div class="event-register-form-card">
+
                         @if ($registration && $registration->status === 'accepted')
-                            <h3 style="font-size:18px;margin:0 0 20px;">Pendaftaran Diterima</h3>
+
+                            <h3 style="font-size:18px;margin:0 0 20px;">
+                                Pendaftaran Diterima
+                            </h3>
 
                             <p class="muted" style="line-height:1.6;margin-bottom:20px;">
                                 Pendaftaran Anda pada event ini sudah <strong>diterima</strong>.
@@ -210,10 +268,12 @@
                             </p>
 
                             <div style="display:grid;gap:14px;">
+
                                 <div class="summary-info-item">
                                     <span class="info-icon">
                                         <i class="fa-regular fa-user"></i>
                                     </span>
+
                                     <span>
                                         <strong>Nama:</strong>
                                         {{ $registration->participant_name }}
@@ -224,6 +284,7 @@
                                     <span class="info-icon">
                                         <i class="fa-regular fa-calendar"></i>
                                     </span>
+
                                     <span>
                                         <strong>Tanggal Lahir:</strong>
                                         {{ \Carbon\Carbon::parse($registration->participant_birthdate)->format('d M Y') }}
@@ -234,6 +295,7 @@
                                     <span class="info-icon">
                                         <i class="fa-regular fa-envelope"></i>
                                     </span>
+
                                     <span>
                                         <strong>Email:</strong>
                                         {{ $registration->participant_email }}
@@ -244,6 +306,7 @@
                                     <span class="info-icon">
                                         <i class="fa-brands fa-whatsapp"></i>
                                     </span>
+
                                     <span>
                                         <strong>WhatsApp:</strong>
                                         {{ $registration->participant_whatsapp }}
@@ -254,6 +317,7 @@
                                     <span class="info-icon">
                                         <i class="fa-solid fa-circle-check"></i>
                                     </span>
+
                                     <span>
                                         <strong>Status:</strong>
                                         Diterima
@@ -264,6 +328,7 @@
                                     <span class="info-icon">
                                         <i class="fa-solid fa-tags"></i>
                                     </span>
+
                                     <span>
                                         <strong>Kategori:</strong>
 
@@ -274,19 +339,22 @@
                                         @endif
                                     </span>
                                 </div>
+
                             </div>
 
                             <div class="form-actions" style="margin-top:22px;">
-                                <a href="{{ route('events') }}" class="btn btn-secondary">
-                                    Kembali ke halaman Event
-                                </a>
 
                                 <a href="{{ route('user.competitions') }}" class="btn btn-primary">
                                     Lihat Event Saya
                                 </a>
+                                <a href="{{ route('events') }}" class="btn btn-secondary">
+                                    Kembali ke halaman Event
+                                </a>
                             </div>
                         @else
-                            <h3 style="font-size:18px;margin:0 0 20px;">Anda sudah mendaftar</h3>
+                            <h3 style="font-size:18px;margin:0 0 20px;">
+                                Anda sudah mendaftar
+                            </h3>
 
                             <p class="muted" style="line-height:1.6">
                                 Anda sudah terdaftar pada event ini.
@@ -297,9 +365,13 @@
                             <a href="{{ route('user.competitions') }}" class="btn btn-primary">
                                 Lihat Event Saya
                             </a>
+
                         @endif
+
                     </div>
+
                 @endif
+
             </div>
         </div>
     </section>

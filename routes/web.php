@@ -102,10 +102,10 @@ Route::post('/checkout', [TransactionController::class, 'store'])
 Route::get('/event', [EventController::class, 'publicIndex'])
     ->name('events');
 
+Route::get('/event/registrasi/{slug}', [EventRegistrationController::class, 'create'])
+    ->name('events.register');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/event/registrasi/{slug}', [EventRegistrationController::class, 'create'])
-        ->name('events.register');
 
     Route::post('/event/registrasi', [EventRegistrationController::class, 'store'])
         ->name('events.register.store');
@@ -344,12 +344,12 @@ Route::middleware(['auth', 'admin'])
 
 
 
-        Route::get('/storage/{path}', function ($path) {
-            if (!Storage::disk('public')->exists($path)) {
-                abort(404);
-            }
+Route::get('/storage/{path}', function ($path) {
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
 
-            return response()->file(
-                storage_path('app/public/' . $path)
-            );
-        })->where('path', '.*');
+    return response()->file(
+        storage_path('app/public/' . $path)
+    );
+})->where('path', '.*');

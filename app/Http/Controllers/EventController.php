@@ -74,8 +74,21 @@ class EventController extends Controller
             ->with('competitionCategories')
             ->first();
 
-        $events = Event::orderBy('start_datetime', 'asc')
-            ->with('competitionCategories')
+        $events = Event::with('competitionCategories')
+            ->orderByRaw("
+            CASE status
+                WHEN 'ongoing' THEN 1
+                WHEN 'upcoming' THEN 2
+                WHEN 'finished' THEN 3
+                ELSE 4
+            END
+        ")
+            ->orderByRaw("
+            CASE
+                WHEN status = 'finished' THEN -UNIX_TIMESTAMP(start_datetime)
+                ELSE UNIX_TIMESTAMP(start_datetime)
+            END
+        ")
             ->get();
 
         return view('pages.events', compact('featured', 'events'));
