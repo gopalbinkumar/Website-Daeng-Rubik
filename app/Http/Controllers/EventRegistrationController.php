@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Exports\EventParticipantsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EventRegistrationController extends Controller
 {
@@ -126,6 +128,18 @@ class EventRegistrationController extends Controller
         ]);
     }
 
+    public function export($eventId)
+    {
+        $event = Event::competition()
+            ->where('id', $eventId)
+            ->firstOrFail();
+
+        return Excel::download(
+            new EventParticipantsExport($event->id),
+            'peserta-' . $event->slug . '.xlsx'
+        );
+    }
+
 
     public function accept(EventRegistration $registration)
     {
@@ -146,40 +160,40 @@ class EventRegistrationController extends Controller
     }
 
 
-    
-public function create($slug)
-{
-    $event = Event::competition()
-        ->where('slug', $slug)
-        ->with([
-            'competitionCategories' => fn($q) => $q->active()
-        ])
-        ->firstOrFail();
 
-    $user = Auth::user();
+    public function create($slug)
+    {
+        $event = Event::competition()
+            ->where('slug', $slug)
+            ->with([
+                'competitionCategories' => fn($q) => $q->active()
+            ])
+            ->firstOrFail();
 
-    $registration = null;
+        $user = Auth::user();
 
-    if ($user) {
-        $registration = EventRegistration::where('event_id', $event->id)
-            ->where('user_id', $user->id)
-            ->latest()
-            ->first();
+        $registration = null;
+
+        if ($user) {
+            $registration = EventRegistration::where('event_id', $event->id)
+                ->where('user_id', $user->id)
+                ->latest()
+                ->first();
+        }
+
+        $showRegistrationForm = $user &&
+            (
+                !$registration ||
+                in_array($registration->status, ['pending', 'rejected'])
+            );
+
+        return view('pages.event-register', [
+            'event' => $event,
+            'user' => $user,
+            'registration' => $registration,
+            'showRegistrationForm' => $showRegistrationForm,
+        ]);
     }
-
-    $showRegistrationForm = $user &&
-        (
-            !$registration ||
-            in_array($registration->status, ['pending', 'rejected'])
-        );
-
-    return view('pages.event-register', [
-        'event' => $event,
-        'user' => $user,
-        'registration' => $registration,
-        'showRegistrationForm' => $showRegistrationForm,
-    ]);
-}
 
 
 

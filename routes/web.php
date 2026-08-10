@@ -229,6 +229,7 @@ Route::middleware(['auth', 'admin'])
             ->group(function () {
 
                 Route::get('/', 'adminIndex')->name('index');
+                Route::get('/{eventId}/export', 'export')->name('export');
                 Route::post('/{registration}/accept', 'accept')->name('accept');
                 Route::post('/{registration}/reject', 'reject')->name('reject');
                 Route::put('/{registration}', 'update')->name('update');

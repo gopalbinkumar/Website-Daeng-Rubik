@@ -44,8 +44,9 @@
                     </strong>
                 </div>
 
-                <a href="{{ route('admin.events.participants.index') }}" class="btn btn-secondary btn-small">
-                    ← Kembali ke Ringkasan
+                <a href="{{ route('admin.events.participants.export', $selectedEvent->id) }}"
+                    class="btn btn-secondary btn-small">
+                    <i class="fa-solid fa-file-excel"></i> Export Excel
                 </a>
             </div>
         @endif
