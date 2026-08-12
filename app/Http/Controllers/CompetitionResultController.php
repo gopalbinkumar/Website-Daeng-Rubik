@@ -8,7 +8,6 @@ use App\Models\CompetitionResult;
 use App\Models\CompetitionRound;
 use Illuminate\Http\Request;
 use App\Models\EventRegistration;
-use App\Models\User;
 
 class CompetitionResultController extends Controller
 {
@@ -26,7 +25,7 @@ class CompetitionResultController extends Controller
         $q = $request->query('q');
         $categoryId = $request->query('competition_category_id');
 
-        return EventRegistration::with('user')
+        return EventRegistration::query()
             ->where('event_id', $eventId)
             ->where('status', 'accepted')
             ->when($categoryId, function ($query) use ($categoryId) {
@@ -35,16 +34,14 @@ class CompetitionResultController extends Controller
                 });
             })
             ->when($q, function ($query) use ($q) {
-                $query->whereHas('user', function ($u) use ($q) {
-                    $u->where('name', 'like', "%{$q}%");
-                });
+                $query->where('participant_name', 'like', "%{$q}%");
             })
-            ->orderBy('created_at')
+            ->orderBy('participant_name')
             ->limit(50)
             ->get()
             ->map(fn($r) => [
-                'user_id' => $r->user->id,
-                'name' => $r->user->name,
+                'user_id' => $r->user_id,
+                'name' => $r->participant_name,
             ]);
     }
 
@@ -153,17 +150,23 @@ class CompetitionResultController extends Controller
             'round_number' => $validated['round_number'],
         ]);
 
-        $user = User::findOrFail($validated['user_id']);
+        $registration = EventRegistration::where('event_id', $validated['event_id'])
+            ->where('user_id', $validated['user_id'])
+            ->where('status', 'accepted')
+            ->whereHas('competitionCategories', function ($query) use ($validated) {
+                $query->where('competition_categories.id', $validated['competition_category_id']);
+            })
+            ->firstOrFail();
 
         CompetitionResult::updateOrCreate(
             [
                 'event_id' => $validated['event_id'],
                 'competition_category_id' => $validated['competition_category_id'],
                 'round_id' => $round->id,
-                'user_id' => $user->id,
+                'user_id' => $registration->user_id,
             ],
             [
-                'participant_name' => $user->name,
+                'participant_name' => $registration->participant_name,
                 'attempt1' => $validated['attempt1'],
                 'attempt2' => $validated['attempt2'],
                 'attempt3' => $validated['attempt3'],
@@ -224,7 +227,7 @@ class CompetitionResultController extends Controller
         return response()->json(
             $results->map(fn($r) => [
                 'rank' => $r->rank,
-                'name' => $r->user->name,
+                'name' => $r->participant_name,
                 'attempt1' => $r->attempt1,
                 'attempt2' => $r->attempt2,
                 'attempt3' => $r->attempt3,
