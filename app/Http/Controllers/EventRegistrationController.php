@@ -60,7 +60,33 @@ class EventRegistrationController extends Controller
                 'oldest' => $participantsQuery->orderBy('created_at', 'asc'),
                 'name_asc' => $participantsQuery->orderBy('participant_name', 'asc'),
                 'name_desc' => $participantsQuery->orderBy('participant_name', 'desc'),
-                default => $participantsQuery->orderBy('created_at', 'desc'),
+
+                // Default:
+                // pending terlama → accepted terbaru → rejected terlama
+                default => $participantsQuery
+                    ->orderByRaw("
+                    CASE
+                        WHEN status = 'pending' THEN 1
+                        WHEN status = 'accepted' THEN 2
+                        WHEN status = 'rejected' THEN 3
+                        ELSE 4
+                    END
+                ")
+                    ->orderByRaw("
+                    CASE
+                        WHEN status = 'pending' THEN created_at
+                    END ASC
+                ")
+                    ->orderByRaw("
+                    CASE
+                        WHEN status = 'accepted' THEN created_at
+                    END DESC
+                ")
+                    ->orderByRaw("
+                    CASE
+                        WHEN status = 'rejected' THEN created_at
+                    END ASC
+                "),
             };
 
             $participants = $participantsQuery
@@ -96,7 +122,8 @@ class EventRegistrationController extends Controller
             $now = now();
 
             if ($status === 'upcoming') {
-                $eventSummariesQuery->where('start_datetime', '>', $now);
+                $eventSummariesQuery
+                    ->where('start_datetime', '>', $now);
             }
 
             if ($status === 'ongoing') {
@@ -106,15 +133,43 @@ class EventRegistrationController extends Controller
             }
 
             if ($status === 'finished') {
-                $eventSummariesQuery->where('end_datetime', '<', $now);
+                $eventSummariesQuery
+                    ->where('end_datetime', '<', $now);
             }
         }
 
         // Sort kompetisi
         match ($sort) {
-            'nearest' => $eventSummariesQuery->orderBy('start_datetime', 'asc'),
-            'oldest' => $eventSummariesQuery->orderBy('created_at', 'asc'),
-            default => $eventSummariesQuery->orderBy('created_at', 'desc'),
+            'nearest' => $eventSummariesQuery
+                ->orderBy('start_datetime', 'asc'),
+
+            'oldest' => $eventSummariesQuery
+                ->orderBy('created_at', 'asc'),
+
+            // Default:
+            // ongoing → upcoming terdekat → finished terbaru
+            default => $eventSummariesQuery
+                ->orderByRaw("
+                CASE
+                    WHEN start_datetime <= NOW()
+                         AND end_datetime >= NOW() THEN 1
+                    WHEN start_datetime > NOW() THEN 2
+                    WHEN end_datetime < NOW() THEN 3
+                    ELSE 4
+                END
+            ")
+                ->orderByRaw("
+                CASE
+                    WHEN start_datetime > NOW()
+                    THEN start_datetime
+                END ASC
+            ")
+                ->orderByRaw("
+                CASE
+                    WHEN end_datetime < NOW()
+                    THEN end_datetime
+                END DESC
+            "),
         };
 
         $eventSummaries = $eventSummariesQuery

@@ -141,9 +141,12 @@
 
                                     <tbody>
                                         @foreach ($rows as $row)
+                                            @php
+                                                $participantName = $row->participant_name ?? $row->user?->name ?? '-';
+                                            @endphp
                                             <tr class="result-row" data-category="{{ $categoryName }}"
                                                 data-round="{{ $rounds->firstWhere('round_number', $roundNumber)->name ?? 'Round ' . $roundNumber }}"
-                                                data-rank="{{ $row->rank ?? '-' }}" data-name="{{ $row->user->name }}"
+                                                data-rank="{{ $row->rank ?? '-' }}" data-name="{{ $participantName }}"
                                                 data-a1="{{ $row->attempt1 ?? 'DNF' }}"
                                                 data-a2="{{ $row->attempt2 ?? 'DNF' }}"
                                                 data-a3="{{ $row->attempt3 ?? 'DNF' }}"
@@ -158,7 +161,7 @@
                                                 </td>
 
                                                 <td class="text-start name-cell">
-                                                    {{ $row->user->name }}
+                                                    {{ $participantName }}
                                                 </td>
 
                                                 <td class="text-end attempt-col">{{ $row->attempt1 ?? 'DNF' }}</td>

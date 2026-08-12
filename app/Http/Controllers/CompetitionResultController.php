@@ -14,7 +14,24 @@ class CompetitionResultController extends Controller
     public function index()
     {
         $results = Event::where('category', 'kompetisi')
-            ->orderBy('start_datetime', 'desc')
+            ->orderByRaw("
+            CASE
+                WHEN status = 'ongoing' THEN 1
+                WHEN status = 'upcoming' THEN 2
+                WHEN status = 'finished' THEN 3
+                ELSE 4
+            END
+        ")
+            ->orderByRaw("
+            CASE
+                WHEN status = 'upcoming' THEN start_datetime
+            END ASC
+        ")
+            ->orderByRaw("
+            CASE
+                WHEN status = 'finished' THEN end_datetime
+            END DESC
+        ")
             ->paginate(10);
 
         return view('admin.events.results-index', compact('results'));
@@ -113,6 +130,9 @@ class CompetitionResultController extends Controller
         return response()->json([
             'exists' => true,
             'data' => [
+                'id' => $result->id,
+                'user_id' => $result->user_id,
+                'participant_name' => $result->participant_name,
                 'attempt1' => $result->attempt1,
                 'attempt2' => $result->attempt2,
                 'attempt3' => $result->attempt3,
@@ -129,11 +149,16 @@ class CompetitionResultController extends Controller
      */
     public function store(Request $request)
     {
+        $isManualCompetitor = $request->boolean('manual_competitor');
+
         $validated = $request->validate([
+            'result_id' => 'nullable|exists:competition_results,id',
             'event_id' => 'required|exists:events,id',
             'competition_category_id' => 'required|exists:competition_categories,id',
             'round_number' => 'required|integer|min:1|max:10',
-            'user_id' => 'required|exists:users,id',
+            'manual_competitor' => 'nullable|boolean',
+            'participant_name' => $isManualCompetitor ? 'required|string|max:255' : 'nullable|string|max:255',
+            'user_id' => $isManualCompetitor ? 'nullable|exists:users,id' : 'required|exists:users,id',
 
             'attempt1' => 'nullable|string',
             'attempt2' => 'nullable|string',
@@ -150,32 +175,63 @@ class CompetitionResultController extends Controller
             'round_number' => $validated['round_number'],
         ]);
 
-        $registration = EventRegistration::where('event_id', $validated['event_id'])
-            ->where('user_id', $validated['user_id'])
-            ->where('status', 'accepted')
-            ->whereHas('competitionCategories', function ($query) use ($validated) {
-                $query->where('competition_categories.id', $validated['competition_category_id']);
-            })
-            ->firstOrFail();
+        if ($isManualCompetitor) {
+            $userId = null;
+            $participantName = trim($validated['participant_name']);
+        } else {
+            $registration = EventRegistration::where('event_id', $validated['event_id'])
+                ->where('user_id', $validated['user_id'])
+                ->where('status', 'accepted')
+                ->whereHas('competitionCategories', function ($query) use ($validated) {
+                    $query->where('competition_categories.id', $validated['competition_category_id']);
+                })
+                ->firstOrFail();
 
-        CompetitionResult::updateOrCreate(
-            [
+            $userId = $registration->user_id;
+            $participantName = $registration->participant_name;
+        }
+
+        $resultData = [
+            'event_id' => $validated['event_id'],
+            'competition_category_id' => $validated['competition_category_id'],
+            'round_id' => $round->id,
+            'user_id' => $userId,
+            'participant_name' => $participantName,
+            'attempt1' => $validated['attempt1'],
+            'attempt2' => $validated['attempt2'],
+            'attempt3' => $validated['attempt3'],
+            'attempt4' => $validated['attempt4'],
+            'attempt5' => $validated['attempt5'],
+            'best' => $validated['best'],
+            'average' => $validated['average'],
+        ];
+
+        if (!empty($validated['result_id'])) {
+            $result = CompetitionResult::where('event_id', $validated['event_id'])
+                ->findOrFail($validated['result_id']);
+
+            $oldCategoryId = $result->competition_category_id;
+            $oldRoundId = $result->round_id;
+
+            $result->update($resultData);
+
+            if ($oldCategoryId !== (int) $validated['competition_category_id'] || $oldRoundId !== (int) $round->id) {
+                $this->recalculateRanks($validated['event_id'], $oldCategoryId, $oldRoundId);
+            }
+        } else {
+            $resultKey = [
                 'event_id' => $validated['event_id'],
                 'competition_category_id' => $validated['competition_category_id'],
                 'round_id' => $round->id,
-                'user_id' => $registration->user_id,
-            ],
-            [
-                'participant_name' => $registration->participant_name,
-                'attempt1' => $validated['attempt1'],
-                'attempt2' => $validated['attempt2'],
-                'attempt3' => $validated['attempt3'],
-                'attempt4' => $validated['attempt4'],
-                'attempt5' => $validated['attempt5'],
-                'best' => $validated['best'],
-                'average' => $validated['average'],
-            ]
-        );
+                'user_id' => $userId,
+            ];
+
+            if ($isManualCompetitor) {
+                $resultKey['participant_name'] = $participantName;
+            }
+
+            CompetitionResult::updateOrCreate($resultKey, $resultData);
+        }
 
         $this->recalculateRanks(
             $validated['event_id'],
@@ -190,13 +246,18 @@ class CompetitionResultController extends Controller
             ]);
         }
 
+        $redirectParams = [
+            'event_id' => $validated['event_id'],
+            'competition_category_id' => $validated['competition_category_id'],
+            'round_number' => $validated['round_number'],
+        ];
+
+        if ($userId) {
+            $redirectParams['user_id'] = $userId;
+        }
+
         return redirect()
-            ->route('admin.events.competition.create', [
-                'event_id' => $validated['event_id'],
-                'competition_category_id' => $validated['competition_category_id'],
-                'round_number' => $validated['round_number'],
-                'user_id' => $validated['user_id'],
-            ])
+            ->route('admin.events.competition.create', $redirectParams)
             ->with('success', 'Hasil kompetisi berhasil disimpan');
 
     }
@@ -226,7 +287,9 @@ class CompetitionResultController extends Controller
 
         return response()->json(
             $results->map(fn($r) => [
+                'id' => $r->id,
                 'rank' => $r->rank,
+                'user_id' => $r->user_id,
                 'name' => $r->participant_name,
                 'attempt1' => $r->attempt1,
                 'attempt2' => $r->attempt2,
@@ -237,6 +300,38 @@ class CompetitionResultController extends Controller
                 'average' => $r->average,
             ])
         );
+    }
+
+    public function destroyResult(Event $event, CompetitionResult $result)
+    {
+        if ($result->event_id !== $event->id) {
+            abort(404);
+        }
+
+        return $this->deleteResult($event, $result);
+    }
+
+    public function destroyResultById(Event $event, $resultId)
+    {
+        $result = CompetitionResult::where('event_id', $event->id)
+            ->whereKey($resultId)
+            ->firstOrFail();
+
+        return $this->deleteResult($event, $result);
+    }
+
+    private function deleteResult(Event $event, CompetitionResult $result)
+    {
+        $categoryId = $result->competition_category_id;
+        $roundId = $result->round_id;
+
+        $result->delete();
+        $this->recalculateRanks($event->id, $categoryId, $roundId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hasil kompetisi berhasil dihapus',
+        ]);
     }
 
     private function recalculateRanks($eventId, $categoryId, $roundId): void

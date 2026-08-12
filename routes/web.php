@@ -269,6 +269,16 @@ Route::middleware(['auth', 'admin'])
             [CompetitionResultController::class, 'resultsByCategoryRound']
         )->name('events.competition.results');
 
+        Route::delete(
+            '/events/{event}/competition/results/{result}',
+            [CompetitionResultController::class, 'destroyResult']
+        )->name('events.competition.destroy-result');
+
+        Route::post(
+            '/events/{event}/competition/results/{resultId}/delete',
+            [CompetitionResultController::class, 'destroyResultById']
+        )->name('events.competition.destroy-result-post');
+
 
         /* =====================
          | PEMBELAJARAN

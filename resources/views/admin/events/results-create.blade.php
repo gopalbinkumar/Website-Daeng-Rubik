@@ -94,6 +94,7 @@
                 <form id="resultForm" method="POST" action="{{ route('admin.events.competition.store') }}">
                     @csrf
                     <input type="hidden" name="event_id" value="{{ $event->id }}">
+                    <input type="hidden" name="result_id" id="resultId">
 
                     <h3 class="form-section-title">Kategori</h3>
 
@@ -138,6 +139,12 @@
                             </select>
                         </div>
                     </div>
+                    <label class="manual-competitor-toggle"
+                        style="display:inline-flex;align-items:center;gap:8px;width:fit-content;margin-top:8px;font-size:13px;color:#111827;cursor:pointer;user-select:none;">
+                        <input type="checkbox" name="manual_competitor" id="manualCompetitorCheckbox" value="1"
+                            style="width:15px;height:15px;margin:0;accent-color:#1976d2;cursor:pointer;">
+                        <span style="line-height:1.3;">Tambah kompetitor baru</span>
+                    </label>
 
                     {{-- PESERTA --}}
                     <h3 class="form-section-title">Kompetitor</h3>
@@ -145,7 +152,7 @@
                         <div class="form-group" style="position:relative">
                             <input type="text" id="participantInput" class="form-input"
                                 data-event-id="{{ $event->id }}" autocomplete="off" placeholder="Nama kompetitor"
-                                required>
+                                name="participant_name" required>
 
                             <input type="hidden" name="user_id" id="participantUserId">
 
@@ -235,15 +242,28 @@
             </div>
         </div>
     </div>
+    <div id="resultContextMenu" class="result-context-menu"
+        style="position:fixed;display:none;min-width:120px;padding:6px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.14);z-index:99999;">
+        <button type="button" data-context-action="edit"
+            style="display:block;width:100%;border:0;border-radius:6px;background:transparent;padding:8px 10px;color:#111827;font-size:13px;text-align:left;cursor:pointer;">
+            Edit
+        </button>
+        <button type="button" data-context-action="delete" class="is-danger"
+            style="display:block;width:100%;border:0;border-radius:6px;background:transparent;padding:8px 10px;color:#dc2626;font-size:13px;text-align:left;cursor:pointer;">
+            Hapus
+        </button>
+    </div>
 
     <script>
         (function() {
             const form = document.getElementById('resultForm');
+            const resultIdInput = document.getElementById('resultId');
 
             const participantInput = document.getElementById('participantInput');
             const participantDropdown = document.getElementById('participantDropdown');
             const participantUserId = document.getElementById('participantUserId');
             const participantGroup = participantInput?.closest('.form-group');
+            const manualCompetitorCheckbox = document.getElementById('manualCompetitorCheckbox');
 
             const categorySelect = document.querySelector('[name="competition_category_id"]');
             const roundSelect = document.querySelector('[name="round_number"]');
@@ -257,20 +277,26 @@
 
             const resultsTableBody = document.getElementById('resultsTableBody');
             const resultsTitle = document.getElementById('resultsTitle');
+            const resultContextMenu = document.getElementById('resultContextMenu');
             const saveButton = form?.querySelector('button.btn-primary');
 
             let participantCache = [];
             let loadedParticipantCategoryId = null;
             let lastRequestKey = null;
             let isFirstLoad = true;
+            let currentResults = [];
+            let contextResult = null;
 
             if (
                 !form ||
+                !resultIdInput ||
                 !participantInput ||
                 !participantDropdown ||
                 !participantUserId ||
+                !manualCompetitorCheckbox ||
                 !categorySelect ||
                 !roundSelect ||
+                !resultContextMenu ||
                 !attempts.length
             ) {
                 return;
@@ -284,6 +310,105 @@
                 avgEl.textContent = '-';
                 bestInput.value = '';
                 avgInput.value = '';
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>"']/g, char => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;',
+                } [char]));
+            }
+
+            function clearEditTarget() {
+                resultIdInput.value = '';
+            }
+
+            function hideContextMenu() {
+                resultContextMenu.style.display = 'none';
+                contextResult = null;
+            }
+
+            function styleContextMenuButtons() {
+                resultContextMenu.querySelectorAll('[data-context-action]').forEach(button => {
+                    const isDanger = button.dataset.contextAction === 'delete';
+                    const defaultBg = 'transparent';
+                    const hoverBg = isDanger ? '#fef2f2' : '#f3f4f6';
+
+                    button.style.display = 'block';
+                    button.style.width = '100%';
+                    button.style.border = '0';
+                    button.style.borderRadius = '6px';
+                    button.style.background = defaultBg;
+                    button.style.padding = '8px 10px';
+                    button.style.color = isDanger ? '#dc2626' : '#111827';
+                    button.style.fontSize = '13px';
+                    button.style.textAlign = 'left';
+                    button.style.cursor = 'pointer';
+
+                    button.addEventListener('mouseenter', () => {
+                        button.style.background = hoverBg;
+                    });
+
+                    button.addEventListener('mouseleave', () => {
+                        button.style.background = defaultBg;
+                    });
+                });
+            }
+
+            function getContextResultFromEvent(e) {
+                const row = e.target.closest('#resultsTableBody tr[data-result-id]');
+
+                if (!row) {
+                    return null;
+                }
+
+                const result = currentResults.find(item => String(item.id ?? '') === String(row.dataset.resultId));
+
+                return result || currentResults[Number(row.dataset.resultIndex)] || null;
+            }
+
+            function resultDeleteUrl(resultId) {
+                return `{{ route('admin.events.competition.destroy-result-post', [$event, '__RESULT_ID__']) }}`
+                    .replace('__RESULT_ID__', encodeURIComponent(resultId));
+            }
+
+            function showAdminAlert(options) {
+                if (window.Swal) {
+                    return Swal.fire({
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                            cancelButton: 'btn btn-secondary',
+                            ...(options.customClass || {}),
+                        },
+                        ...options,
+                    });
+                }
+
+                console.error(options.text || options.title || 'Terjadi kesalahan');
+                return Promise.resolve({
+                    isConfirmed: false
+                });
+            }
+
+            function showAdminSuccess(message) {
+                return showAdminAlert({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: message,
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+            }
+
+            function showAdminError(message) {
+                return showAdminAlert({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: message,
+                });
             }
 
             function toCS(v) {
@@ -388,11 +513,19 @@
             // =====================================================
             // LOCK / UNLOCK ATTEMPT
             // =====================================================
+            function isManualCompetitor() {
+                return manualCompetitorCheckbox.checked;
+            }
+
             function isReadyToInputAttempt() {
                 return Boolean(
                     categorySelect.value &&
                     roundSelect.value &&
-                    participantUserId.value
+                    (
+                        isManualCompetitor() ?
+                        participantInput.value.trim() :
+                        participantUserId.value
+                    )
                 );
             }
 
@@ -450,7 +583,44 @@
             // =====================================================
             let activeParticipantIndex = -1;
 
+            function hideParticipantDropdown() {
+                participantDropdown.innerHTML = '';
+                participantDropdown.style.display = 'none';
+                activeParticipantIndex = -1;
+            }
+
+            function applyManualCompetitorMode(clearName = true, focusInput = true) {
+                const isManual = isManualCompetitor();
+
+                participantInput.placeholder = isManual ? 'Nama kompetitor baru' : 'Nama kompetitor';
+                participantInput.classList.toggle('is-manual-competitor', isManual);
+
+                participantUserId.value = '';
+                participantUserId.removeAttribute('value');
+                hideParticipantDropdown();
+
+                if (clearName) {
+                    clearEditTarget();
+                    participantInput.value = '';
+
+                    attempts.forEach(input => {
+                        input.value = '';
+                    });
+
+                    resetResultSummary();
+                }
+
+                lastRequestKey = null;
+                setAttemptState();
+
+                if (focusInput) {
+                    participantInput.focus();
+                }
+            }
+
             async function loadAllParticipants() {
+                if (isManualCompetitor()) return;
+
                 const eventId = participantInput.dataset.eventId;
                 const categoryId = categorySelect.value;
 
@@ -495,6 +665,9 @@
             }
 
             async function selectParticipant(p) {
+                if (isManualCompetitor()) return;
+
+                clearEditTarget();
                 participantInput.value = p.name;
                 participantUserId.value = p.user_id;
                 participantUserId.setAttribute('value', p.user_id);
@@ -552,6 +725,11 @@
             }
 
             participantInput.addEventListener('focus', async () => {
+                if (isManualCompetitor()) {
+                    hideParticipantDropdown();
+                    return;
+                }
+
                 await loadAllParticipants();
 
                 // Jangan tampilkan dropdown saat input baru diklik
@@ -561,11 +739,19 @@
             participantInput.addEventListener('input', async () => {
                 const q = participantInput.value.trim().toLowerCase();
 
-                participantUserId.value = '';
-                participantUserId.removeAttribute('value');
+                if (!isManualCompetitor()) {
+                    clearEditTarget();
+                    participantUserId.value = '';
+                    participantUserId.removeAttribute('value');
+                }
 
                 lastRequestKey = null;
                 setAttemptState();
+
+                if (isManualCompetitor()) {
+                    hideParticipantDropdown();
+                    return;
+                }
 
                 await loadAllParticipants();
 
@@ -585,12 +771,12 @@
             });
 
             function resetParticipantSelection() {
+                clearEditTarget();
                 participantInput.value = '';
                 participantUserId.value = '';
                 participantUserId.removeAttribute('value');
 
-                participantDropdown.innerHTML = '';
-                participantDropdown.style.display = 'none';
+                hideParticipantDropdown();
 
                 participantCache = [];
                 loadedParticipantCategoryId = null;
@@ -604,6 +790,22 @@
             }
 
             participantInput.addEventListener('keydown', async e => {
+                if (isManualCompetitor()) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+
+                        if (isReadyToInputAttempt()) {
+                            focusAttempt(0);
+                        }
+                    }
+
+                    if (e.key === 'Escape') {
+                        hideParticipantDropdown();
+                    }
+
+                    return;
+                }
+
                 const q = participantInput.value.trim().toLowerCase();
                 const items = getParticipantItems();
                 const dropdownIsOpen = participantDropdown.style.display === 'block';
@@ -685,8 +887,7 @@
 
             document.addEventListener('click', e => {
                 if (participantGroup && !participantGroup.contains(e.target)) {
-                    participantDropdown.style.display = 'none';
-                    activeParticipantIndex = -1;
+                    hideParticipantDropdown();
                 }
             });
 
@@ -815,7 +1016,7 @@
             // CHECK EXISTING RESULT / PREFILL EDIT MODE
             // =====================================================
             async function checkAndPrefill() {
-                if (!categorySelect.value || !roundSelect.value || !participantUserId.value) {
+                if (isManualCompetitor() || !categorySelect.value || !roundSelect.value || !participantUserId.value) {
                     return;
                 }
 
@@ -855,6 +1056,7 @@
                     avgEl.textContent = json.data.average ?? '-';
                     bestInput.value = json.data.best ?? '';
                     avgInput.value = json.data.average ?? '';
+                    resultIdInput.value = json.data.id ?? '';
 
                 } catch (e) {
                     console.error('Gagal cek hasil kompetisi', e);
@@ -892,9 +1094,9 @@
                         `{{ route('admin.events.competition.results', $event) }}?${params.toString()}`
                     );
 
-                    let data = await res.json();
+                    currentResults = await res.json();
 
-                    if (!data.length) {
+                    if (!currentResults.length) {
                         resultsTableBody.innerHTML = `
                         <tr>
                             <td colspan="9" style="text-align:center;color:#9ca3af">
@@ -919,17 +1121,17 @@
                     //     return bestA - bestB;
                     // });
 
-                    resultsTableBody.innerHTML = data.map((r, i) => `
-                    <tr>
+                    resultsTableBody.innerHTML = currentResults.map((r, i) => `
+                    <tr data-result-id="${escapeHtml(r.id ?? '')}" data-result-index="${i}">
                         <td class="text-center">${r.rank ?? i + 1}</td>
-                        <td>${r.name}</td>
-                        <td class="text-end">${r.attempt1 ?? '-'}</td>
-                        <td class="text-end">${r.attempt2 ?? '-'}</td>
-                        <td class="text-end">${r.attempt3 ?? '-'}</td>
-                        <td class="text-end">${r.attempt4 ?? '-'}</td>
-                        <td class="text-end">${r.attempt5 ?? '-'}</td>
-                        <td class="text-end"><strong>${r.average ?? '-'}</strong></td>
-                        <td class="text-end">${r.best ?? '-'}</td>
+                        <td>${escapeHtml(r.name)}</td>
+                        <td class="text-end">${escapeHtml(r.attempt1 ?? '-')}</td>
+                        <td class="text-end">${escapeHtml(r.attempt2 ?? '-')}</td>
+                        <td class="text-end">${escapeHtml(r.attempt3 ?? '-')}</td>
+                        <td class="text-end">${escapeHtml(r.attempt4 ?? '-')}</td>
+                        <td class="text-end">${escapeHtml(r.attempt5 ?? '-')}</td>
+                        <td class="text-end"><strong>${escapeHtml(r.average ?? '-')}</strong></td>
+                        <td class="text-end">${escapeHtml(r.best ?? '-')}</td>
                     </tr>
                 `).join('');
 
@@ -940,8 +1142,103 @@
                 }
             }
 
+            function fillFormFromResult(result) {
+                resultIdInput.value = result.id ?? '';
+                manualCompetitorCheckbox.checked = !result.user_id;
+                applyManualCompetitorMode(false, false);
+
+                participantInput.value = result.name ?? '';
+
+                if (result.user_id) {
+                    participantUserId.value = result.user_id;
+                    participantUserId.setAttribute('value', result.user_id);
+                } else {
+                    participantUserId.value = '';
+                    participantUserId.removeAttribute('value');
+                }
+
+                attempts[0].value = result.attempt1 ?? '';
+                attempts[1].value = result.attempt2 ?? '';
+                attempts[2].value = result.attempt3 ?? '';
+                attempts[3].value = result.attempt4 ?? '';
+                attempts[4].value = result.attempt5 ?? '';
+
+                bestEl.textContent = result.best ?? '-';
+                avgEl.textContent = result.average ?? '-';
+                bestInput.value = result.best ?? '';
+                avgInput.value = result.average ?? '';
+
+                lastRequestKey = null;
+                hideContextMenu();
+                setAttemptState();
+                focusAttempt(0);
+            }
+
+            async function deleteResult(result) {
+                hideContextMenu();
+
+                if (!result?.id) return;
+
+                const confirmation = await showAdminAlert({
+                    title: 'Yakin ingin menghapus?',
+                    text: `Hasil ${result.name} tidak bisa dikembalikan!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-primary',
+                    },
+                });
+
+                if (!confirmation.isConfirmed) {
+                    return;
+                }
+
+                try {
+                    const formData = new FormData(form);
+
+                    const res = await fetch(resultDeleteUrl(result.id), {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': formData.get('_token'),
+                            'Accept': 'application/json',
+                        },
+                        body: formData,
+                    });
+
+                    if (!res.ok) {
+                        showAdminError(`Gagal menghapus data (${res.status})`);
+                        return;
+                    }
+
+                    if (String(resultIdInput.value) === String(result.id)) {
+                        resetParticipantSelection();
+                    }
+
+                    await loadTable();
+                    showAdminSuccess('Hasil kompetisi berhasil dihapus');
+                } catch (e) {
+                    console.error(e);
+                    showAdminError('Terjadi kesalahan saat menghapus');
+                }
+            }
+
             function handleCategoryOrRoundChange() {
                 lastRequestKey = null;
+                clearEditTarget();
+
+                if (isManualCompetitor()) {
+                    attempts.forEach(input => {
+                        input.value = '';
+                    });
+
+                    resetResultSummary();
+                }
 
                 setAttemptState();
                 checkAndPrefill();
@@ -954,14 +1251,106 @@
             });
 
             roundSelect.addEventListener('change', handleCategoryOrRoundChange);
+
+            function openResultContextMenu(e) {
+                const row = e.target.closest('#resultsTableBody tr[data-result-id]');
+
+                if (!row) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                contextResult = currentResults.find(result => String(result.id ?? '') === String(row.dataset.resultId));
+
+                if (!contextResult && row.dataset.resultIndex !== undefined) {
+                    contextResult = currentResults[Number(row.dataset.resultIndex)] ?? null;
+                }
+
+                if (!contextResult) {
+                    return;
+                }
+
+                resultContextMenu.style.position = 'fixed';
+                resultContextMenu.style.zIndex = '99999';
+                resultContextMenu.style.display = 'block';
+                resultContextMenu.style.minWidth = '120px';
+                resultContextMenu.style.padding = '6px';
+                resultContextMenu.style.border = '1px solid #e5e7eb';
+                resultContextMenu.style.borderRadius = '8px';
+                resultContextMenu.style.background = '#fff';
+                resultContextMenu.style.boxShadow = '0 12px 28px rgba(15,23,42,.14)';
+
+                const menuRect = resultContextMenu.getBoundingClientRect();
+                const left = Math.min(e.clientX, window.innerWidth - menuRect.width - 8);
+                const top = Math.min(e.clientY, window.innerHeight - menuRect.height - 8);
+
+                resultContextMenu.style.left = `${Math.max(8, left)}px`;
+                resultContextMenu.style.top = `${Math.max(8, top)}px`;
+            }
+
+            document.addEventListener('contextmenu', function(e) {
+                const result = getContextResultFromEvent(e);
+
+                if (!result) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+                contextResult = result;
+                openResultContextMenu(e);
+            }, true);
+
+            resultsTableBody.addEventListener('contextmenu', openResultContextMenu);
+
+            resultsTableBody.addEventListener('mouseup', function(e) {
+                if (e.button === 2) {
+                    openResultContextMenu(e);
+                }
+            });
+
+            resultContextMenu.addEventListener('click', function(e) {
+                const action = e.target.closest('[data-context-action]')?.dataset.contextAction;
+
+                if (!action || !contextResult) return;
+
+                if (action === 'edit') {
+                    fillFormFromResult(contextResult);
+                    return;
+                }
+
+                if (action === 'delete') {
+                    deleteResult(contextResult);
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!resultContextMenu.contains(e.target)) {
+                    hideContextMenu();
+                }
+            });
+
+            window.addEventListener('scroll', hideContextMenu, true);
+            window.addEventListener('resize', hideContextMenu);
             // =====================================================
             // AJAX SUBMIT
             // =====================================================
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
-                if (!participantUserId.value) {
-                    alert('Silakan pilih kompetitor dari daftar');
+                if (isManualCompetitor()) {
+                    if (!participantInput.value.trim()) {
+                        showAdminError('Silakan isi nama kompetitor baru');
+                        participantInput.focus();
+                        return;
+                    }
+
+                    participantUserId.value = '';
+                    participantUserId.removeAttribute('value');
+                } else if (!participantUserId.value) {
+                    showAdminError('Silakan pilih kompetitor dari daftar');
                     participantInput.focus();
                     return;
                 }
@@ -981,7 +1370,7 @@
                     });
 
                     if (!res.ok) {
-                        alert('Gagal menyimpan data');
+                        showAdminError('Gagal menyimpan data');
                         return;
                     }
 
@@ -990,10 +1379,12 @@
                     await loadTable();
 
                     participantInput.value = '';
+                    clearEditTarget();
                     participantUserId.value = '';
                     participantUserId.removeAttribute('value');
 
-                    participantDropdown.style.display = 'none';
+                    hideParticipantDropdown();
+                    hideContextMenu();
 
                     attempts.forEach(input => {
                         input.value = '';
@@ -1006,8 +1397,12 @@
 
                 } catch (e) {
                     console.error(e);
-                    alert('Terjadi kesalahan saat menyimpan');
+                    showAdminError('Terjadi kesalahan saat menyimpan');
                 }
+            });
+
+            manualCompetitorCheckbox.addEventListener('change', function() {
+                applyManualCompetitorMode(true);
             });
 
             // =====================================================
@@ -1087,7 +1482,9 @@
             // =====================================================
             // INITIAL STATE
             // =====================================================
+            styleContextMenuButtons();
             initCategoryIconList();
+            applyManualCompetitorMode(false, false);
             setAttemptState();
 
             if (categorySelect.value && roundSelect.value) {
