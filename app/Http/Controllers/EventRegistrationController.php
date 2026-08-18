@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Models\CompetitionRound;
+use App\Models\CompetitionResult;
 use App\Exports\EventParticipantsExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -222,6 +224,8 @@ class EventRegistrationController extends Controller
             ->where('slug', $slug)
             ->with([
                 'competitionCategories' => fn($q) => $q->active()
+                    ->orderBy('competition_categories.sort_order')
+                    ->orderBy('competition_categories.id')
             ])
             ->firstOrFail();
 
@@ -242,11 +246,90 @@ class EventRegistrationController extends Controller
                 in_array($registration->status, ['pending', 'rejected'])
             );
 
+        $acceptedParticipants = $event->registrations()
+            ->with('competitionCategories')
+            ->where('status', 'accepted')
+            ->orderBy('participant_name')
+            ->get();
+
+        $competitionCategories = $event->competitionCategories;
+        $rounds = CompetitionRound::where('event_id', $event->id)
+            ->when(request('category'), function ($q) {
+                $q->where('competition_category_id', request('category'));
+            })
+            ->orderBy('round_number')
+            ->get();
+
+        $selectedRound = null;
+
+        if (request('round')) {
+            $selectedRound = CompetitionRound::where('event_id', $event->id)
+                ->where('round_number', request('round'))
+                ->when(request('category'), function ($q) {
+                    $q->where('competition_category_id', request('category'));
+                })
+                ->first();
+        }
+
+        $allResults = CompetitionResult::with(['user', 'category', 'round'])
+            ->where('competition_results.event_id', $event->id)
+            ->when(request('category'), function ($q) {
+                $q->where('competition_results.competition_category_id', request('category'));
+            })
+            ->when($selectedRound, function ($q) use ($selectedRound) {
+                $q->where('competition_results.round_id', $selectedRound->id);
+            })
+            ->join('competition_rounds', 'competition_results.round_id', '=', 'competition_rounds.id')
+            ->select('competition_results.*')
+            ->orderBy('competition_results.competition_category_id')
+            ->orderBy('competition_rounds.round_number')
+            ->orderByRaw('competition_results.rank IS NULL, competition_results.rank ASC')
+            ->get();
+
+        if (!request('category') && !request('round')) {
+            $groupedResults = $allResults
+                ->groupBy('competition_category_id')
+                ->map(function ($categoryGroup) {
+                    return $categoryGroup
+                        ->groupBy(fn($row) => optional($row->round)->round_number)
+                        ->sortKeys();
+                })
+                ->sortKeys();
+        } elseif (request('category') && !request('round')) {
+            $groupedResults = collect([
+                request('category') => $allResults
+                    ->groupBy(fn($row) => optional($row->round)->round_number)
+                    ->sortKeys(),
+            ]);
+        } elseif (!request('category') && request('round')) {
+            $groupedResults = $allResults
+                ->groupBy('competition_category_id')
+                ->map(function ($categoryGroup) {
+                    return $categoryGroup
+                        ->groupBy(fn($row) => optional($row->round)->round_number)
+                        ->sortKeys();
+                })
+                ->sortKeys();
+        } else {
+            $groupedResults = collect([
+                request('category') => collect([
+                    request('round') => $allResults,
+                ]),
+            ]);
+        }
+
+        $results = $allResults;
+
         return view('pages.event-register', [
             'event' => $event,
             'user' => $user,
             'registration' => $registration,
             'showRegistrationForm' => $showRegistrationForm,
+            'acceptedParticipants' => $acceptedParticipants,
+            'competitionCategories' => $competitionCategories,
+            'rounds' => $rounds,
+            'results' => $results,
+            'groupedResults' => $groupedResults,
         ]);
     }
 

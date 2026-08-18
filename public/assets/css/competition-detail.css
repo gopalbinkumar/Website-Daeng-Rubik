@@ -90,6 +90,10 @@
     overflow-x: auto;
 }
 
+.competition-detail-page .table-responsive::-webkit-scrollbar {
+    display: none;
+}
+
 .competition-detail-page table.table {
     width: 100%;
     border-collapse: separate;

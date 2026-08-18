@@ -75,7 +75,7 @@
                             @if ($featured->status !== 'finished')
                                 <a href="{{ route('events.register', $featured->slug) }}" class="btn btn-primary"
                                     style="flex:1">
-                                    Daftar
+                                    Detail
                                 </a>
                             @endif
                             {{-- <button class="btn btn-secondary" onclick="openEventModal({{ $featured->id }})" style="flex:1">
@@ -123,17 +123,17 @@
 
                             <div class="prod-actions">
                                 @if ($ev->category === 'kompetisi')
-                                    @if ($ev->status !== 'finished')
-                                        <a href="{{ route('events.register', $ev->slug) }}" class="btn btn-primary"
-                                            style="flex:1">
-                                            Daftar
+                                    <a href="{{ route('events.register', $ev->slug) }}" class="btn btn-primary"
+                                        style="flex:1">
+                                        Detail
+                                    </a>
+
+                                    @if ($ev->status == 'finished'||$ev->status == 'ongoing')
+                                        <a href="{{ route('events.competition.show', [$ev->id, $ev->slug]) }}"
+                                            class="btn btn-secondary" style="flex:1">
+                                            Hasil
                                         </a>
                                     @endif
-
-                                    <a href="{{ route('events.competition.show', [$ev->id, $ev->slug]) }}"
-                                        class="btn btn-secondary" style="flex:1">
-                                        Hasil
-                                    </a>
                                 @else
                                     <button class="btn btn-secondary" style="flex:1"
                                         onclick="openEventModal({{ $ev->id }})">

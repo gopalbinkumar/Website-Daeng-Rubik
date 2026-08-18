@@ -141,7 +141,7 @@
                                                 default => 'badge-secondary',
                                             };
 
-                                            $eventUrl = route('events.competition.show', [$event->id, $event->slug]);
+                                            $eventUrl = route('events.register', [$event->slug]);
                                         @endphp
 
                                         <tr class="my-events-clickable-row" data-url="{{ $eventUrl }}" tabindex="0"

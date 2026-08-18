@@ -181,6 +181,12 @@
                                 <i class="fa-solid fa-wallet"></i> Transaksi
                             </a>
 
+                            @if (auth()->user()->role === 'admin')
+                                <a href="{{ route('admin.dashboard') }}">
+                                    <i class="fa-solid fa-user-shield"></i> Admin Dashboard
+                                </a>
+                            @endif
+
                             <div class="dropdown-divider"></div>
 
                             <form id="userLogoutForm" action="{{ route('auth.logout') }}" method="POST">
@@ -297,6 +303,12 @@
             <a class="nav-link" href="{{ route('transactions') }}">
                 <i class="fa-solid fa-wallet"></i> Transaksi
             </a>
+
+            @if (auth()->user()->role === 'admin')
+                <a class="nav-link" href="{{ route('admin.dashboard') }}">
+                    <i class="fa-solid fa-user-shield"></i> Admin Dashboard
+                </a>
+            @endif
         @endauth
 
     </nav>
